@@ -5,6 +5,11 @@ usersTable = "TBD"
 accountBalancesTable = "TBD"
 stockBalancesTable = "TBD"
 
+# TO DO:
+# MONGO DB
+# TRIGGERS
+# Auditing
+
 
 # Get a current copy of DB for cache
 def fillCache():
@@ -44,7 +49,6 @@ def updateStockCache(userID, stockSymbol):
 
 
 # Adds the amount to the users balance.
-# TO DO: AUDIT
 def add(userID, amount):
     if cache.exists(userID):
         query = "UPDATE {TABLE} SET account_balance = account_balance + {AMOUNT} WHERE user_id = {USER}".format(
@@ -64,7 +68,6 @@ def add(userID, amount):
 
 
 # Gets a quote from the quote server and returns the information.
-# TO DO: AUDIT
 def quote(userID, stockSymbol):
     message = "{}, {}".format(stockSymbol, userID)
     stockSocket.send(message.encode())
@@ -81,7 +84,7 @@ def quote(userID, stockSymbol):
     return dataReceived[0]
 
 
-# TO DO: MONGODB PORTION
+# Creates a buy request to be confirmed by the user
 def buy(userID, stockSymbol, amount):
     if cache.exists(userID):
         user = cache.get(userID)
@@ -97,6 +100,7 @@ def buy(userID, stockSymbol, amount):
         return "Error: User does not exist."
 
 
+# Confirms the buy request
 def commitBuy(userID):
     if cache.exists(userID + "_BUY"):
         buy = cache.get(userID + "_BUY")
@@ -130,7 +134,7 @@ def commitBuy(userID):
             return "Error: Buy too old"
 
 
-# TO DO MongoDB Portion
+# Cancels the buy request
 def cancelBuy(userID):
     if cache.exists(userID + "_BUY"):
         cache.delete(userID + "_BUY")
@@ -139,6 +143,7 @@ def cancelBuy(userID):
         return "Error: No buy to cancel"
 
 
+# Creates a sell request to be confirmed by the user
 def sell(userID, stockSymbol, amount):
     if cache.exists(userID+"_"+stockSymbol):
         user = cache.get(userID)
@@ -154,6 +159,7 @@ def sell(userID, stockSymbol, amount):
         return "Error: User does not have that stock."
 
 
+# Confirms the sell request
 def commitSell(userID):
     if cache.exists(userID + "_SELL"):
         sell = cache.get(userID + "_SELL")
@@ -165,9 +171,9 @@ def commitSell(userID):
             Connections.executeQuery(dbConnection, query)
             query = "UPDATE {TABLE} SET stock_amount = stock_amount - {AMOUNT} " \
                     "WHERE user_id = {USER} AND stock_id = {STOCK}".format(TABLE=stockBalancesTable,
-                                                                           AMOUNT=buy['amount'],
+                                                                           AMOUNT=sell['amount'],
                                                                            USER=userID,
-                                                                           STOCK=buy["stock_id"])
+                                                                           STOCK=sell["stock_id"])
             Connections.executeQuery(dbConnection, query)
 
             cache.delete(userID + "_SELL")
@@ -179,6 +185,7 @@ def commitSell(userID):
             return "Error: Sell too old"
 
 
+# Cancels the sell request
 def cancelSell(userID):
     if cache.exists(userID + "_SELL"):
         cache.delete(userID + "_SELL")
