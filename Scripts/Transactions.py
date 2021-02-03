@@ -87,7 +87,7 @@ def buy(userID, stockSymbol, amount):
         user = cache.get(userID)
         price = quote(userID, stockSymbol)
         value = amount * price
-        if user["account_balance"] > value:
+        if user["account_balance"] >= value:
             cache.set(userID + "_BUY", {"user_id": userID, "stock_id": stockSymbol,
                                         "amount": amount, "value": value, "time": datetime.datetime.now()})
             return 1
@@ -110,10 +110,10 @@ def commitBuy(userID):
                 TABLE=stockBalancesTable, USER=userID, STOCK=buy["stock_id"])
             if Connections.executeExist(dbConnection, query):
                 query = "UPDATE {TABLE} SET stock_amount = stock_amount + {AMOUNT} " \
-                        "WHERE user_id = {USER} AND stock_id = {STOCK}".format.format(TABLE=stockBalancesTable,
-                                                                                      AMOUNT=buy['amount'],
-                                                                                      USER=userID,
-                                                                                      STOCK=buy["stock_id"])
+                        "WHERE user_id = {USER} AND stock_id = {STOCK}".format(TABLE=stockBalancesTable,
+                                                                               AMOUNT=buy['amount'],
+                                                                               USER=userID,
+                                                                               STOCK=buy["stock_id"])
                 Connections.executeQuery(dbConnection, query)
             else:
                 query = "INSERT INTO {TABLE} VALUES" \
@@ -134,21 +134,57 @@ def commitBuy(userID):
 def cancelBuy(userID):
     if cache.exists(userID + "_BUY"):
         cache.delete(userID + "_BUY")
-        return "Buy Canceled"
+        return 1
     else:
         return "Error: No buy to cancel"
 
 
 def sell(userID, stockSymbol, amount):
-    print("to do")
+    if cache.exists(userID+"_"+stockSymbol):
+        user = cache.get(userID)
+        price = quote(userID, stockSymbol)
+        value = amount * price
+        if user["stock_amount"] >= amount:
+            cache.set(userID + "_SELL", {"user_id": userID, "stock_id": stockSymbol,
+                                        "amount": amount, "value": value, "time": datetime.datetime.now()})
+            return 1
+        else:
+            return "Error: User does not have required amount of that stock."
+    else:
+        return "Error: User does not have that stock."
 
 
 def commitSell(userID):
-    print("to do")
+    if cache.exists(userID + "_SELL"):
+        sell = cache.get(userID + "_SELL")
+        now = datetime.datetime.now()
+        timeDiff = (now - sell["time"]).total_seconds()
+        if timeDiff <= 60:
+            query = "UPDATE {TABLE} SET account_balance = account_balance + {AMOUNT} WHERE user_id = {USER}".format(
+                TABLE=accountBalancesTable, USER=userID, AMOUNT=sell["value"])
+            Connections.executeQuery(dbConnection, query)
+            query = "UPDATE {TABLE} SET stock_amount = stock_amount - {AMOUNT} " \
+                    "WHERE user_id = {USER} AND stock_id = {STOCK}".format(TABLE=stockBalancesTable,
+                                                                           AMOUNT=buy['amount'],
+                                                                           USER=userID,
+                                                                           STOCK=buy["stock_id"])
+            Connections.executeQuery(dbConnection, query)
+
+            cache.delete(userID + "_SELL")
+            updateAccountCache(userID)
+            updateStockCache(userID, sell["stock_id"])
+            return 1
+        else:
+            cache.delete(userID + "_SELL")
+            return "Error: Sell too old"
 
 
 def cancelSell(userID):
-    print("to do")
+    if cache.exists(userID + "_SELL"):
+        cache.delete(userID + "_SELL")
+        return 1
+    else:
+        return "Error: No sell to cancel"
 
 
 def setBuyAmount(userID, stockSymbol, amount):
