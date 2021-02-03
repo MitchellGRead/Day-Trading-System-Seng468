@@ -38,6 +38,7 @@ def createDBConnection():
     return connection
 
 
+# Read helper method for the SQL server
 def executeReadQuery(connection, query):
     cursor = connection.cursor()
     result = None
@@ -49,6 +50,7 @@ def executeReadQuery(connection, query):
         print(f"The error '{e}' occurred")
 
 
+# Write helper method for the SQL server
 def executeQuery(connection, query):
     connection.autocommit = True
     cursor = connection.cursor()
@@ -58,6 +60,19 @@ def executeQuery(connection, query):
         print(f"The error '{e}' occurred")
 
 
+# Checks if the record exists
+def executeExist(connection, query):
+    cursor = connection.cursor()
+    result = None
+    try:
+        cursor.execute(query)
+        result = cursor.fetchone()[0]
+    except OperationalError as e:
+        print(f"The error '{e}' occurred")
+    return result
+
+
+# Starts the redis (cache) server
 def startRedis():
     r = redis.Redis(host=localHost, port=redisPort, db=0)
     return r
