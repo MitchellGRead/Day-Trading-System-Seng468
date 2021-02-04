@@ -6,6 +6,12 @@ accountBalancesTable = "TBD"
 stockBalancesTable = "TBD"
 
 
+# TO DO:
+# MONGO DB
+# TRIGGERS
+# Auditing
+
+
 # Get a current copy of DB for cache
 def fillCache():
     # Fill account_balances cache
@@ -44,7 +50,6 @@ def updateStockCache(userID, stockSymbol):
 
 
 # Adds the amount to the users balance.
-# TO DO: AUDIT
 def add(userID, amount):
     if cache.exists(userID):
         query = "UPDATE {TABLE} SET account_balance = account_balance + {AMOUNT} WHERE user_id = {USER}".format(
@@ -64,7 +69,6 @@ def add(userID, amount):
 
 
 # Gets a quote from the quote server and returns the information.
-# TO DO: AUDIT
 def quote(userID, stockSymbol):
     message = "{}, {}".format(stockSymbol, userID)
     stockSocket.send(message.encode())
@@ -81,13 +85,13 @@ def quote(userID, stockSymbol):
     return dataReceived[0]
 
 
-# TO DO: MONGODB PORTION
+# Creates a buy request to be confirmed by the user
 def buy(userID, stockSymbol, amount):
     if cache.exists(userID):
         user = cache.get(userID)
         price = quote(userID, stockSymbol)
         value = amount * price
-        if user["account_balance"] > value:
+        if user["account_balance"] >= value:
             cache.set(userID + "_BUY", {"user_id": userID, "stock_id": stockSymbol,
                                         "amount": amount, "value": value, "time": datetime.datetime.now()})
             return 1
@@ -97,58 +101,98 @@ def buy(userID, stockSymbol, amount):
         return "Error: User does not exist."
 
 
+# Confirms the buy request
 def commitBuy(userID):
     if cache.exists(userID + "_BUY"):
-        buy = cache.get(userID + "_BUY")
+        buyObj = cache.get(userID + "_BUY")
         now = datetime.datetime.now()
-        timeDiff = (now - buy["time"]).total_seconds()
+        timeDiff = (now - buyObj["time"]).total_seconds()
         if timeDiff <= 60:
             query = "UPDATE {TABLE} SET account_balance = account_balance - {AMOUNT} WHERE user_id = {USER}".format(
-                TABLE=accountBalancesTable, USER=userID, AMOUNT=buy["value"])
+                TABLE=accountBalancesTable, USER=userID, AMOUNT=buyObj["value"])
             Connections.executeQuery(dbConnection, query)
             query = "SELECT EXISTS(SELECT * FROM {TABLE} WHERE user_id = {USER} AND stock_id = {STOCK})".format(
-                TABLE=stockBalancesTable, USER=userID, STOCK=buy["stock_id"])
+                TABLE=stockBalancesTable, USER=userID, STOCK=buyObj["stock_id"])
             if Connections.executeExist(dbConnection, query):
                 query = "UPDATE {TABLE} SET stock_amount = stock_amount + {AMOUNT} " \
-                        "WHERE user_id = {USER} AND stock_id = {STOCK}".format.format(TABLE=stockBalancesTable,
-                                                                                      AMOUNT=buy['amount'],
-                                                                                      USER=userID,
-                                                                                      STOCK=buy["stock_id"])
+                        "WHERE user_id = {USER} AND stock_id = {STOCK}".format(TABLE=stockBalancesTable,
+                                                                               AMOUNT=buyObj['amount'],
+                                                                               USER=userID,
+                                                                               STOCK=buyObj["stock_id"])
                 Connections.executeQuery(dbConnection, query)
             else:
                 query = "INSERT INTO {TABLE} VALUES" \
-                        " ({USER}, {STOCK}, {AMOUNT}, 0)".format(TABLE=stockBalancesTable, AMOUNT=buy['amount'],
-                                                                 USER=userID, STOCK=buy["stock_id"])
+                        " ({USER}, {STOCK}, {AMOUNT}, 0)".format(TABLE=stockBalancesTable, AMOUNT=buyObj['amount'],
+                                                                 USER=userID, STOCK=buyObj["stock_id"])
                 Connections.executeQuery(dbConnection, query)
 
             cache.delete(userID + "_BUY")
             updateAccountCache(userID)
-            updateStockCache(userID, buy["stock_id"])
+            updateStockCache(userID, buyObj["stock_id"])
             return 1
         else:
             cache.delete(userID + "_BUY")
             return "Error: Buy too old"
 
 
-# TO DO MongoDB Portion
+# Cancels the buy request
 def cancelBuy(userID):
     if cache.exists(userID + "_BUY"):
         cache.delete(userID + "_BUY")
-        return "Buy Canceled"
+        return 1
     else:
         return "Error: No buy to cancel"
 
 
+# Creates a sell request to be confirmed by the user
 def sell(userID, stockSymbol, amount):
-    print("to do")
+    if cache.exists(userID + "_" + stockSymbol):
+        user = cache.get(userID)
+        price = quote(userID, stockSymbol)
+        value = amount * price
+        if user["stock_amount"] >= amount:
+            cache.set(userID + "_SELL", {"user_id": userID, "stock_id": stockSymbol,
+                                         "amount": amount, "value": value, "time": datetime.datetime.now()})
+            return 1
+        else:
+            return "Error: User does not have required amount of that stock."
+    else:
+        return "Error: User does not have that stock."
 
 
+# Confirms the sell request
 def commitSell(userID):
-    print("to do")
+    if cache.exists(userID + "_SELL"):
+        sellObj = cache.get(userID + "_SELL")
+        now = datetime.datetime.now()
+        timeDiff = (now - sellObj["time"]).total_seconds()
+        if timeDiff <= 60:
+            query = "UPDATE {TABLE} SET account_balance = account_balance + {AMOUNT} WHERE user_id = {USER}".format(
+                TABLE=accountBalancesTable, USER=userID, AMOUNT=sellObj["value"])
+            Connections.executeQuery(dbConnection, query)
+            query = "UPDATE {TABLE} SET stock_amount = stock_amount - {AMOUNT} " \
+                    "WHERE user_id = {USER} AND stock_id = {STOCK}".format(TABLE=stockBalancesTable,
+                                                                           AMOUNT=sellObj['amount'],
+                                                                           USER=userID,
+                                                                           STOCK=sellObj["stock_id"])
+            Connections.executeQuery(dbConnection, query)
+
+            cache.delete(userID + "_SELL")
+            updateAccountCache(userID)
+            updateStockCache(userID, sellObj["stock_id"])
+            return 1
+        else:
+            cache.delete(userID + "_SELL")
+            return "Error: Sell too old"
 
 
+# Cancels the sell request
 def cancelSell(userID):
-    print("to do")
+    if cache.exists(userID + "_SELL"):
+        cache.delete(userID + "_SELL")
+        return 1
+    else:
+        return "Error: No sell to cancel"
 
 
 def setBuyAmount(userID, stockSymbol, amount):
