@@ -8,9 +8,20 @@ stockHost = "quoteserver.seng.uvic.ca"
 
 redisPort = 6379
 stockPort = 4444
+transPort = 6666
 
 dbPort = 5432
 dbName, dbUser, dbPassword = "TBD"
+
+
+# Creates socket for Sending/Receiving from WebService
+def connectWeb():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((localHost, transPort))
+    s.listen()
+    conn, addr = s.accept()
+    print("Connected to WebService @ " + addr[0])
+    return conn
 
 
 # Creates a connection to the quote server.
