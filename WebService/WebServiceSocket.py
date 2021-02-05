@@ -1,24 +1,27 @@
 from socket import socket, AF_INET, SOCK_STREAM
 import json
+from time import sleep
 
 WEBSERVER_IP, WEBSERVER_PORT = 'localhost', 5000
 TRANS_SERVER_IP, TRANS_SERVER_PORT = 'localhost', 6666
 
 web_socket = socket(AF_INET, SOCK_STREAM)
-# trans_socket = socket(AF_INET, SOCK_STREAM)
-# trans_socket.connect((TRANS_SERVER_IP, TRANS_SERVER_PORT))
+trans_socket = socket(AF_INET, SOCK_STREAM)
+while trans_socket.connect_ex((TRANS_SERVER_IP, TRANS_SERVER_PORT)) != 0:
+    sleep(1)
+
 
 
 def handleCommand(data):
     print(data)
-    # resp = sendAndRecvData(trans_socket, data)
+    resp = sendAndRecvData(trans_socket, data)
     # Log operation
-    # print(resp)
+    print(resp)
 
 
 def sendAndRecvData(conn, data):
     conn.sendall(json.dumps(data).encode())
-    data = conn.recv(1024).decode()
+    data = conn.recv(1024)
     return json.loads(data)
 
 

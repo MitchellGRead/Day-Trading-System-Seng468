@@ -3,6 +3,7 @@ from UserCommands import UserCommands
 
 CURRENT_FILE_NAME = "./1_user_workload.txt"
 WEBSERVER_IP, WEBSERVER_PORT = "localhost", 5000
+WEBSERVER_URL = f'{WEBSERVER_IP}:{WEBSERVER_PORT}'
 
 
 def readWorkloadFile():
