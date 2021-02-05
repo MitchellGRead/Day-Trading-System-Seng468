@@ -303,7 +303,7 @@ if __name__ == "__main__":
         if response == 1:
             response = {"status": 200}
         else:
-            response = {"status": 500, "message": response}
+            response = {"status": 500, "reason": response}
         webConn.send(json.dumps(response).encode())
 
     stockSocket = Connections.createQuoteConn()
