@@ -25,7 +25,7 @@ class UserCommands:
         command, user_id, amount = params
 
         data = {
-
+            'command': command,
             'user_id': user_id,
             'amount': amount
         }
@@ -34,7 +34,7 @@ class UserCommands:
 
         return resp
 
-    def quoteRequest(server_url, params):
+    def quoteRequest(self, server_url, params):
         command, user_id, stock_symbol = params
 
         data = {
@@ -42,37 +42,45 @@ class UserCommands:
             'user_id': user_id,
             'stock_symbol': stock_symbol
         }
-        resp = requests.get(f'{server_url}/quote/{user_id}/{stock_symbol}/', json=data)
+        # resp = requests.get(f'{server_url}/quote/{user_id}/{stock_symbol}/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def displaySummary(server_url, params):
+    def displaySummary(self, server_url, params):
         command, user_id = params
         data = {
             'command': command,
             'user_id': user_id
         }
-        resp = requests.get(f'{server_url}/summary/{user_id}/', json=data)
+        # resp = requests.get(f'{server_url}/summary/{user_id}/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def dumplog(server_url, params):
+    def dumplog(self, server_url, params):
         if len(params) == 2:
             command, filename = params
-            data = {'command': command}
-            resp = requests.get(f'{server_url}/dumplog/', json=data)
+            data = {
+                'command': command,
+                'filename': filename
+            }
+            # resp = requests.get(f'{server_url}/dumplog/', json=data)
+            resp = self.sendAndRecvData(data)
             return resp
         elif len(params) == 3:
             command, user_id, filename = params
             data = {
                 'command': command,
-                'user_id': user_id
+                'user_id': user_id,
+                'filename': filename
             }
-            resp = requests.get(f'{server_url}/dumplog/{user_id}/', json=data)
+            # resp = requests.get(f'{server_url}/dumplog/{user_id}/', json=data)
+            resp = self.sendAndRecvData(data)
             return resp
         else:
             return None
 
     # BUY REQUESTS --------------------------------------------
-    def buyRequest(server_url, params):
+    def buyRequest(self, server_url, params):
         command, user_id, stock_symbol, amount = params
         data = {
             'command': command,
@@ -80,28 +88,31 @@ class UserCommands:
             'stock_symbol': stock_symbol,
             'amount': amount
         }
-        resp = requests.post(f'{server_url}/buy/', json=data)
+        # resp = requests.post(f'{server_url}/buy/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def commitBuyRequest(server_url, params):
+    def commitBuyRequest(self, server_url, params):
         command, user_id = params
         data = {
             'command': command,
             'user_id': user_id
         }
-        resp = requests.post(f'{server_url}/buy/commit/', json=data)
+        # resp = requests.post(f'{server_url}/buy/commit/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def cancelBuyRequest(server_url, params):
+    def cancelBuyRequest(self, server_url, params):
         command, user_id = params
         data = {
             'command': command,
             'user_id': user_id
         }
-        resp = requests.post(f'{server_url}/cancel/buy/', json=data)
+        # resp = requests.post(f'{server_url}/cancel/buy/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def setBuyAmountRequest(server_url, params):
+    def setBuyAmountRequest(self, server_url, params):
         command, user_id, stock_symbol, amount = params
         data = {
             'command': command,
@@ -109,20 +120,22 @@ class UserCommands:
             'stock_symbol': stock_symbol,
             'amount': amount
         }
-        resp = requests.post(f'{server_url}/set/buy/amount/', json=data)
+        # resp = requests.post(f'{server_url}/set/buy/amount/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def cancelSetBuyRequest(server_url, params):
+    def cancelSetBuyRequest(self, server_url, params):
         command, user_id, stock_symbol = params
         data = {
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol
         }
-        resp = requests.post(f'{server_url}/cancel/set/buy/', json=data)
+        # resp = requests.post(f'{server_url}/cancel/set/buy/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def setBuyTriggerRequest(server_url, params):
+    def setBuyTriggerRequest(self, server_url, params):
         command, user_id, stock_symbol, amount = params
         data = {
             'command': command,
@@ -130,31 +143,34 @@ class UserCommands:
             'stock_symbol': stock_symbol,
             'amount': amount
         }
-        resp = requests.post(f'{server_url}/set/buy/trigger/', json=data)
+        # resp = requests.post(f'{server_url}/set/buy/trigger/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
     # --------------------------------------------------------------
 
     # BUY REQUESTS --------------------------------------------
-    def cancelSellRequest(server_url, params):
+    def cancelSellRequest(self, server_url, params):
         command, user_id = params
         data = {
             'command': command,
             'user_id': user_id
         }
-        resp = requests.post(f'{server_url}/cancel/sell/', json=data)
+        # resp = requests.post(f'{server_url}/cancel/sell/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def commitSellRequest(server_url, params):
+    def commitSellRequest(self, server_url, params):
         command, user_id = params
         data = {
             'command': command,
             'user_id': user_id
         }
-        resp = requests.post(f'{server_url}/buy/commit/', json=data)
+        # resp = requests.post(f'{server_url}/buy/commit/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def sellRequest(server_url, params):
+    def sellRequest(self, server_url, params):
         command, user_id, stock_symbol, amount = params
         data = {
             'command': command,
@@ -162,10 +178,11 @@ class UserCommands:
             'stock_symbol': stock_symbol,
             'amount': amount
         }
-        resp = requests.post(f'{server_url}/sell/', json=data)
+        # resp = requests.post(f'{server_url}/sell/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def setSellAmountRequest(server_url, params):
+    def setSellAmountRequest(self, server_url, params):
         command, user_id, stock_symbol, amount = params
         data = {
             'command': command,
@@ -173,20 +190,22 @@ class UserCommands:
             'stock_symbol': stock_symbol,
             'amount': amount
         }
-        resp = requests.post(f'{server_url}/set/sell/amount/', json=data)
+        # resp = requests.post(f'{server_url}/set/sell/amount/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def cancelSetSellRequest(server_url, params):
+    def cancelSetSellRequest(self, server_url, params):
         command, user_id, stock_symbol = params
         data = {
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol
         }
-        resp = requests.post(f'{server_url}/cancel/set/sell/', json=data)
+        # resp = requests.post(f'{server_url}/cancel/set/sell/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
 
-    def setSellTriggerRequest(server_url, params):
+    def setSellTriggerRequest(self, server_url, params):
         command, user_id, stock_symbol, amount = params
         data = {
             'command': command,
@@ -194,6 +213,7 @@ class UserCommands:
             'stock_symbol': stock_symbol,
             'amount': amount
         }
-        resp = requests.post(f'{server_url}/set/buy/trigger/', json=data)
+        # resp = requests.post(f'{server_url}/set/buy/trigger/', json=data)
+        resp = self.sendAndRecvData(data)
         return resp
     # --------------------------------------------------------------

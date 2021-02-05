@@ -1,25 +1,37 @@
 from socket import socket, AF_INET, SOCK_STREAM
 import json
 
-
 WEBSERVER_IP, WEBSERVER_PORT = 'localhost', 5000
+TRANS_SERVER_IP, TRANS_SERVER_PORT = 'localhost', 6666
+
 web_socket = socket(AF_INET, SOCK_STREAM)
+# trans_socket = socket(AF_INET, SOCK_STREAM)
+# trans_socket.connect((TRANS_SERVER_IP, TRANS_SERVER_PORT))
 
 
 def handleCommand(data):
-    command = data['command']
-    if command == 'ADD':
-        print('add')
+    print(data)
+    # resp = sendAndRecvData(trans_socket, data)
+    # Log operation
+    # print(resp)
+
+
+def sendAndRecvData(conn, data):
+    conn.sendall(json.dumps(data).encode())
+    data = conn.recv(1024).decode()
+    return json.loads(data)
 
 
 def checkRequest(data):
     return 'command' in data and 'user_id' in data
+
 
 def sendSuccess(conn, status=200):
     success = {
         'status': status
     }
     conn.sendall(json.dumps(success).encode())
+
 
 def sendError(conn, status=400, reason='', content=None):
     error = {
@@ -43,10 +55,8 @@ if __name__ == '__main__':
                 break
             data = json.loads(data)
 
-            if checkRequest(data):
+            if True: #checkRequest(data):
                 handleCommand(data)
                 sendSuccess(conn)
             else:
                 sendError(conn, reason='Invalid request. Requires command and user_id.', content=data)
-
-

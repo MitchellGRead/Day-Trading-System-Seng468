@@ -3,7 +3,6 @@ from UserCommands import UserCommands
 
 CURRENT_FILE_NAME = "./1_user_workload.txt"
 WEBSERVER_IP, WEBSERVER_PORT = "localhost", 5000
-WEBSERVER_URL = f'{WEBSERVER_IP}:{WEBSERVER_PORT}'
 
 
 def readWorkloadFile():
@@ -25,53 +24,53 @@ def main():
         if command == 'ADD':
             resp = command_sender.addFundsRequest(WEBSERVER_URL, param)
             print(resp)
-        # elif command == 'QUOTE':
-        #     resp = UserCommands.quoteRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'BUY':
-        #     resp = UserCommands.buyRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'COMMIT_BUY':
-        #     resp = UserCommands.commitBuyRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'CANCEL_BUY':
-        #     resp = UserCommands.cancelBuyRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'SET_BUY_AMOUNT':
-        #     resp = UserCommands.setBuyAmountRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'CANCEL_SET_BUY':
-        #     resp = UserCommands.cancelSetBuyRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'SET_BUY_TRIGGER':
-        #     resp = UserCommands.setBuyTriggerRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'SELL':
-        #     resp = UserCommands.sellRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'COMMIT_SELL':
-        #     resp = UserCommands.commitSellRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'CANCEL_SELL':
-        #     resp = UserCommands.cancelSellRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'SET_SELL_AMOUNT':
-        #     resp = UserCommands.setSellAmountRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'CANCEL_SET_SELL':
-        #     resp = UserCommands.cancelSetSellRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'SET_SELL_TRIGGER':
-        #     resp = UserCommands.setSellTriggerRequest(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'DISPLAY_SUMMARY':
-        #     resp = UserCommands.displaySummary(WEBSERVER_URL, param)
-        #     print(resp.json())
-        # elif command == 'DUMPLOG':
-        #     resp = UserCommands.dumplog(WEBSERVER_URL, param)
-        #     print(resp)
-        # else:
-        #     print(f'INVALID COMMAND: {command}')
+        elif command == 'QUOTE':
+            resp = command_sender.quoteRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'BUY':
+            resp = command_sender.buyRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'COMMIT_BUY':
+            resp = command_sender.commitBuyRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'CANCEL_BUY':
+            resp = command_sender.cancelBuyRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'SET_BUY_AMOUNT':
+            resp = command_sender.setBuyAmountRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'CANCEL_SET_BUY':
+            resp = command_sender.cancelSetBuyRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'SET_BUY_TRIGGER':
+            resp = command_sender.setBuyTriggerRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'SELL':
+            resp = command_sender.sellRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'COMMIT_SELL':
+            resp = command_sender.commitSellRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'CANCEL_SELL':
+            resp = command_sender.cancelSellRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'SET_SELL_AMOUNT':
+            resp = command_sender.setSellAmountRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'CANCEL_SET_SELL':
+            resp = command_sender.cancelSetSellRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'SET_SELL_TRIGGER':
+            resp = command_sender.setSellTriggerRequest(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'DISPLAY_SUMMARY':
+            resp = command_sender.displaySummary(WEBSERVER_URL, param)
+            print(resp)
+        elif command == 'DUMPLOG':
+            resp = command_sender.dumplog(WEBSERVER_URL, param)
+            print(resp)
+        else:
+            print(f'INVALID COMMAND: {command}')
 
     return
 
