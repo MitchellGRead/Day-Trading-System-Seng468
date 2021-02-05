@@ -237,6 +237,7 @@ if __name__ == "__main__":
 
     print(json.loads(cache.get("test")))
 
+    # Web connection
     webConn = Connections.connectWeb()
     while True:
         data = webConn.recv(1024)
