@@ -2,8 +2,9 @@ import UserCommands
 
 
 CURRENT_FILE_NAME = "./1_user_workload.txt"
-WEBSERVER_IP, WEBSERVER_PORT = "localhost", 5000
-WEBSERVER_URL = f'http://{WEBSERVER_IP}:{WEBSERVER_PORT}'
+WEBSERVER_IP = "http://localhost"
+WEBSERVER_PORT = 5000
+WEBSERVER_URL = f'{WEBSERVER_IP}:{WEBSERVER_PORT}'
 
 
 def readWorkloadFile():
@@ -24,7 +25,6 @@ def main():
         if command == 'ADD':
             resp = UserCommands.addFundsRequest(WEBSERVER_URL, param)
             print(resp.json())
-            return
         elif command == 'QUOTE':
             resp = UserCommands.quoteRequest(WEBSERVER_URL, param)
             print(resp.json())
