@@ -1,16 +1,20 @@
 #!/bin/bash
+name=trading-db
+tag=13
 
-# Tear down existing image and container
-a=$(docker stop trading-db-13)
-a=$(docker rm trading-db-13)
-a=$(docker image rm trading-db:13)
+# Tear down existing image and container if they exist
+a=$(docker stop $name-$tag > /dev/null 2>&1 &)
+a=$(docker rm $name-$tag > /dev/null 2>&1 &)
+a=$(docker image rm $name:$tag > /dev/null 2>&1 &)
 
 # Build new container, exit if error encountered
-docker build -f ./Dockerfile -t trading-db:13 ./docker_context
+$(docker build -f ./Dockerfile -t $name:$tag ./docker_context > /dev/null 2>&1 &)
+echo Built docker image titled $name:$tag
 if 
     [ $? -eq 0 ]
 then 
-    docker run --name trading-db-13 -p 5432:5432/tcp -d trading-db:13 -c max_connections=100
+    $(docker run --name $name-$tag -p 5432:5432/tcp -d $name:$tag -c max_connections=100 > /dev/null 2>&1 &)
+    echo Started docker container titled $name-$tag
 else
     exit 1
 fi
