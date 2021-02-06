@@ -5,3 +5,5 @@ tag=13
 # Tear down existing image and container if they exist
 docker stop $name-$tag
 docker rm $name-$tag
+docker image rm $name:$tag
+docker image rm postgres:13

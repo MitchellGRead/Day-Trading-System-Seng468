@@ -6,12 +6,12 @@ tag=13
 a=$(./remove_container.sh > /dev/null 2>&1)
 
 # Build new container, exit if error encountered
-$(docker build -f ./Dockerfile -t $name:$tag ./docker_context > /dev/null 2>&1)
+docker build -f ./Dockerfile -t $name:$tag ./docker_context
 echo Built docker image titled $name:$tag
 if 
     [ $? -eq 0 ]
 then 
-    $(docker run --name $name-$tag -p 5432:5432/tcp -d $name:$tag -c max_connections=100 > /dev/null 2>&1)
+    docker run --name $name-$tag -p 5432:5432/tcp -d $name:$tag
     echo Started docker container titled $name-$tag
 else
     exit 1
