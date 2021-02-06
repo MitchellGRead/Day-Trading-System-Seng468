@@ -14,9 +14,16 @@ sudo ./start_container.sh
 **NOTE:** It should be noted that this script tears down any existing containers and spins up a new instance in its place.
 **Thus, data from the last instance is deleted when this script is used to create a new instance!**
 
-# Which port to connect to
-In order to talk to the postgres server, you need to connect to the port on which the server is listening.
-**This is the TCP port number 5432.**
+# Connecting to the database
+In order to connect to the postgres server, you need to know the IP address, the port number, the database name, username
+and password. This information is as follows:
+<ul>
+<li>IP address: localhost (if locally deployed) or the IP of the machine on which it is deployed
+<li>Port number: 5432
+<li>Database name: trading-db
+<li>Database username: daytrader
+<li>Database password: tothemoon
+</ul>
 
 # Going inside the container
 Should the need arise, it is possible to enter the container for debugging purposes. To do so, ensure your container is up
