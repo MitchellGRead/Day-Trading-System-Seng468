@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 
+# User commands or inputs from UI. i.e. Buy, Add, etc
 @dataclass
 class UserCommandEvent:
     timestamp: int
@@ -8,22 +9,25 @@ class UserCommandEvent:
     transactionNumber: int
     command: str
     userName: str
-    stockSymbol: str
     funds: float
+    stockSymbol: str = ''  # required where symbol needed for command
+    filename: str = ''  # required for dumplog
     xmlName: str = 'userCommand'
 
 
+# Anything that alters a users account. i.e. add or remove
 @dataclass
 class AccountTransaction:
     timestamp: int
     server: str
     transactionNumber: int
-    command: str
+    action: str
     userName: str
     funds: float
     xmlName: str = 'accountTransaction'
 
 
+# Current user commands, interserver comms, or executing previously set triggers
 @dataclass
 class SystemEvent:
     timestamp: int
@@ -36,6 +40,7 @@ class SystemEvent:
     xmlName: str = 'systemEvent'
 
 
+# When quote server successfully hit
 @dataclass
 class QuoteServerEvent:
     quoteServerTimestamp: int
@@ -48,6 +53,7 @@ class QuoteServerEvent:
     xmlName: str = 'quoteServer'
 
 
+# Whenever error occurs. Should contain all info from original command and an error message
 @dataclass
 class ErrorEvent:
     timestamp: int
@@ -55,8 +61,9 @@ class ErrorEvent:
     transactionNumber: int
     command: str
     userName: str
-    stockSymbol: str
     errorMessage: str
+    stockSymbol: str = ''
+    filename: str = ''
     funds: float = 0
     xmlName: str = 'systemEvent'
 
