@@ -15,4 +15,5 @@ then
     echo Started docker container titled $name-$tag
 else
     exit 1
+    pause
 fi

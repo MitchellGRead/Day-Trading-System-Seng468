@@ -2,9 +2,9 @@ import Connections
 import datetime
 import json
 
-usersTable = "TBD"
-accountBalancesTable = "TBD"
-stockBalancesTable = "TBD"
+usersTable = "users"
+accountBalancesTable = "accounts"
+stockBalancesTable = "stocks"
 
 
 # TO DO:
@@ -20,14 +20,14 @@ def fillCache():
     results = Connections.executeReadQuery(connection=dbConnection, query=query)
     for row in results:
         user = {"user_id": row[0], "account_balance": row[1], "reserved_balance": row[2]}
-        cache.set(row[0], user)
+        cache.set(row[0], json.dumps(user))
 
     # Fill stock_balances table
     query = "SELECT * FROM {TABLE}".format(TABLE=stockBalancesTable)
     results = Connections.executeReadQuery(connection=dbConnection, query=query)
     for row in results:
         stockBalance = {"user_id": row[0], "stock_id": row[1], "stock_amount": row[2], "stock_reserved": row[3]}
-        cache.set("{}_{}".format(row[0], row[1]), stockBalance)
+        cache.set("{}_{}".format(row[0], row[1]), json.dumps(stockBalance))
 
 
 # Updates Account Cache after a write
@@ -36,7 +36,7 @@ def updateAccountCache(userID):
     results = Connections.executeReadQuery(connection=dbConnection, query=query)
     for row in results:
         user = {"user_id": row[0], "account_balance": row[1], "reserved_balance": row[2]}
-        cache.set(row[0], user)
+        cache.set(row[0], json.dumps(user))
 
 
 # Updates Stock Cache after a write
@@ -47,7 +47,7 @@ def updateStockCache(userID, stockSymbol):
     results = Connections.executeReadQuery(connection=dbConnection, query=query)
     for row in results:
         stockBalance = {"user_id": row[0], "stock_id": row[1], "stock_amount": row[2], "stock_reserved": row[3]}
-        cache.set("{}_{}".format(row[0], row[1]), stockBalance)
+        cache.set("{}_{}".format(row[0], row[1]), json.dumps(stockBalance))
 
 
 # Adds the amount to the users balance.
@@ -229,6 +229,9 @@ if __name__ == "__main__":
     print("Start program")
     global stockSocket, dbConnection, cache
 
+    dbConnection = Connections.createSQLConnection()
+    Connections.checkDB(dbConnection)
+
     # Figuring out redis, will need to rejigger above methods
     # Need to run redis-server.exe
     cache = Connections.startRedis()
@@ -307,7 +310,6 @@ if __name__ == "__main__":
         webConn.send(json.dumps(response).encode())
 
     stockSocket = Connections.createQuoteConn()
-    dbConnection = Connections.createDBConnection()
 
     fillCache()
 
