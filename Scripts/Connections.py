@@ -24,7 +24,7 @@ def connectWeb():
     s.bind((localHost, transPort))
     s.listen()
     conn, addr = s.accept()
-    print("Connected to WebService @ " + addr[0] + ":" + addr[1])
+    print("Connected to WebService @ " + addr[0] + ":" + str(addr[1]))
     return conn
 
 

@@ -32,7 +32,7 @@ def fillCache():
 
 # Updates Account Cache after a write
 def updateAccountCache(userID):
-    query = "SELECT * FROM {TABLE} WHERE user_id = {USER}".format(TABLE=accountBalancesTable, USER=userID)
+    query = "SELECT * FROM {TABLE} WHERE user_id = '{USER}'".format(TABLE=accountBalancesTable, USER=userID)
     results = Connections.executeReadQuery(connection=dbConnection, query=query)
     for row in results:
         user = {"user_id": row[0], "account_balance": row[1], "reserved_balance": row[2]}
@@ -41,7 +41,7 @@ def updateAccountCache(userID):
 
 # Updates Stock Cache after a write
 def updateStockCache(userID, stockSymbol):
-    query = "SELECT * FROM {TABLE} WHERE user_id = {USER} AND stock_id = {STOCK}".format(TABLE=stockBalancesTable,
+    query = "SELECT * FROM {TABLE} WHERE user_id = '{USER}' AND stock_id = {STOCK}".format(TABLE=stockBalancesTable,
                                                                                          USER=userID,
                                                                                          STOCK=stockSymbol)
     results = Connections.executeReadQuery(connection=dbConnection, query=query)
@@ -53,17 +53,18 @@ def updateStockCache(userID, stockSymbol):
 # Adds the amount to the users balance.
 def add(userID, amount):
     if cache.exists(userID):
-        query = "UPDATE {TABLE} SET account_balance = account_balance + {AMOUNT} WHERE user_id = {USER}".format(
+        query = "UPDATE {TABLE} SET account_balance = account_balance + {AMOUNT} WHERE user_id = '{USER}'".format(
             TABLE=accountBalancesTable, USER=userID, AMOUNT=amount)
         Connections.executeQuery(dbConnection, query)
 
         updateAccountCache(userID)
     else:
-        query = "INSERT INTO {TABLE} (user_id, account_balance, reserve_balance) VALUES ({USER}, {BALANCE}, 0)".format(
-            TABLE=accountBalancesTable, USER=userID, BALANCE=amount)
+        query = "INSERT INTO {TABLE} (user_id) VALUES ('{USER}')".format(TABLE=usersTable, USER=userID)
         Connections.executeQuery(dbConnection, query)
 
-        query = "INSERT INTO {TABLE} (user_id) VALUE {USER}".format(TABLE=usersTable, USER=userID)
+        query = "INSERT INTO {TABLE} (user_id, account_balance, reserve_balance) VALUES ('{USER}', {BALANCE}, 0)".format(
+            TABLE=accountBalancesTable, USER=userID, BALANCE=amount)
+        print(query)
         Connections.executeQuery(dbConnection, query)
 
         updateAccountCache(userID)
@@ -256,7 +257,7 @@ if __name__ == "__main__":
             response = 1
             print("received dumplog command")
         elif command == "ADD":
-            response = 1
+            response = add(data["user_id"], data["amount"])
             print("received add command")
         elif command == "QUOTE":
             response = 1
