@@ -108,11 +108,13 @@ def quote(userID, stockSymbol):
 def buy(userID, stockSymbol, amount):
     if cache.exists(userID):
         user = json.loads(cache.get(userID))
-        price = quote(userID, stockSymbol)
-        amountOfStock = floor(float(amount)/float(price))
+        price = float(quote(userID, stockSymbol))
+        amountOfStock = floor(float(amount)/price)
+        totalValue = price*amountOfStock
+
         if float(user["account_balance"]) >= float(amount):
             dictionary = {"user_id": userID, "stock_id": stockSymbol,
-                          "amount": amount, "amount_of_stock": amountOfStock, "time": datetime.datetime.now()}
+                          "amount": totalValue, "amount_of_stock": amountOfStock, "time": datetime.datetime.now()}
             cache.set(userID + "_BUY", json.dumps(dictionary, default=default))
             return 1
         else:
@@ -171,11 +173,13 @@ def cancelBuy(userID):
 def sell(userID, stockSymbol, amount):
     if cache.exists(userID + "_" + stockSymbol):
         user = json.loads(cache.get(userID))
-        price = quote(userID, stockSymbol)
-        amountOfStock = ceil(float(amount)/float(price))
+        price = float(quote(userID, stockSymbol))
+        amountOfStock = ceil(float(amount)/price)
+        totalValue = float(amount)*price
+
         if user["stock_amount"] >= amountOfStock:
             dictionary = {"user_id": userID, "stock_id": stockSymbol,
-                          "amount": amount, "amount_of_stock": amountOfStock, "time": datetime.datetime.now()}
+                          "amount": totalValue, "amount_of_stock": amountOfStock, "time": datetime.datetime.now()}
             cache.set(userID + "_SELL", json.dumps(dictionary, default=default))
             return 1
         else:
