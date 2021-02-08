@@ -57,8 +57,8 @@ def updateAccountCache(userID):
 # Updates Stock Cache after a write
 def updateStockCache(userID, stockSymbol):
     query = "SELECT * FROM {TABLE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}'".format(TABLE=stockBalancesTable,
-                                                                                           USER=userID,
-                                                                                           STOCK=stockSymbol)
+                                                                                             USER=userID,
+                                                                                             STOCK=stockSymbol)
     results = Connections.executeReadQuery(connection=dbConnection, query=query)
     for row in results:
         stockBalance = {"user_id": row[0], "stock_id": row[1], "stock_amount": row[2], "stock_reserved": row[3]}
@@ -109,8 +109,8 @@ def buy(userID, stockSymbol, amount):
     if cache.exists(userID):
         user = json.loads(cache.get(userID))
         price = float(quote(userID, stockSymbol))
-        amountOfStock = floor(float(amount)/price)
-        totalValue = price*amountOfStock
+        amountOfStock = floor(float(amount) / price)
+        totalValue = price * amountOfStock
 
         if float(user["account_balance"]) >= float(amount):
             dictionary = {"user_id": userID, "stock_id": stockSymbol,
@@ -138,9 +138,9 @@ def commitBuy(userID):
             if Connections.executeExist(dbConnection, query):
                 query = "UPDATE {TABLE} SET stock_amount = stock_amount + {AMOUNT} " \
                         "WHERE user_id = '{USER}' AND stock_id = '{STOCK}'".format(TABLE=stockBalancesTable,
-                                                                               AMOUNT=buyObj['amount_of_stock'],
-                                                                               USER=userID,
-                                                                               STOCK=buyObj["stock_id"])
+                                                                                   AMOUNT=buyObj['amount_of_stock'],
+                                                                                   USER=userID,
+                                                                                   STOCK=buyObj["stock_id"])
                 Connections.executeQuery(dbConnection, query)
             else:
                 query = "INSERT INTO {TABLE} VALUES" \
@@ -174,8 +174,8 @@ def sell(userID, stockSymbol, amount):
     if cache.exists(userID + "_" + stockSymbol):
         user = json.loads(cache.get(userID))
         price = float(quote(userID, stockSymbol))
-        amountOfStock = ceil(float(amount)/price)
-        totalValue = float(amount)*price
+        amountOfStock = ceil(float(amount) / price)
+        totalValue = float(amount) * price
 
         if user["stock_amount"] >= amountOfStock:
             dictionary = {"user_id": userID, "stock_id": stockSymbol,
