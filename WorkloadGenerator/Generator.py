@@ -1,4 +1,5 @@
 from UserCommands import UserCommands
+import datetime
 
 
 CURRENT_FILE_NAME = "./1_user_workload.txt"
@@ -77,4 +78,7 @@ def main():
 
 
 if __name__ == "__main__":
+    start = datetime.datetime.now()
     main()
+    end = datetime.datetime.now()
+    print("Execution Time: " + str((end-start).total_seconds()*1000) + " ms")

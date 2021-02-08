@@ -11,7 +11,6 @@ while trans_socket.connect_ex((TRANS_SERVER_IP, TRANS_SERVER_PORT)) != 0:
     sleep(1)
 
 
-
 def handleCommand(data):
     print(data)
     resp = sendAndRecvData(trans_socket, data)

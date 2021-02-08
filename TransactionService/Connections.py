@@ -2,6 +2,7 @@ import socket
 import redis
 import psycopg2
 from psycopg2 import OperationalError
+from time import sleep
 
 localHost = "127.0.0.1"
 # stockHost = "quoteserver.seng.uvic.ca"
@@ -19,7 +20,6 @@ accountBalancesTable = "accounts"
 stockBalancesTable = "stocks"
 
 
-
 # Creates socket for Sending/Receiving from WebService
 def connectWeb():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,7 +34,9 @@ def connectWeb():
 # Creates a connection to the quote server.
 def createQuoteConn():
     stockSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    stockSocket.connect((stockHost, stockPort))
+    print("Attempting Connection to Quote Server")
+    while stockSocket.connect_ex((stockHost, stockPort)) != 0:
+        sleep(1)
     print("Quote Connection Started")
     return stockSocket
 
@@ -83,7 +85,6 @@ def checkDB(connection):
 # Read helper method for the SQL server
 def executeReadQuery(connection, query):
     cursor = connection.cursor()
-    result = None
     try:
         cursor.execute(query)
         result = cursor.fetchall()
