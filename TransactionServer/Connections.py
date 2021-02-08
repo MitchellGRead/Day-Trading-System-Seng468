@@ -4,7 +4,8 @@ import psycopg2
 from psycopg2 import OperationalError
 
 localHost = "127.0.0.1"
-stockHost = "quoteserver.seng.uvic.ca"
+# stockHost = "quoteserver.seng.uvic.ca"
+stockHost = "localhost"
 
 redisPort = 6379
 stockPort = 4444

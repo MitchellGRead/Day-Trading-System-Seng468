@@ -1,6 +1,7 @@
 import Connections
 import datetime
 import json
+from math import floor
 
 usersTable = "users"
 accountBalancesTable = "accounts"
@@ -11,6 +12,19 @@ stockBalancesTable = "stocks"
 # MONGO DB
 # TRIGGERS
 # Auditing
+
+# Time Handling Methods
+def default(obj):
+    if isinstance(obj, datetime.datetime):
+        return {'_isoformat': obj.isoformat()}
+    return super().default(obj)
+
+
+def object_hook(obj):
+    _isoformat = obj.get('_isoformat')
+    if _isoformat is not None:
+        return datetime.datetime.fromisoformat(_isoformat)
+    return obj
 
 
 # Get a current copy of DB for cache
@@ -41,9 +55,9 @@ def updateAccountCache(userID):
 
 # Updates Stock Cache after a write
 def updateStockCache(userID, stockSymbol):
-    query = "SELECT * FROM {TABLE} WHERE user_id = '{USER}' AND stock_id = {STOCK}".format(TABLE=stockBalancesTable,
-                                                                                         USER=userID,
-                                                                                         STOCK=stockSymbol)
+    query = "SELECT * FROM {TABLE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}'".format(TABLE=stockBalancesTable,
+                                                                                           USER=userID,
+                                                                                           STOCK=stockSymbol)
     results = Connections.executeReadQuery(connection=dbConnection, query=query)
     for row in results:
         stockBalance = {"user_id": row[0], "stock_id": row[1], "stock_amount": row[2], "stock_reserved": row[3]}
@@ -80,23 +94,26 @@ def quote(userID, stockSymbol):
 
     if cache.exists("quotes"):
         quotes = cache.get("quotes")
+        quotes = json.loads(quotes, object_hook=object_hook)
         quotes[stockSymbol] = [dataReceived[0], datetime.datetime.now()]
-        cache.set("quotes", quotes)
+        cache.set("quotes", json.dumps(quotes, default=default))
     else:
         quotes = {stockSymbol: [dataReceived[0], datetime.datetime.now()]}
-        cache.set("quotes", quotes)
+        cache.set("quotes", json.dumps(quotes, default=default))
+    print(dataReceived)
     return dataReceived[0]
 
 
 # Creates a buy request to be confirmed by the user
 def buy(userID, stockSymbol, amount):
     if cache.exists(userID):
-        user = cache.get(userID)
+        user = json.loads(cache.get(userID))
         price = quote(userID, stockSymbol)
-        value = amount * price
-        if user["account_balance"] >= value:
-            cache.set(userID + "_BUY", {"user_id": userID, "stock_id": stockSymbol,
-                                        "amount": amount, "value": value, "time": datetime.datetime.now()})
+        amountOfStock = floor(float(amount)/float(price))
+        if float(user["account_balance"]) >= float(amount):
+            dictionary = {"user_id": userID, "stock_id": stockSymbol,
+                          "amount": amount, "amount_of_stock": amountOfStock, "time": datetime.datetime.now()}
+            cache.set(userID + "_BUY", json.dumps(dictionary, default=default))
             return 1
         else:
             return "User does not have required funds."
@@ -107,31 +124,32 @@ def buy(userID, stockSymbol, amount):
 # Confirms the buy request
 def commitBuy(userID):
     if cache.exists(userID + "_BUY"):
-        buyObj = cache.get(userID + "_BUY")
+        buyObj = json.loads(cache.get(userID + "_BUY"), object_hook=object_hook)
         now = datetime.datetime.now()
         timeDiff = (now - buyObj["time"]).total_seconds()
         if timeDiff <= 60:
-            query = "UPDATE {TABLE} SET account_balance = account_balance - {AMOUNT} WHERE user_id = {USER}".format(
-                TABLE=accountBalancesTable, USER=userID, AMOUNT=buyObj["value"])
+            query = "UPDATE {TABLE} SET account_balance = account_balance - {AMOUNT} WHERE user_id = '{USER}'".format(
+                TABLE=accountBalancesTable, USER=userID, AMOUNT=buyObj["amount"])
             Connections.executeQuery(dbConnection, query)
-            query = "SELECT EXISTS(SELECT * FROM {TABLE} WHERE user_id = {USER} AND stock_id = {STOCK})".format(
+            query = "SELECT EXISTS(SELECT * FROM {TABLE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}')".format(
                 TABLE=stockBalancesTable, USER=userID, STOCK=buyObj["stock_id"])
             if Connections.executeExist(dbConnection, query):
                 query = "UPDATE {TABLE} SET stock_amount = stock_amount + {AMOUNT} " \
-                        "WHERE user_id = {USER} AND stock_id = {STOCK}".format(TABLE=stockBalancesTable,
-                                                                               AMOUNT=buyObj['amount'],
+                        "WHERE user_id = '{USER}' AND stock_id = '{STOCK}'".format(TABLE=stockBalancesTable,
+                                                                               AMOUNT=buyObj['amount_of_stock'],
                                                                                USER=userID,
                                                                                STOCK=buyObj["stock_id"])
                 Connections.executeQuery(dbConnection, query)
             else:
                 query = "INSERT INTO {TABLE} VALUES" \
-                        " ({USER}, {STOCK}, {AMOUNT}, 0)".format(TABLE=stockBalancesTable, AMOUNT=buyObj['amount'],
-                                                                 USER=userID, STOCK=buyObj["stock_id"])
+                        " ('{USER}', '{STOCK}', {AMOUNT}, 0)".format(TABLE=stockBalancesTable,
+                                                                     AMOUNT=buyObj["amount_of_stock"], USER=userID,
+                                                                     STOCK=buyObj["stock_id"])
                 Connections.executeQuery(dbConnection, query)
 
             cache.delete(userID + "_BUY")
             updateAccountCache(userID)
-            updateStockCache(userID, buyObj["stock_id"])
+            updateStockCache(userID, json.dumps(buyObj["stock_id"]))
             return 1
         else:
             cache.delete(userID + "_BUY")
@@ -230,12 +248,15 @@ if __name__ == "__main__":
     print("Start program")
     global stockSocket, dbConnection, cache
 
+    stockSocket = Connections.createQuoteConn()
+
     dbConnection = Connections.createSQLConnection()
     Connections.checkDB(dbConnection)
 
     # Figuring out redis, will need to rejigger above methods
     # Need to run redis-server.exe
     cache = Connections.startRedis()
+    cache.flushdb()
     testCache = {"test": "cache", "cache": "test"}
     cache.set("test", json.dumps(testCache))
 
@@ -256,20 +277,23 @@ if __name__ == "__main__":
         elif command == "DUMPLOG":
             response = 1
             print("received dumplog command")
+
         elif command == "ADD":
             response = add(data["user_id"], data["amount"])
             print("received add command")
         elif command == "QUOTE":
+            # Need work on WebService to accept quote info back.
+            price = quote(data["user_id"], data["stock_symbol"])
             response = 1
             print("received quote command")
         elif command == "BUY":
-            response = 1
+            response = buy(data["user_id"], data["stock_symbol"], data["amount"])
             print("received buy command")
         elif command == "COMMIT_BUY":
-            response = 1
+            response = commitBuy(data["user_id"])
             print("received commit buy command")
         elif command == "CANCEL_BUY":
-            response = 1
+            response = cancelBuy(data["user_id"])
             print("received cancel buy command")
         elif command == "SET_BUY_AMOUNT":
             response = 1
@@ -309,9 +333,3 @@ if __name__ == "__main__":
         else:
             response = {"status": 500, "reason": response}
         webConn.send(json.dumps(response).encode())
-
-    stockSocket = Connections.createQuoteConn()
-
-    fillCache()
-
-    quote('oY01WVirLr', 'S')
