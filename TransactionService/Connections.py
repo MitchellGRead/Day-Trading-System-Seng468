@@ -4,14 +4,20 @@ import psycopg2
 from psycopg2 import OperationalError
 
 localHost = "127.0.0.1"
-stockHost = "quoteserver.seng.uvic.ca"
+# stockHost = "quoteserver.seng.uvic.ca"
+stockHost = "localhost"
 
 redisPort = 6379
 stockPort = 4444
 transPort = 6666
 
 dbPort = 5432
-dbName, dbUser, dbPassword = "TBD"
+dbName, dbUser, dbPassword = "trading-db", "daytrader", "tothemoon"
+
+usersTable = "users"
+accountBalancesTable = "accounts"
+stockBalancesTable = "stocks"
+
 
 
 # Creates socket for Sending/Receiving from WebService
@@ -20,7 +26,8 @@ def connectWeb():
     s.bind((localHost, transPort))
     s.listen()
     conn, addr = s.accept()
-    print("Connected to WebService @ " + addr[0] + ":" + addr[1])
+
+    print("Connected to WebService @ " + addr[0] + ":" + str(addr[1]))
     return conn
 
 
@@ -33,7 +40,7 @@ def createQuoteConn():
 
 
 # Create a connection to the database manager
-def createDBConnection():
+def createSQLConnection():
     connection = None
     try:
         connection = psycopg2.connect(
@@ -43,12 +50,36 @@ def createDBConnection():
             host=localHost,
             port=dbPort
         )
-        print("Connection to postgres successful")
+        print("Connection to PostGres Successful")
     except OperationalError as e:
         print(f"The error '{e}' occurred")
     return connection
 
+  
+def checkDB(connection):
+    destroyTables = "DROP TABLE IF EXISTS stocks, accounts, users CASCADE;"
+    executeQuery(connection, destroyTables)
+    createUser = "CREATE TABLE IF NOT EXISTS users (" \
+                 "user_id VARCHAR(10) PRIMARY KEY);"
+    createAccounts = "CREATE TABLE IF NOT EXISTS accounts (" \
+                     "user_id varchar(10) PRIMARY KEY," \
+                     "account_balance float4," \
+                     "reserve_balance float4," \
+                     "constraint user_id FOREIGN KEY (user_id) REFERENCES users(user_id));"
+    createStocks = "CREATE TABLE IF NOT EXISTS stocks (" \
+                   "user_id varchar(10)," \
+                   "stock_id varchar(10)," \
+                   "stock_amount integer," \
+                   "stock_reserved integer," \
+                   "constraint stock_amount check (stock_amount >= 0)," \
+                   "constraint stock_reserved check (stock_reserved >= 0)," \
+                   "constraint user_id FOREIGN KEY (user_id) REFERENCES users(user_id)," \
+                   "PRIMARY KEY (user_id, stock_id));"
+    executeQuery(connection, createUser)
+    executeQuery(connection, createAccounts)
+    executeQuery(connection, createStocks)
 
+    
 # Read helper method for the SQL server
 def executeReadQuery(connection, query):
     cursor = connection.cursor()
@@ -86,4 +117,5 @@ def executeExist(connection, query):
 # Starts the redis (cache) server
 def startRedis():
     r = redis.Redis(host=localHost, port=redisPort, db=0)
+    print("Connection to Redis Successful")
     return r
