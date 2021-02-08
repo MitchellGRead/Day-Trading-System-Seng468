@@ -19,12 +19,14 @@ accountBalancesTable = "accounts"
 stockBalancesTable = "stocks"
 
 
+
 # Creates socket for Sending/Receiving from WebService
 def connectWeb():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((localHost, transPort))
     s.listen()
     conn, addr = s.accept()
+
     print("Connected to WebService @ " + addr[0] + ":" + str(addr[1]))
     return conn
 
@@ -53,7 +55,7 @@ def createSQLConnection():
         print(f"The error '{e}' occurred")
     return connection
 
-
+  
 def checkDB(connection):
     destroyTables = "DROP TABLE IF EXISTS stocks, accounts, users CASCADE;"
     executeQuery(connection, destroyTables)
@@ -77,7 +79,7 @@ def checkDB(connection):
     executeQuery(connection, createAccounts)
     executeQuery(connection, createStocks)
 
-
+    
 # Read helper method for the SQL server
 def executeReadQuery(connection, query):
     cursor = connection.cursor()

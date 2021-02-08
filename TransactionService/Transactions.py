@@ -13,6 +13,7 @@ stockBalancesTable = "stocks"
 # TRIGGERS
 # Auditing
 
+
 # Time Handling Methods
 def default(obj):
     if isinstance(obj, datetime.datetime):
@@ -78,7 +79,6 @@ def add(userID, amount):
 
         query = "INSERT INTO {TABLE} (user_id, account_balance, reserve_balance) VALUES ('{USER}', {BALANCE}, 0)".format(
             TABLE=accountBalancesTable, USER=userID, BALANCE=amount)
-        print(query)
         Connections.executeQuery(dbConnection, query)
 
         updateAccountCache(userID)
