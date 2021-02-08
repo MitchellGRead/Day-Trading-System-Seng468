@@ -1,7 +1,7 @@
 import Connections
 import datetime
 import json
-from math import floor
+from math import floor, ceil
 
 usersTable = "users"
 accountBalancesTable = "accounts"
@@ -170,12 +170,13 @@ def cancelBuy(userID):
 # Creates a sell request to be confirmed by the user
 def sell(userID, stockSymbol, amount):
     if cache.exists(userID + "_" + stockSymbol):
-        user = cache.get(userID)
+        user = json.loads(cache.get(userID))
         price = quote(userID, stockSymbol)
-        value = amount * price
-        if user["stock_amount"] >= amount:
-            cache.set(userID + "_SELL", {"user_id": userID, "stock_id": stockSymbol,
-                                         "amount": amount, "value": value, "time": datetime.datetime.now()})
+        amountOfStock = ceil(float(amount)/float(price))
+        if user["stock_amount"] >= amountOfStock:
+            dictionary = {"user_id": userID, "stock_id": stockSymbol,
+                          "amount": amount, "amount_of_stock": amountOfStock, "time": datetime.datetime.now()}
+            cache.set(userID + "_SELL", json.dumps(dictionary, default=default))
             return 1
         else:
             return "User does not have required amount of that stock."
@@ -191,11 +192,11 @@ def commitSell(userID):
         timeDiff = (now - sellObj["time"]).total_seconds()
         if timeDiff <= 60:
             query = "UPDATE {TABLE} SET account_balance = account_balance + {AMOUNT} WHERE user_id = {USER}".format(
-                TABLE=accountBalancesTable, USER=userID, AMOUNT=sellObj["value"])
+                TABLE=accountBalancesTable, USER=userID, AMOUNT=sellObj["amount"])
             Connections.executeQuery(dbConnection, query)
             query = "UPDATE {TABLE} SET stock_amount = stock_amount - {AMOUNT} " \
                     "WHERE user_id = {USER} AND stock_id = {STOCK}".format(TABLE=stockBalancesTable,
-                                                                           AMOUNT=sellObj['amount'],
+                                                                           AMOUNT=sellObj['amount_of_stock'],
                                                                            USER=userID,
                                                                            STOCK=sellObj["stock_id"])
             Connections.executeQuery(dbConnection, query)
@@ -253,8 +254,6 @@ if __name__ == "__main__":
     dbConnection = Connections.createSQLConnection()
     Connections.checkDB(dbConnection)
 
-    # Figuring out redis, will need to rejigger above methods
-    # Need to run redis-server.exe
     cache = Connections.startRedis()
     cache.flushdb()
 
@@ -282,6 +281,7 @@ if __name__ == "__main__":
             price = quote(data["user_id"], data["stock_symbol"])
             response = 1
             print("received quote command")
+
         elif command == "BUY":
             response = buy(data["user_id"], data["stock_symbol"], data["amount"])
             print("received buy command")
@@ -291,6 +291,18 @@ if __name__ == "__main__":
         elif command == "CANCEL_BUY":
             response = cancelBuy(data["user_id"])
             print("received cancel buy command")
+
+        elif command == "SELL":
+            response = sell(data["user_id"], data["stock_symbol"], data["amount"])
+            print("received sell command")
+        elif command == "COMMIT_SELL":
+            response = commitSell(data["user_id"])
+            print("received commit sell command")
+        elif command == "CANCEL_SELL":
+            response = cancelSell(data["user_id"])
+            print("received cancel sell command")
+
+        # Not Implemented
         elif command == "SET_BUY_AMOUNT":
             response = 1
             print("received set buy amount command")
@@ -300,15 +312,8 @@ if __name__ == "__main__":
         elif command == "CANCEL_SET_BUY":
             response = 1
             print("received cancel set buy command")
-        elif command == "SELL":
-            response = 1
-            print("received sell command")
-        elif command == "COMMIT_SELL":
-            response = 1
-            print("received commit sell command")
-        elif command == "CANCEL_SELL":
-            response = 1
-            print("received cancel sell command")
+
+        # Not Implemented
         elif command == "SET_SELL_AMOUNT":
             response = 1
             print("received set sell amount command")
@@ -318,6 +323,7 @@ if __name__ == "__main__":
         elif command == "CANCEL_SET_SELL":
             response = 1
             print("received cancel set sell command")
+
         else:
             response = "Unknown command"
             print(data)
