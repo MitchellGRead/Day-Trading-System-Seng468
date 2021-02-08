@@ -14,13 +14,14 @@ stockBalancesTable = "stocks"
 # Auditing
 
 
-# Time Handling Methods
+# Time Handling Method
 def default(obj):
     if isinstance(obj, datetime.datetime):
         return {'_isoformat': obj.isoformat()}
     return super().default(obj)
 
 
+# Time Handling Method
 def object_hook(obj):
     _isoformat = obj.get('_isoformat')
     if _isoformat is not None:
