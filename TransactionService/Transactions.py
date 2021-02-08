@@ -257,10 +257,6 @@ if __name__ == "__main__":
     # Need to run redis-server.exe
     cache = Connections.startRedis()
     cache.flushdb()
-    testCache = {"test": "cache", "cache": "test"}
-    cache.set("test", json.dumps(testCache))
-
-    print(json.loads(cache.get("test")))
 
     # Web connection
     webConn = Connections.connectWeb()
