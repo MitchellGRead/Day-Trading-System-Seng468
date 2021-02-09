@@ -150,12 +150,12 @@ def cancelBuy(userID):
 # Creates a sell request to be confirmed by the user
 def sell(userID, stockSymbol, amount):
     if cache.exists(userID + "_" + stockSymbol):
-        user = json.loads(cache.get(userID))
+        user = json.loads(cache.get(userID + "_" + stockSymbol))
         price = float(quote(userID, stockSymbol))
         amountOfStock = ceil(float(amount) / price)
         totalValue = float(amount) * price
 
-        if user["stock_amount"] >= amountOfStock:
+        if int(user["stock_amount"]) >= amountOfStock:
             dictionary = {"user_id": userID, "stock_id": stockSymbol,
                           "amount": totalValue, "amount_of_stock": amountOfStock, "time": datetime.datetime.now()}
             cache.set(userID + "_SELL", json.dumps(dictionary, default=default))
@@ -169,7 +169,7 @@ def sell(userID, stockSymbol, amount):
 # Confirms the sell request
 def commitSell(userID):
     if cache.exists(userID + "_SELL"):
-        sellObj = cache.get(userID + "_SELL")
+        sellObj = json.loads(cache.get(userID + "_SELL"), object_hook=object_hook)
         now = datetime.datetime.now()
         timeDiff = (now - sellObj["time"]).total_seconds()
         if timeDiff <= 60:

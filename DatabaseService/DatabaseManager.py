@@ -8,79 +8,80 @@ stockBalancesTable = "stocks"
 
 
 def fillAccountCache():
-    query = "SELECT * FROM {TABLE}".format(TABLE=accountBalancesTable)
+    query = "SELECT * FROM {TABLE};".format(TABLE=accountBalancesTable)
     results = Connections.executeReadQuery(connection=sqlConnection, query=query)
     return results
 
 
 def fillStockCache():
-    query = "SELECT * FROM {TABLE}".format(TABLE=stockBalancesTable)
+    query = "SELECT * FROM {TABLE};".format(TABLE=stockBalancesTable)
     results = Connections.executeReadQuery(connection=sqlConnection, query=query)
     return results
 
 
 def updateAccountCache(userID):
-    query = "SELECT * FROM {TABLE} WHERE user_id = '{USER}'".format(TABLE=accountBalancesTable, USER=userID)
+    query = "SELECT * FROM {TABLE} WHERE user_id = '{USER}';".format(TABLE=accountBalancesTable, USER=userID)
     results = Connections.executeReadQuery(connection=sqlConnection, query=query)
     return results
 
 
 def updateStockCache(userID, stockSymbol):
-    query = "SELECT * FROM {TABLE} WHERE user_id = " \
-            "'{USER}' AND stock_id = '{STOCK}'".format(TABLE=stockBalancesTable, USER=userID, STOCK=stockSymbol)
+    query = "SELECT * FROM {TABLE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}';".format(
+        TABLE=stockBalancesTable, USER=userID, STOCK=stockSymbol)
+    print(query)
     results = Connections.executeReadQuery(connection=sqlConnection, query=query)
     return results
 
 
 def addUser(userID):
     query = "SELECT exists (SELECT 1 FROM {TABLE} " \
-            "WHERE user_id = '{USER}' LIMIT 1)".format(TABLE=usersTable, USER=userID)
+            "WHERE user_id = '{USER}' LIMIT 1);".format(TABLE=usersTable, USER=userID)
     if Connections.executeExist(sqlConnection, query):
         return
     else:
         print("Adding user " + userID)
-        query = "INSERT INTO {TABLE} (user_id) VALUES ('{USER}')".format(TABLE=usersTable, USER=userID)
+        query = "INSERT INTO {TABLE} (user_id) VALUES ('{USER}');".format(TABLE=usersTable, USER=userID)
         Connections.executeQuery(sqlConnection, query)
 
 
 def addFunds(userID, amount):
     query = "SELECT exists (SELECT 1 FROM {TABLE} " \
-            "WHERE user_id = '{USER}' LIMIT 1)".format(TABLE=accountBalancesTable, USER=userID)
+            "WHERE user_id = '{USER}' LIMIT 1);".format(TABLE=accountBalancesTable, USER=userID)
     if Connections.executeExist(sqlConnection, query):
         query = "UPDATE {TABLE} SET account_balance = account_balance" \
-                " + {AMOUNT} WHERE user_id = '{USER}'".format(TABLE=accountBalancesTable, USER=userID, AMOUNT=amount)
+                " + {AMOUNT} WHERE user_id = '{USER}';".format(TABLE=accountBalancesTable, USER=userID, AMOUNT=amount)
         Connections.executeQuery(sqlConnection, query)
     else:
         addUser(userID)
         query = "INSERT INTO {TABLE} (user_id, account_balance, reserve_balance) VALUES ('{USER}', {BALANCE}, " \
-                "0)".format(TABLE=accountBalancesTable, USER=userID, BALANCE=amount)
+                "0);".format(TABLE=accountBalancesTable, USER=userID, BALANCE=amount)
         Connections.executeQuery(sqlConnection, query)
     return 1
 
 
 def commitBuy(userID, stockSymbol, valueAmount, stockAmount):
     query = "UPDATE {TABLE} SET account_balance = account_balance - {AMOUNT} " \
-            "WHERE user_id = '{USER}'".format(TABLE=accountBalancesTable, USER=userID, AMOUNT=valueAmount)
+            "WHERE user_id = '{USER}';".format(TABLE=accountBalancesTable, USER=userID, AMOUNT=valueAmount)
     Connections.executeQuery(sqlConnection, query)
     query = "SELECT EXISTS(SELECT * FROM {TABLE} WHERE user_id = '{USER}' AND " \
-            "stock_id = '{STOCK}')".format(TABLE=stockBalancesTable, USER=userID, STOCK=stockSymbol)
+            "stock_id = '{STOCK}');".format(TABLE=stockBalancesTable, USER=userID, STOCK=stockSymbol)
     if Connections.executeExist(sqlConnection, query):
         query = "UPDATE {TABLE} SET stock_amount = stock_amount + {AMOUNT} WHERE user_id = '{USER}' AND stock_id = " \
-                "'{STOCK}'".format(TABLE=stockBalancesTable, AMOUNT=stockAmount, USER=userID, STOCK=stockSymbol)
+                "'{STOCK}';".format(TABLE=stockBalancesTable, AMOUNT=stockAmount, USER=userID, STOCK=stockSymbol)
         Connections.executeQuery(sqlConnection, query)
     else:
         query = "INSERT INTO {TABLE} VALUES ('{USER}', '{STOCK}', {AMOUNT}, " \
-                "0)".format(TABLE=stockBalancesTable, AMOUNT=stockAmount, USER=userID, STOCK=stockSymbol)
+                "0);".format(TABLE=stockBalancesTable, AMOUNT=stockAmount, USER=userID, STOCK=stockSymbol)
         Connections.executeQuery(sqlConnection, query)
     return 1
 
 
 def commitSell(userID, stockSymbol, valueAmount, stockAmount):
     query = "UPDATE {TABLE} SET account_balance = account_balance + {AMOUNT} WHERE " \
-            "user_id = {USER}".format(TABLE=accountBalancesTable, USER=userID, AMOUNT=valueAmount)
+            "user_id = '{USER}';".format(TABLE=accountBalancesTable, USER=userID, AMOUNT=valueAmount)
     Connections.executeQuery(sqlConnection, query)
-    query = "UPDATE {TABLE} SET stock_amount = stock_amount - {AMOUNT} WHERE user_id = {USER} AND stock_id = " \
-            "{STOCK}".format(TABLE=stockBalancesTable, AMOUNT=stockAmount, USER=userID, STOCK=stockSymbol)
+    query = "UPDATE {TABLE} SET stock_amount = stock_amount - {AMOUNT} WHERE user_id = '{USER}' AND stock_id = " \
+            "'{STOCK}';".format(TABLE=stockBalancesTable, AMOUNT=stockAmount, USER=userID, STOCK=stockSymbol)
     Connections.executeQuery(sqlConnection, query)
     return 1
 

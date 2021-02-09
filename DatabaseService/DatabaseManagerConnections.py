@@ -63,6 +63,7 @@ def checkDB(connection):
 
 # Read helper method for the SQL server
 def executeReadQuery(connection, query):
+    query = query.replace('"', '')
     cursor = connection.cursor()
     try:
         cursor.execute(query)
@@ -74,6 +75,7 @@ def executeReadQuery(connection, query):
 
 # Write helper method for the SQL server
 def executeQuery(connection, query):
+    query = query.replace('"', '')
     connection.autocommit = True
     cursor = connection.cursor()
     try:
@@ -84,6 +86,7 @@ def executeQuery(connection, query):
 
 # Checks if the record exists
 def executeExist(connection, query):
+    query = query.replace('"', '')
     cursor = connection.cursor()
     result = None
     try:
