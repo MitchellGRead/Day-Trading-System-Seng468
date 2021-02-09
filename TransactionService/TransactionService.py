@@ -1,12 +1,8 @@
-import Connections
+import TransactionConnections as Connections
 import datetime
 import json
 from math import floor, ceil
-
-usersTable = "users"
-accountBalancesTable = "accounts"
-stockBalancesTable = "stocks"
-
+import pickle
 
 # TO DO:
 # MONGO DB
@@ -32,15 +28,17 @@ def object_hook(obj):
 # Get a current copy of DB for cache
 def fillCache():
     # Fill account_balances cache
-    query = "SELECT * FROM {TABLE}".format(TABLE=accountBalancesTable)
-    results = Connections.executeReadQuery(connection=dbConnection, query=query)
+    dbmSocket.send(json.dumps({"command": "fillAccountCache"}).encode())
+    results = dbmSocket.recv(4096)
+    results = pickle.loads(results)
     for row in results:
         user = {"user_id": row[0], "account_balance": row[1], "reserved_balance": row[2]}
         cache.set(row[0], json.dumps(user))
 
     # Fill stock_balances table
-    query = "SELECT * FROM {TABLE}".format(TABLE=stockBalancesTable)
-    results = Connections.executeReadQuery(connection=dbConnection, query=query)
+    dbmSocket.send(json.dumps({"command": "fillStockCache"}).encode())
+    results = dbmSocket.recv(4096)
+    results = pickle.loads(results)
     for row in results:
         stockBalance = {"user_id": row[0], "stock_id": row[1], "stock_amount": row[2], "stock_reserved": row[3]}
         cache.set("{}_{}".format(row[0], row[1]), json.dumps(stockBalance))
@@ -48,8 +46,9 @@ def fillCache():
 
 # Updates Account Cache after a write
 def updateAccountCache(userID):
-    query = "SELECT * FROM {TABLE} WHERE user_id = '{USER}'".format(TABLE=accountBalancesTable, USER=userID)
-    results = Connections.executeReadQuery(connection=dbConnection, query=query)
+    dbmSocket.send(json.dumps({"command": "updateAccountCache", "user_id": userID}).encode())
+    results = dbmSocket.recv(4096)
+    results = pickle.loads(results)
     for row in results:
         user = {"user_id": row[0], "account_balance": row[1], "reserved_balance": row[2]}
         cache.set(row[0], json.dumps(user))
@@ -57,10 +56,9 @@ def updateAccountCache(userID):
 
 # Updates Stock Cache after a write
 def updateStockCache(userID, stockSymbol):
-    query = "SELECT * FROM {TABLE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}'".format(TABLE=stockBalancesTable,
-                                                                                             USER=userID,
-                                                                                             STOCK=stockSymbol)
-    results = Connections.executeReadQuery(connection=dbConnection, query=query)
+    dbmSocket.send(json.dumps({"command": "updateStockCache", "user_id": userID, "stock_id": stockSymbol}).encode())
+    results = dbmSocket.recv(4096)
+    results = pickle.loads(results)
     for row in results:
         stockBalance = {"user_id": row[0], "stock_id": row[1], "stock_amount": row[2], "stock_reserved": row[3]}
         cache.set("{}_{}".format(row[0], row[1]), json.dumps(stockBalance))
@@ -68,22 +66,13 @@ def updateStockCache(userID, stockSymbol):
 
 # Adds the amount to the users balance.
 def add(userID, amount):
-    if cache.exists(userID):
-        query = "UPDATE {TABLE} SET account_balance = account_balance + {AMOUNT} WHERE user_id = '{USER}'".format(
-            TABLE=accountBalancesTable, USER=userID, AMOUNT=amount)
-        Connections.executeQuery(dbConnection, query)
-
-        updateAccountCache(userID)
+    dbmSocket.send(json.dumps({"command": "addFunds", "user_id": userID, "amount": amount}).encode())
+    result = dbmSocket.recv(1024).decode()
+    updateAccountCache(userID)
+    if result == "Success":
+        return 1
     else:
-        query = "INSERT INTO {TABLE} (user_id) VALUES ('{USER}')".format(TABLE=usersTable, USER=userID)
-        Connections.executeQuery(dbConnection, query)
-
-        query = "INSERT INTO {TABLE} (user_id, account_balance, reserve_balance) VALUES ('{USER}', {BALANCE}, 0)".format(
-            TABLE=accountBalancesTable, USER=userID, BALANCE=amount)
-        Connections.executeQuery(dbConnection, query)
-
-        updateAccountCache(userID)
-    return 1
+        return "Error Adding Funds In DBM"
 
 
 # Gets a quote from the quote server and returns the information.
@@ -114,8 +103,8 @@ def buy(userID, stockSymbol, amount):
         totalValue = price * amountOfStock
 
         if float(user["account_balance"]) >= float(amount):
-            dictionary = {"user_id": userID, "stock_id": stockSymbol,
-                          "amount": totalValue, "amount_of_stock": amountOfStock, "time": datetime.datetime.now()}
+            dictionary = {"user_id": userID, "stock_id": stockSymbol, "amount": totalValue,
+                          "amount_of_stock": amountOfStock, "time": datetime.datetime.now()}
             cache.set(userID + "_BUY", json.dumps(dictionary, default=default))
             return 1
         else:
@@ -131,29 +120,17 @@ def commitBuy(userID):
         now = datetime.datetime.now()
         timeDiff = (now - buyObj["time"]).total_seconds()
         if timeDiff <= 60:
-            query = "UPDATE {TABLE} SET account_balance = account_balance - {AMOUNT} WHERE user_id = '{USER}'".format(
-                TABLE=accountBalancesTable, USER=userID, AMOUNT=buyObj["amount"])
-            Connections.executeQuery(dbConnection, query)
-            query = "SELECT EXISTS(SELECT * FROM {TABLE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}')".format(
-                TABLE=stockBalancesTable, USER=userID, STOCK=buyObj["stock_id"])
-            if Connections.executeExist(dbConnection, query):
-                query = "UPDATE {TABLE} SET stock_amount = stock_amount + {AMOUNT} " \
-                        "WHERE user_id = '{USER}' AND stock_id = '{STOCK}'".format(TABLE=stockBalancesTable,
-                                                                                   AMOUNT=buyObj['amount_of_stock'],
-                                                                                   USER=userID,
-                                                                                   STOCK=buyObj["stock_id"])
-                Connections.executeQuery(dbConnection, query)
-            else:
-                query = "INSERT INTO {TABLE} VALUES" \
-                        " ('{USER}', '{STOCK}', {AMOUNT}, 0)".format(TABLE=stockBalancesTable,
-                                                                     AMOUNT=buyObj["amount_of_stock"], USER=userID,
-                                                                     STOCK=buyObj["stock_id"])
-                Connections.executeQuery(dbConnection, query)
-
+            dbmSocket.send(json.dumps({"command": "commitBuy", "user_id": userID, "value_amount": buyObj["amount"],
+                                       "stock_id": buyObj["stock_id"], "amount_of_stock": buyObj["amount_of_stock"]}
+                                      ).encode())
+            result = dbmSocket.recv(1024).decode()
             cache.delete(userID + "_BUY")
             updateAccountCache(userID)
             updateStockCache(userID, json.dumps(buyObj["stock_id"]))
-            return 1
+            if result == "Success":
+                return 1
+            else:
+                return "Error Committing Buy In DBM"
         else:
             cache.delete(userID + "_BUY")
             return "Buy too old."
@@ -196,20 +173,18 @@ def commitSell(userID):
         now = datetime.datetime.now()
         timeDiff = (now - sellObj["time"]).total_seconds()
         if timeDiff <= 60:
-            query = "UPDATE {TABLE} SET account_balance = account_balance + {AMOUNT} WHERE user_id = {USER}".format(
-                TABLE=accountBalancesTable, USER=userID, AMOUNT=sellObj["amount"])
-            Connections.executeQuery(dbConnection, query)
-            query = "UPDATE {TABLE} SET stock_amount = stock_amount - {AMOUNT} " \
-                    "WHERE user_id = {USER} AND stock_id = {STOCK}".format(TABLE=stockBalancesTable,
-                                                                           AMOUNT=sellObj['amount_of_stock'],
-                                                                           USER=userID,
-                                                                           STOCK=sellObj["stock_id"])
-            Connections.executeQuery(dbConnection, query)
+            dbmSocket.send(json.dumps({"command": "commitSell", "user_id": userID, "value_amount": sellObj["amount"],
+                                       "stock_id": sellObj["stock_id"], "amount_of_stock": sellObj["amount_of_stock"]}
+                                      ).encode())
+            result = dbmSocket.recv(1024).decode()
 
             cache.delete(userID + "_SELL")
             updateAccountCache(userID)
             updateStockCache(userID, sellObj["stock_id"])
-            return 1
+            if result == "Success":
+                return 1
+            else:
+                return "Error Committing Buy In DBM"
         else:
             cache.delete(userID + "_SELL")
             return "Sell too old."
@@ -252,15 +227,14 @@ def setSellTrigger(userID, stockSymbol, amount):
 
 if __name__ == "__main__":
     print("Start program")
-    global stockSocket, dbConnection, cache
+    global stockSocket, cache, dbmSocket
 
+    dbmSocket = Connections.createDatabaseManagerConn()
     stockSocket = Connections.createQuoteConn()
-
-    dbConnection = Connections.createSQLConnection()
-    Connections.checkDB(dbConnection)
 
     cache = Connections.startRedis()
     cache.flushdb()
+
 
     # Web connection
     webConn = Connections.connectWeb()

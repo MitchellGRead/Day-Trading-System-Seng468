@@ -4,41 +4,19 @@ import psycopg2
 from psycopg2 import OperationalError
 from time import sleep
 
-localHost = "127.0.0.1"
-# stockHost = "quoteserver.seng.uvic.ca"
-stockHost = "localhost"
-
-redisPort = 6379
-stockPort = 4444
-transPort = 6666
+dbmSocket = 5656
+localHost = "localhost"
 
 dbPort = 5432
 dbName, dbUser, dbPassword = "trading-db", "daytrader", "tothemoon"
 
-usersTable = "users"
-accountBalancesTable = "accounts"
-stockBalancesTable = "stocks"
 
-
-# Creates socket for Sending/Receiving from WebService
-def connectWeb():
+def createSocket():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((localHost, transPort))
+    s.bind((localHost, dbmSocket))
     s.listen()
     conn, addr = s.accept()
-
-    print("Connected to WebService @ " + addr[0] + ":" + str(addr[1]))
     return conn
-
-
-# Creates a connection to the quote server.
-def createQuoteConn():
-    stockSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print("Attempting Connection to Quote Server")
-    while stockSocket.connect_ex((stockHost, stockPort)) != 0:
-        sleep(1)
-    print("Quote Connection Started")
-    return stockSocket
 
 
 # Create a connection to the database manager
@@ -55,9 +33,10 @@ def createSQLConnection():
         print("Connection to PostGres Successful")
     except OperationalError as e:
         print(f"The error '{e}' occurred")
+    connection.autocommit = True
     return connection
 
-  
+
 def checkDB(connection):
     destroyTables = "DROP TABLE IF EXISTS stocks, accounts, users CASCADE;"
     executeQuery(connection, destroyTables)
@@ -81,7 +60,7 @@ def checkDB(connection):
     executeQuery(connection, createAccounts)
     executeQuery(connection, createStocks)
 
-    
+
 # Read helper method for the SQL server
 def executeReadQuery(connection, query):
     cursor = connection.cursor()
@@ -113,10 +92,3 @@ def executeExist(connection, query):
     except OperationalError as e:
         print(f"The error '{e}' occurred")
     return result
-
-
-# Starts the redis (cache) server
-def startRedis():
-    r = redis.Redis(host=localHost, port=redisPort, db=0)
-    print("Connection to Redis Successful")
-    return r
