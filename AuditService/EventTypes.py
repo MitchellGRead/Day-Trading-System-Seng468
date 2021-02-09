@@ -9,7 +9,7 @@ class UserCommandEvent:
     transactionNumber: int
     command: str
     userName: str
-    funds: float
+    funds: float = 0
     stockSymbol: str = ''  # required where symbol needed for command
     filename: str = ''  # required for dumplog
     xmlName: str = 'userCommand'
@@ -34,15 +34,17 @@ class SystemEvent:
     server: str
     transactionNumber: int
     command: str
-    userName: str
-    stockSymbol: str
-    funds: float
+    stockSymbol: str = ''
+    funds: float = 0
+    filename: str = ''
+    userName: str = ''
     xmlName: str = 'systemEvent'
 
 
 # When quote server successfully hit
 @dataclass
 class QuoteServerEvent:
+    timestamp: int
     quoteServerTimestamp: int
     server: str
     transactionNumber: int
@@ -60,21 +62,9 @@ class ErrorEvent:
     server: str
     transactionNumber: int
     command: str
-    userName: str
     errorMessage: str
+    userName: str = ''
     stockSymbol: str = ''
     filename: str = ''
     funds: float = 0
     xmlName: str = 'systemEvent'
-
-
-@dataclass
-class DebugEvent:
-    timestamp: int
-    server: str
-    debugMessage: str
-    transactionNumber: int = -1
-    stockSymbol: str = ''
-    command: str = ''
-    userName: str = ''
-    xmlName: str = 'debugEvent'
