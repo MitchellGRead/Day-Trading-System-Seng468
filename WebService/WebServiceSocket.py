@@ -21,7 +21,7 @@ def handleCommand(data):
 def sendAndRecvData(conn, data):
     conn.sendall(json.dumps(data).encode())
     data = conn.recv(1024)
-    return json.loads(data)
+    return json.loads(data.decode())
 
 
 def checkRequest(data):
