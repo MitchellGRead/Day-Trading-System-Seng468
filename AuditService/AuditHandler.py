@@ -2,7 +2,6 @@ from XmlWriter import XmlWriter
 
 
 class AuditHandler:
-
     # These lists are temporary and are meant to be stored in a DB on a per user basis in Mongo
     log_events = []
 
@@ -53,3 +52,20 @@ class AuditHandler:
         # get user data
         # send back an object/dataclass?
         return None
+
+    def logEvent(self, event):
+        xml_tag = event.xmlName
+        if xml_tag == 'userCommand':
+            self.logUserCommandEvent(event)
+        elif xml_tag == 'accountTransaction':
+            self.logAccountTransactionEvent(event)
+        elif xml_tag == 'systemEvent':
+            self.logSystemEvent(event)
+        elif xml_tag == 'quoteServer':
+            self.logQuoteServerEvent(event)
+        elif xml_tag == 'errorEvent':
+            self.logErrorEvent(event)
+        else:
+            print(f'AuditHandler: The xml tag - {xml_tag} is not valid. Skipping event.')
+            return False
+        return True

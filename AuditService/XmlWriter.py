@@ -101,7 +101,7 @@ class XmlWriter:
             elif xml_tag == 'errorEvent':
                 content += self.writeErrorEvent(event)
             else:
-                print(f'The xml tag - {xml_tag} is not valid. Skipping event.')
+                print(f'XmlWriter: The xml tag - {xml_tag} is not valid. Skipping event.')
 
         content += '</log>\n'
         with open(self.save_location, 'w') as file:

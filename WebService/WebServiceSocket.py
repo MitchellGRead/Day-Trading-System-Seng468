@@ -1,27 +1,40 @@
 from socket import socket, AF_INET, SOCK_STREAM
 import json
 from time import sleep
+from lib.audit import EventTypes
+import pickle
 
 WEBSERVER_IP, WEBSERVER_PORT = 'localhost', 5000
 TRANS_SERVER_IP, TRANS_SERVER_PORT = 'localhost', 6666
+AUDIT_SERVICE_IP, AUDIT_SERVICE_PORT = 'localhost', 6500
 
 web_socket = socket(AF_INET, SOCK_STREAM)
 trans_socket = socket(AF_INET, SOCK_STREAM)
+audit_socket = socket(AF_INET, SOCK_STREAM)
 while trans_socket.connect_ex((TRANS_SERVER_IP, TRANS_SERVER_PORT)) != 0:
+    sleep(1)
+while audit_socket.connect_ex((AUDIT_SERVICE_IP, AUDIT_SERVICE_PORT)) != 0:
+    print('yo')
     sleep(1)
 
 
 def handleCommand(data):
     print(data)
-    resp = sendAndRecvData(trans_socket, data)
+    resp = sendAndRecvJsonData(trans_socket, data)
     # Log operation
     print(resp)
 
 
-def sendAndRecvData(conn, data):
+def sendAndRecvJsonData(conn, data):
     conn.sendall(json.dumps(data).encode())
     data = conn.recv(1024)
     return json.loads(data.decode())
+
+
+def sendAndRecvObjectData(conn, data):
+    conn.sendall(pickle.dumps(data))
+    data = conn.recv(4096)
+    return pickle.loads(data)
 
 
 def checkRequest(data):
