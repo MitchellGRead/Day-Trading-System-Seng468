@@ -67,4 +67,4 @@ class ErrorEvent:
     stockSymbol: str = ''
     filename: str = ''
     funds: float = 0
-    xmlName: str = 'systemEvent'
+    xmlName: str = 'errorEvent'
