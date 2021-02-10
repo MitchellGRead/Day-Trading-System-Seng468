@@ -1,6 +1,6 @@
 
 class XmlWriter:
-    SAVE_PATH = './logfiles/'
+    SAVE_PATH = '../../AuditService/logfiles/'
 
     def __init__(self, file_name=''):
         if file_name and file_name.endswith('.xml'):
