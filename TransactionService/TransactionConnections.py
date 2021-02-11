@@ -2,6 +2,8 @@ import socket
 import redis
 from time import sleep
 
+serviceName = 'TransactionService'
+
 localHost = "localhost"
 # stockHost = "quoteserver.seng.uvic.ca"
 stockHost = localHost
@@ -10,6 +12,7 @@ dbmHost = localHost
 redisPort = 6379
 stockPort = 4444
 transPort = 6666
+auditPort = 6500
 dbmPort = 5656
 
 
@@ -22,6 +25,16 @@ def connectWeb():
 
     print("Connected to WebService @ " + addr[0] + ":" + str(addr[1]))
     return conn
+
+
+# Creates socket for Sending/Receiving from AuditService
+def connectAudit():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print("Attempting Connection to Audit Server")
+    while s.connect_ex((localHost, auditPort)) != 0:
+        sleep(1)
+    print("Quote Connection Started")
+    return s
 
 
 # Creates a connection to the quote server.

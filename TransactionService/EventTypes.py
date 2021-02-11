@@ -1,10 +1,14 @@
 from dataclasses import dataclass
+import time
+
+
+def timeInMs():
+    return round(time.time() * 1000)
 
 
 # User commands or inputs from UI. i.e. Buy, Add, etc
 @dataclass
 class UserCommandEvent:
-    timestamp: int
     server: str
     transactionNumber: int
     command: str
@@ -12,25 +16,25 @@ class UserCommandEvent:
     funds: float = 0
     stockSymbol: str = ''  # required where symbol needed for command
     filename: str = ''  # required for dumplog
+    timestamp: int = timeInMs()
     xmlName: str = 'userCommand'
 
 
 # Anything that alters a users account. i.e. add or remove
 @dataclass
 class AccountTransaction:
-    timestamp: int
     server: str
     transactionNumber: int
     action: str
     userName: str
     funds: float
+    timestamp: int = timeInMs()
     xmlName: str = 'accountTransaction'
 
 
 # Current user commands, interserver comms, or executing previously set triggers
 @dataclass
 class SystemEvent:
-    timestamp: int
     server: str
     transactionNumber: int
     command: str
@@ -38,13 +42,13 @@ class SystemEvent:
     funds: float = 0
     filename: str = ''
     userName: str = ''
+    timestamp: int = timeInMs()
     xmlName: str = 'systemEvent'
 
 
 # When quote server successfully hit
 @dataclass
 class QuoteServerEvent:
-    timestamp: int
     quoteServerTimestamp: int
     server: str
     transactionNumber: int
@@ -52,13 +56,13 @@ class QuoteServerEvent:
     stockSymbol: str
     price: float
     cryptoKey: str
+    timestamp: int = timeInMs()
     xmlName: str = 'quoteServer'
 
 
 # Whenever error occurs. Should contain all info from original command and an error message
 @dataclass
 class ErrorEvent:
-    timestamp: int
     server: str
     transactionNumber: int
     command: str
@@ -67,4 +71,5 @@ class ErrorEvent:
     stockSymbol: str = ''
     filename: str = ''
     funds: float = 0
+    timestamp: int = timeInMs()
     xmlName: str = 'errorEvent'
