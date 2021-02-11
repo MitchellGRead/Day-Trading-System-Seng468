@@ -82,7 +82,7 @@ class XmlWriter:
         return log
 
     def ensureTrailingZeros(self, num):
-        return '%.2f' % num
+        return '%.2f' % float(num)
 
     def createLogFile(self, audit_events):
         content = '<?xml version=\"1.0\"?>\n' \
