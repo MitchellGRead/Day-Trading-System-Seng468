@@ -1,8 +1,9 @@
 from socket import socket, AF_INET, SOCK_STREAM
+import json
 from time import sleep
 import pickle
 
-from WebService.AuditHandler import AuditHandler
+from AuditHandler import AuditHandler
 
 server_name = 'WebService'
 
@@ -30,14 +31,14 @@ def handleCommand(data):
             filename=(data['filename'] if 'filename' in data else '')
         )
     else:
-        resp = sendAndRecvJsonData(trans_socket, data)
+        resp = sendAndRecvObjectData(trans_socket, data)
     print(resp)
 
 
 def sendAndRecvJsonData(conn, data):
-    conn.sendall(pickle.dumps(data))
+    conn.sendall(json.dumps(data).encode())
     data = conn.recv(1024)
-    return pickle.loads(data)
+    return json.loads(data.decode())
 
 
 def sendAndRecvObjectData(conn, data):
@@ -54,7 +55,7 @@ def sendSuccess(conn, status=200):
     success = {
         'status': status
     }
-    conn.sendall(pickle.dumps(success))
+    conn.sendall(json.dumps(success).encode())
 
 
 def sendError(conn, status=400, reason='', content=None):
@@ -63,7 +64,7 @@ def sendError(conn, status=400, reason='', content=None):
         'reason': reason,
         'content': content
     }
-    conn.sendall(pickle.dumps(error))
+    conn.sendall(json.dumps(error).encode())
 
 
 if __name__ == '__main__':
@@ -77,13 +78,12 @@ if __name__ == '__main__':
         conn, address = web_socket.accept()
         print(f'Connection from {address}')
         while True:
-            data = conn.recv(1024)
+            data = conn.recv(1024).decode()
             if not data:
                 break
-            data = pickle.loads(data)
+            data = json.loads(data)
 
-            if True:
-                # checkRequest(data):
+            if True: #checkRequest(data):
                 handleCommand(data)
                 sendSuccess(conn)
             else:

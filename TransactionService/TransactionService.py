@@ -79,10 +79,10 @@ def quote(userID, stockSymbol):
     if cache.exists("quotes"):
         quotes = cache.get("quotes")
         quotes = pickle.loads(quotes)
-        quotes[stockSymbol] = [dataReceived[0], datetime.datetime.now()]
+        quotes[stockSymbol] = [dataReceived[0], datetime.now()]
         cache.set("quotes", pickle.dumps(quotes))
     else:
-        quotes = {stockSymbol: [dataReceived[0], datetime.datetime.now()]}
+        quotes = {stockSymbol: [dataReceived[0], datetime.now()]}
         cache.set("quotes", pickle.dumps(quotes))
     print(dataReceived)
     return dataReceived[0]

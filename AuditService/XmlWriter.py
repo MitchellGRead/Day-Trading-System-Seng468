@@ -1,3 +1,4 @@
+import os
 
 class XmlWriter:
     SAVE_PATH = 'logfiles/'
@@ -104,7 +105,10 @@ class XmlWriter:
                 print(f'XmlWriter: The xml tag - {xml_tag} is not valid. Skipping event.')
 
         content += '</log>\n'
-        with open(self.save_location, 'w') as file:
-            file.write(content)
-
-
+        if os.path.isdir(self.SAVE_PATH):
+            with open(self.save_location, 'w') as file:
+                file.write(content)
+        else:
+            os.mkdir(self.SAVE_PATH)
+            with open(self.save_location, 'w') as file:
+                file.write(content)
