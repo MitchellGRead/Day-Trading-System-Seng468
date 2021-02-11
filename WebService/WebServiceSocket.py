@@ -1,7 +1,7 @@
 from socket import socket, AF_INET, SOCK_STREAM
 import json
 from time import sleep
-from lib.audit import EventTypes
+from audit import EventTypes
 import pickle
 
 WEBSERVER_IP, WEBSERVER_PORT = 'localhost', 5000
@@ -14,7 +14,6 @@ audit_socket = socket(AF_INET, SOCK_STREAM)
 while trans_socket.connect_ex((TRANS_SERVER_IP, TRANS_SERVER_PORT)) != 0:
     sleep(1)
 while audit_socket.connect_ex((AUDIT_SERVICE_IP, AUDIT_SERVICE_PORT)) != 0:
-    print('yo')
     sleep(1)
 
 
