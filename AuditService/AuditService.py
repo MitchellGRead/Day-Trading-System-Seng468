@@ -1,7 +1,7 @@
-from socket import socket, AF_INET, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM, error as socketError
 from AuditHandler import AuditHandler
+from AuditThread import AuditThread
 import pickle
-import EventTypes
 
 AUDIT_SERVICE_IP, AUDIT_SERVICE_PORT = 'localhost', 6500
 SERVICE_NAME = 'auditService'
@@ -66,16 +66,27 @@ def logEvent(conn, event):
 if __name__ == '__main__':
     audit_socket.bind((AUDIT_SERVICE_IP, AUDIT_SERVICE_PORT))
     audit_socket.listen(5)
+    counter = 0
+    threads = []
     while True:
         print(f'Listening on ({AUDIT_SERVICE_IP}, {AUDIT_SERVICE_PORT})')
         conn, address = audit_socket.accept()
+        counter += 1
         print(f'Connection from {address}')
 
-        while True:
-            data = conn.recv(4096)
-            if not data:
-                break
+        try:
+            thread = AuditThread(conn, audit_handler, counter)
+            threads.append(thread)
+            thread.start()
+        except socketError:
+            print(f'Audit service lost connection from {address}')
+        # while True:
 
-            event = decodeData(data)
-            print(event)
-            logEvent(conn, event)
+            # data = conn.recv(4096)
+            # if not data:
+            #     break
+            #
+            # event = decodeData(data)
+            # print(event)
+            # if event:
+            #     logEvent(conn, event)
