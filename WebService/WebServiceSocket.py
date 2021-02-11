@@ -1,5 +1,4 @@
 from socket import socket, AF_INET, SOCK_STREAM
-import json
 from time import sleep
 from audit import EventTypes
 import pickle
@@ -25,9 +24,9 @@ def handleCommand(data):
 
 
 def sendAndRecvJsonData(conn, data):
-    conn.sendall(json.dumps(data).encode())
+    conn.sendall(pickle.dumps(data))
     data = conn.recv(1024)
-    return json.loads(data.decode())
+    return pickle.loads(data)
 
 
 def sendAndRecvObjectData(conn, data):
@@ -44,7 +43,7 @@ def sendSuccess(conn, status=200):
     success = {
         'status': status
     }
-    conn.sendall(json.dumps(success).encode())
+    conn.sendall(pickle.dumps(success))
 
 
 def sendError(conn, status=400, reason='', content=None):
@@ -53,7 +52,7 @@ def sendError(conn, status=400, reason='', content=None):
         'reason': reason,
         'content': content
     }
-    conn.sendall(json.dumps(error).encode())
+    conn.sendall(pickle.dumps(error))
 
 
 if __name__ == '__main__':
@@ -64,12 +63,13 @@ if __name__ == '__main__':
         conn, address = web_socket.accept()
         print(f'Connection from {address}')
         while True:
-            data = conn.recv(1024).decode()
+            data = conn.recv(1024)
             if not data:
                 break
-            data = json.loads(data)
+            data = pickle.loads(data)
 
-            if True: #checkRequest(data):
+            if True:
+                # checkRequest(data):
                 handleCommand(data)
                 sendSuccess(conn)
             else:

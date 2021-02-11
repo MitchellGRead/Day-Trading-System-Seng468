@@ -1,5 +1,4 @@
 import pickle
-import json
 import DatabaseManagerConnections as Connections
 
 usersTable = "users"
@@ -9,18 +8,21 @@ stockBalancesTable = "stocks"
 
 def fillAccountCache():
     query = "SELECT * FROM {TABLE};".format(TABLE=accountBalancesTable)
+    print(query)
     results = Connections.executeReadQuery(connection=sqlConnection, query=query)
     return results
 
 
 def fillStockCache():
     query = "SELECT * FROM {TABLE};".format(TABLE=stockBalancesTable)
+    print(query)
     results = Connections.executeReadQuery(connection=sqlConnection, query=query)
     return results
 
 
 def updateAccountCache(userID):
     query = "SELECT * FROM {TABLE} WHERE user_id = '{USER}';".format(TABLE=accountBalancesTable, USER=userID)
+    print(query)
     results = Connections.executeReadQuery(connection=sqlConnection, query=query)
     return results
 
@@ -36,25 +38,30 @@ def updateStockCache(userID, stockSymbol):
 def addUser(userID):
     query = "SELECT exists (SELECT 1 FROM {TABLE} " \
             "WHERE user_id = '{USER}' LIMIT 1);".format(TABLE=usersTable, USER=userID)
+    print(query)
     if Connections.executeExist(sqlConnection, query):
         return
     else:
         print("Adding user " + userID)
         query = "INSERT INTO {TABLE} (user_id) VALUES ('{USER}');".format(TABLE=usersTable, USER=userID)
+        print(query)
         Connections.executeQuery(sqlConnection, query)
 
 
 def addFunds(userID, amount):
     query = "SELECT exists (SELECT 1 FROM {TABLE} " \
             "WHERE user_id = '{USER}' LIMIT 1);".format(TABLE=accountBalancesTable, USER=userID)
+    print(query)
     if Connections.executeExist(sqlConnection, query):
         query = "UPDATE {TABLE} SET account_balance = account_balance" \
                 " + {AMOUNT} WHERE user_id = '{USER}';".format(TABLE=accountBalancesTable, USER=userID, AMOUNT=amount)
+        print(query)
         Connections.executeQuery(sqlConnection, query)
     else:
         addUser(userID)
         query = "INSERT INTO {TABLE} (user_id, account_balance, reserve_balance) VALUES ('{USER}', {BALANCE}, " \
                 "0);".format(TABLE=accountBalancesTable, USER=userID, BALANCE=amount)
+        print(query)
         Connections.executeQuery(sqlConnection, query)
     return 1
 
@@ -62,16 +69,21 @@ def addFunds(userID, amount):
 def commitBuy(userID, stockSymbol, valueAmount, stockAmount):
     query = "UPDATE {TABLE} SET account_balance = account_balance - {AMOUNT} " \
             "WHERE user_id = '{USER}';".format(TABLE=accountBalancesTable, USER=userID, AMOUNT=valueAmount)
+    print(query)
     Connections.executeQuery(sqlConnection, query)
     query = "SELECT EXISTS(SELECT * FROM {TABLE} WHERE user_id = '{USER}' AND " \
             "stock_id = '{STOCK}');".format(TABLE=stockBalancesTable, USER=userID, STOCK=stockSymbol)
+    print(query)
     if Connections.executeExist(sqlConnection, query):
         query = "UPDATE {TABLE} SET stock_amount = stock_amount + {AMOUNT} WHERE user_id = '{USER}' AND stock_id = " \
                 "'{STOCK}';".format(TABLE=stockBalancesTable, AMOUNT=stockAmount, USER=userID, STOCK=stockSymbol)
+        print(query)
         Connections.executeQuery(sqlConnection, query)
     else:
+        addUser(userID)
         query = "INSERT INTO {TABLE} VALUES ('{USER}', '{STOCK}', {AMOUNT}, " \
                 "0);".format(TABLE=stockBalancesTable, AMOUNT=stockAmount, USER=userID, STOCK=stockSymbol)
+        print(query)
         Connections.executeQuery(sqlConnection, query)
     return 1
 
@@ -79,9 +91,11 @@ def commitBuy(userID, stockSymbol, valueAmount, stockAmount):
 def commitSell(userID, stockSymbol, valueAmount, stockAmount):
     query = "UPDATE {TABLE} SET account_balance = account_balance + {AMOUNT} WHERE " \
             "user_id = '{USER}';".format(TABLE=accountBalancesTable, USER=userID, AMOUNT=valueAmount)
+    print(query)
     Connections.executeQuery(sqlConnection, query)
     query = "UPDATE {TABLE} SET stock_amount = stock_amount - {AMOUNT} WHERE user_id = '{USER}' AND stock_id = " \
             "'{STOCK}';".format(TABLE=stockBalancesTable, AMOUNT=stockAmount, USER=userID, STOCK=stockSymbol)
+    print(query)
     Connections.executeQuery(sqlConnection, query)
     return 1
 
@@ -99,32 +113,31 @@ if __name__ == "__main__":
         data = conn.recv(1024)
         if not data:
             break
-        data = json.loads(data.decode())
+        data = pickle.loads(data)
         command = data["command"]
 
         if command == "fillAccountCache":
+            print("received fillAccountCache command")
             response = fillAccountCache()
-            print("received fillAccountCache command")
         elif command == "fillStockCache":
-            response = fillStockCache()
             print("received fillAccountCache command")
+            response = fillStockCache()
         elif command == "updateAccountCache":
-            response = updateAccountCache(data["user_id"])
             print("received updateAccountCache command")
+            response = updateAccountCache(data["user_id"])
         elif command == "updateStockCache":
-            response = updateStockCache(data["user_id"], data["stock_id"])
             print("received updateStockCache command")
+            response = updateStockCache(data["user_id"], data["stock_id"])
 
         elif command == "addFunds":
-            response = addFunds(data["user_id"], data["amount"])
             print("received add command")
+            response = addFunds(data["user_id"], data["amount"])
         elif command == "commitBuy":
-
-            response = commitBuy(data["user_id"], data["stock_id"], data["value_amount"], data["amount_of_stock"])
             print("received commit buy command")
+            response = commitBuy(data["user_id"], data["stock_id"], data["value_amount"], data["amount_of_stock"])
         elif command == "commitSell":
-            response = commitSell(data["user_id"], data["stock_id"], data["value_amount"], data["amount_of_stock"])
             print("received commit sell command")
+            response = commitSell(data["user_id"], data["stock_id"], data["value_amount"], data["amount_of_stock"])
 
         # Not Implemented
         elif command == "SET_BUY_AMOUNT":
@@ -148,8 +161,8 @@ if __name__ == "__main__":
 
         else:
             response = "Unknown command"
-            print(data)
             print("received unknown command")
+            print(data)
 
         if response == 1:
             conn.send("Success".encode())

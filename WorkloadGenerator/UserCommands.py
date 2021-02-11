@@ -1,6 +1,6 @@
 import requests
 from socket import socket, AF_INET, SOCK_STREAM
-import json
+import pickle
 
 
 class UserCommands:
@@ -17,9 +17,9 @@ class UserCommands:
         self.web_service_socket.connect((self.web_service_ip, self.web_service_port))
 
     def sendAndRecvData(self, data):
-        self.web_service_socket.sendall(json.dumps(data).encode())
-        data = self.web_service_socket.recv(1024).decode()
-        return json.loads(data)
+        self.web_service_socket.sendall(pickle.dumps(data))
+        data = self.web_service_socket.recv(1024)
+        return pickle.loads(data)
 
     def addFundsRequest(self, server_url, params):
         command, user_id, amount = params
