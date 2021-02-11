@@ -1,7 +1,7 @@
 from socket import socket, AF_INET, SOCK_STREAM
 from AuditHandler import AuditHandler
 import pickle
-from lib.audit import EventTypes
+import EventTypes
 
 AUDIT_SERVICE_IP, AUDIT_SERVICE_PORT = 'localhost', 6500
 SERVICE_NAME = 'auditService'
@@ -39,14 +39,13 @@ def decodeData(data):
 
 
 def isDumplog(event):
-    if isinstance(event, EventTypes.UserCommandEvent) and event.command == 'DUMPLOG':
+    if event.xmlName == 'userCommand' and event.command == 'DUMPLOG':
         audit_handler.dumplog(event.filename)
 
 
 def logEvent(conn, event):
     if event:
         res = audit_handler.logEvent(event)
-        isDumplog(event)
         if not res:
             sendError(
                 conn,
@@ -54,6 +53,7 @@ def logEvent(conn, event):
                 reason=f'AuditService: Failed to log event \n{event}'
             )
         else:
+            isDumplog(event)
             sendSuccess(conn)
     else:
         sendError(
