@@ -1,18 +1,19 @@
 import TransactionConnections as Connections
-import datetime
+from datetime import datetime
 import json
 from math import floor, ceil
 import pickle
+from AuditHandler import AuditHandler
 
 # TO DO:
 # MONGO DB
 # TRIGGERS
-# Auditing
+# Auditing - transaction numbers
 
 
 # Time Handling Method
 def default(obj):
-    if isinstance(obj, datetime.datetime):
+    if isinstance(obj, datetime):
         return {'_isoformat': obj.isoformat()}
     return super().default(obj)
 
@@ -21,7 +22,7 @@ def default(obj):
 def object_hook(obj):
     _isoformat = obj.get('_isoformat')
     if _isoformat is not None:
-        return datetime.datetime.fromisoformat(_isoformat)
+        return datetime.fromisoformat(_isoformat)
     return obj
 
 
@@ -72,7 +73,7 @@ def add(userID, amount):
     if result == "Success":
         return 1
     else:
-        return "Error Adding Funds In DBM"
+        return f"Error Adding Funds In DBM for user {userID}"
 
 
 # Gets a quote from the quote server and returns the information.
@@ -81,14 +82,22 @@ def quote(userID, stockSymbol):
     stockSocket.send(message.encode())
     dataReceived = stockSocket.recv(1024).decode()
     dataReceived = dataReceived.split(", ")
+    auditHandler.handleQuoteEvent(  # Ping to quote server
+        transaction_num=0,
+        quote_server_time=20,
+        user_name=userID,
+        stock_symbol=stockSymbol,
+        price=dataReceived[0],
+        crptokey='blah'
+    )
 
     if cache.exists("quotes"):
         quotes = cache.get("quotes")
         quotes = json.loads(quotes, object_hook=object_hook)
-        quotes[stockSymbol] = [dataReceived[0], datetime.datetime.now()]
+        quotes[stockSymbol] = [dataReceived[0], datetime.now()]
         cache.set("quotes", json.dumps(quotes, default=default))
     else:
-        quotes = {stockSymbol: [dataReceived[0], datetime.datetime.now()]}
+        quotes = {stockSymbol: [dataReceived[0], datetime.now()]}
         cache.set("quotes", json.dumps(quotes, default=default))
     print(dataReceived)
     return dataReceived[0]
@@ -104,20 +113,20 @@ def buy(userID, stockSymbol, amount):
 
         if float(user["account_balance"]) >= float(amount):
             dictionary = {"user_id": userID, "stock_id": stockSymbol, "amount": totalValue,
-                          "amount_of_stock": amountOfStock, "time": datetime.datetime.now()}
+                          "amount_of_stock": amountOfStock, "time": datetime.now()}
             cache.set(userID + "_BUY", json.dumps(dictionary, default=default))
             return 1
         else:
-            return "User does not have required funds."
+            return f"User {userID} does not have required funds."
     else:
-        return "User does not exist."
+        return f"User {userID} does not exist."
 
 
 # Confirms the buy request
 def commitBuy(userID):
     if cache.exists(userID + "_BUY"):
         buyObj = json.loads(cache.get(userID + "_BUY"), object_hook=object_hook)
-        now = datetime.datetime.now()
+        now = datetime.now()
         timeDiff = (now - buyObj["time"]).total_seconds()
         if timeDiff <= 60:
             dbmSocket.send(json.dumps({"command": "commitBuy", "user_id": userID, "value_amount": buyObj["amount"],
@@ -135,7 +144,7 @@ def commitBuy(userID):
             cache.delete(userID + "_BUY")
             return "Buy too old."
     else:
-        return "No buy exists."
+        return f'No BUY exists for {userID}'
 
 
 # Cancels the buy request
@@ -157,20 +166,20 @@ def sell(userID, stockSymbol, amount):
 
         if int(user["stock_amount"]) >= amountOfStock:
             dictionary = {"user_id": userID, "stock_id": stockSymbol,
-                          "amount": totalValue, "amount_of_stock": amountOfStock, "time": datetime.datetime.now()}
+                          "amount": totalValue, "amount_of_stock": amountOfStock, "time": datetime.now()}
             cache.set(userID + "_SELL", json.dumps(dictionary, default=default))
             return 1
         else:
-            return "User does not have required amount of that stock."
+            return 'User does not have required amount of that stock.'
     else:
-        return "User does not have that stock."
+        return f'User does not own stock {stockSymbol}.'
 
 
 # Confirms the sell request
 def commitSell(userID):
     if cache.exists(userID + "_SELL"):
         sellObj = json.loads(cache.get(userID + "_SELL"), object_hook=object_hook)
-        now = datetime.datetime.now()
+        now = datetime.now()
         timeDiff = (now - sellObj["time"]).total_seconds()
         if timeDiff <= 60:
             dbmSocket.send(json.dumps({"command": "commitSell", "user_id": userID, "value_amount": sellObj["amount"],
@@ -189,7 +198,7 @@ def commitSell(userID):
             cache.delete(userID + "_SELL")
             return "Sell too old."
     else:
-        return "Sell does not exist."
+        return f"Sell does not exist for {userID}."
 
 
 # Cancels the sell request
@@ -227,10 +236,12 @@ def setSellTrigger(userID, stockSymbol, amount):
 
 if __name__ == "__main__":
     print("Start program")
-    global stockSocket, cache, dbmSocket
+    global stockSocket, cache, dbmSocket, auditSocket, auditHandler
 
     dbmSocket = Connections.createDatabaseManagerConn()
     stockSocket = Connections.createQuoteConn()
+    auditSocket = Connections.connectAudit()
+    auditHandler = AuditHandler(auditSocket, Connections.serviceName)
 
     cache = Connections.startRedis()
     cache.flushdb()
@@ -245,40 +256,140 @@ if __name__ == "__main__":
         msg = data.decode()
         data = json.loads(msg)
         command = data["command"]
-        if command == "DISPLAY_SUMMARY":
-            response = 1
-            print("received display summary command")
-        elif command == "DUMPLOG":
-            response = 1
-            print("received dumplog command")
 
-        elif command == "ADD":
+        if command == "ADD":
             response = add(data["user_id"], data["amount"])
+            if response == 1:
+                auditHandler.handleAddEvent(
+                    transaction_num=0,
+                    user_name=data["user_id"],
+                    funds=data["amount"]
+                )
+            else:
+                auditHandler.handleErrorEvent(
+                    transaction_num=0,
+                    command='ADD',
+                    error_msg=response,
+                    user_name=data["user_id"],
+                    funds=data["amount"]
+                )
             print("received add command")
+
         elif command == "QUOTE":
             # Need work on WebService to accept quote info back.
+            # Send response back to determine if service was hit or not?
             price = quote(data["user_id"], data["stock_symbol"])
             response = 1
             print("received quote command")
 
         elif command == "BUY":
             response = buy(data["user_id"], data["stock_symbol"], data["amount"])
+            if response == 1:
+                auditHandler.handleUserCommandEvent(
+                    transaction_num=0,
+                    command=command,
+                    user_name=data["user_id"],
+                    funds=data["amount"],
+                    stock_symbol=data["stock_symbol"]
+                )
+            else:
+                auditHandler.handleErrorEvent(
+                    transaction_num=0,
+                    command=command,
+                    error_msg=response,
+                    user_name=data["user_id"],
+                    funds=data["amount"],
+                    stock_symbol=data["stock_symbol"]
+                )
             print("received buy command")
+
         elif command == "COMMIT_BUY":
             response = commitBuy(data["user_id"])
+            if response == 1:
+                auditHandler.handleUserCommandEvent(
+                    transaction_num=0,
+                    command=command,
+                    user_name=data['user_id']
+                )
+            else:
+                auditHandler.handleErrorEvent(
+                    transaction_num=0,
+                    command=command,
+                    error_msg=response,
+                    user_name=data['user_id']
+                )
             print("received commit buy command")
+
         elif command == "CANCEL_BUY":
             response = cancelBuy(data["user_id"])
+            if response == 1:
+                auditHandler.handleUserCommandEvent(
+                    transaction_num=0,
+                    command=command,
+                    user_name=data['user_id']
+                )
+            else:
+                auditHandler.handleErrorEvent(
+                    transaction_num=0,
+                    command=command,
+                    error_msg=response,
+                    user_name=data['user_id']
+                )
             print("received cancel buy command")
 
         elif command == "SELL":
             response = sell(data["user_id"], data["stock_symbol"], data["amount"])
+            if response == 1:
+                auditHandler.handleUserCommandEvent(
+                    transaction_num=0,
+                    command=command,
+                    user_name=data['user_id'],
+                    funds=data['amount'],
+                    stock_symbol=data['stock_symbol']
+                )
+            else:
+                auditHandler.handleErrorEvent(
+                    transaction_num=0,
+                    command=command,
+                    error_msg=response,
+                    user_name=data['user_id'],
+                    funds=data['amount'],
+                    stock_symbol=data['stock_symbol']
+                )
             print("received sell command")
+
         elif command == "COMMIT_SELL":
             response = commitSell(data["user_id"])
+            if response == 1:
+                auditHandler.handleUserCommandEvent(
+                    transaction_num=0,
+                    command=command,
+                    user_name=data['user_id']
+                )
+            else:
+                auditHandler.handleErrorEvent(
+                    transaction_num=0,
+                    command=command,
+                    error_msg=response,
+                    user_name=data['user_id']
+                )
             print("received commit sell command")
+
         elif command == "CANCEL_SELL":
             response = cancelSell(data["user_id"])
+            if response == 1:
+                auditHandler.handleUserCommandEvent(
+                    transaction_num=0,
+                    command=command,
+                    user_name=data['user_id']
+                )
+            else:
+                auditHandler.handleErrorEvent(
+                    transaction_num=0,
+                    command=command,
+                    error_msg=response,
+                    user_name=data['user_id']
+                )
             print("received cancel sell command")
 
         # Not Implemented

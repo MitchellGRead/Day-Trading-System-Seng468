@@ -1,8 +1,11 @@
 from socket import socket, AF_INET, SOCK_STREAM
 import json
 from time import sleep
-from audit import EventTypes
 import pickle
+
+from WebService.AuditHandler import AuditHandler
+
+server_name = 'WebService'
 
 WEBSERVER_IP, WEBSERVER_PORT = 'localhost', 5000
 TRANS_SERVER_IP, TRANS_SERVER_PORT = 'localhost', 6666
@@ -19,8 +22,16 @@ while audit_socket.connect_ex((AUDIT_SERVICE_IP, AUDIT_SERVICE_PORT)) != 0:
 
 def handleCommand(data):
     print(data)
-    resp = sendAndRecvJsonData(trans_socket, data)
-    # Log operation
+    command = data['command']
+    if command == 'DUMPLOG' or command == 'DISPLAY_SUMMARY':
+        resp = audit_handler.handleUserCommandEvent(
+            transaction_num=0,
+            command=command,
+            user_name=(data['user_id'] if 'user_id' in data else ''),
+            filename=(data['filename'] if 'filename' in data else '')
+        )
+    else:
+        resp = sendAndRecvJsonData(trans_socket, data)
     print(resp)
 
 
@@ -57,6 +68,9 @@ def sendError(conn, status=400, reason='', content=None):
 
 
 if __name__ == '__main__':
+    global audit_handler
+
+    audit_handler = AuditHandler(audit_socket, server_name)
     web_socket.bind((WEBSERVER_IP, WEBSERVER_PORT))
     web_socket.listen(5)
     while True:
