@@ -62,18 +62,17 @@ def add(userID, amount):
 
 
 # Gets a quote from the quote server and returns the information.
-def quote(userID, stockSymbol):
+def quote(transaction_num, userID, stockSymbol):
     message = "{}, {}".format(stockSymbol, userID)
     stockSocket.send(message.encode())
     dataReceived = stockSocket.recv(1024).decode()
     dataReceived = dataReceived.split(", ")
     auditHandler.handleQuoteEvent(  # Ping to quote server
-        transaction_num=0,
-        quote_server_time=20,
+        transaction_num=transaction_num,
         user_name=userID,
         stock_symbol=stockSymbol,
         price=dataReceived[0],
-        crptokey='blah'
+        crptokey=dataReceived[2]
     )
 
     if cache.exists("quotes"):
@@ -89,10 +88,10 @@ def quote(userID, stockSymbol):
 
 
 # Creates a buy request to be confirmed by the user
-def buy(userID, stockSymbol, amount):
+def buy(transaction_num, userID, stockSymbol, amount):
     if cache.exists(userID):
         user = pickle.loads(cache.get(userID))
-        price = float(quote(userID, stockSymbol))
+        price = float(quote(transaction_num, userID, stockSymbol))
         amountOfStock = floor(float(amount) / price)
         totalValue = price * amountOfStock
 
@@ -141,10 +140,10 @@ def cancelBuy(userID):
 
 
 # Creates a sell request to be confirmed by the user
-def sell(userID, stockSymbol, amount):
+def sell(transaction_num, userID, stockSymbol, amount):
     if cache.exists(userID + "_" + stockSymbol):
         user = pickle.loads(cache.get(userID + "_" + stockSymbol))
-        price = float(quote(userID, stockSymbol))
+        price = float(quote(transaction_num, userID, stockSymbol))
         amountOfStock = ceil(float(amount) / price)
         totalValue = float(amount) * price
 
@@ -243,13 +242,13 @@ if __name__ == "__main__":
             response = add(data["user_id"], data["amount"])
             if response == 1:
                 auditHandler.handleAddEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     user_name=data["user_id"],
                     funds=data["amount"]
                 )
             else:
                 auditHandler.handleErrorEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command='ADD',
                     error_msg=response,
                     user_name=data["user_id"],
@@ -260,15 +259,15 @@ if __name__ == "__main__":
         elif command == "QUOTE":
             # Need work on WebService to accept quote info back.
             # Send response back to determine if service was hit or not?
-            price = quote(data["user_id"], data["stock_symbol"])
+            price = quote(data['transaction_num'], data["user_id"], data["stock_symbol"])
             response = 1
             print("received quote command")
 
         elif command == "BUY":
-            response = buy(data["user_id"], data["stock_symbol"], data["amount"])
+            response = buy(data['transaction_num'], data["user_id"], data["stock_symbol"], data["amount"])
             if response == 1:
                 auditHandler.handleUserCommandEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     user_name=data["user_id"],
                     funds=data["amount"],
@@ -276,7 +275,7 @@ if __name__ == "__main__":
                 )
             else:
                 auditHandler.handleErrorEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     error_msg=response,
                     user_name=data["user_id"],
@@ -289,13 +288,13 @@ if __name__ == "__main__":
             response = commitBuy(data["user_id"])
             if response == 1:
                 auditHandler.handleUserCommandEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     user_name=data['user_id']
                 )
             else:
                 auditHandler.handleErrorEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     error_msg=response,
                     user_name=data['user_id']
@@ -306,13 +305,13 @@ if __name__ == "__main__":
             response = cancelBuy(data["user_id"])
             if response == 1:
                 auditHandler.handleUserCommandEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     user_name=data['user_id']
                 )
             else:
                 auditHandler.handleErrorEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     error_msg=response,
                     user_name=data['user_id']
@@ -320,10 +319,10 @@ if __name__ == "__main__":
             print("received cancel buy command")
 
         elif command == "SELL":
-            response = sell(data["user_id"], data["stock_symbol"], data["amount"])
+            response = sell(data['transaction_num'], data["user_id"], data["stock_symbol"], data["amount"])
             if response == 1:
                 auditHandler.handleUserCommandEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     user_name=data['user_id'],
                     funds=data['amount'],
@@ -331,7 +330,7 @@ if __name__ == "__main__":
                 )
             else:
                 auditHandler.handleErrorEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     error_msg=response,
                     user_name=data['user_id'],
@@ -344,13 +343,13 @@ if __name__ == "__main__":
             response = commitSell(data["user_id"])
             if response == 1:
                 auditHandler.handleUserCommandEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     user_name=data['user_id']
                 )
             else:
                 auditHandler.handleErrorEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     error_msg=response,
                     user_name=data['user_id']
@@ -361,13 +360,13 @@ if __name__ == "__main__":
             response = cancelSell(data["user_id"])
             if response == 1:
                 auditHandler.handleUserCommandEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     user_name=data['user_id']
                 )
             else:
                 auditHandler.handleErrorEvent(
-                    transaction_num=0,
+                    transaction_num=data['transaction_num'],
                     command=command,
                     error_msg=response,
                     user_name=data['user_id']
