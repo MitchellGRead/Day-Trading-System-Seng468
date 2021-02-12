@@ -1,6 +1,5 @@
 import socket
 import random
-import json
 
 stockPort = 4444
 localHost = "localhost"

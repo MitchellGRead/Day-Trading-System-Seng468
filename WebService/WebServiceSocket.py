@@ -3,7 +3,7 @@ import json
 from time import sleep
 import pickle
 
-from WebService.AuditHandler import AuditHandler
+from AuditHandler import AuditHandler
 
 server_name = 'WebService'
 
@@ -31,7 +31,7 @@ def handleCommand(data):
             filename=(data['filename'] if 'filename' in data else '')
         )
     else:
-        resp = sendAndRecvJsonData(trans_socket, data)
+        resp = sendAndRecvObjectData(trans_socket, data)
     print(resp)
 
 

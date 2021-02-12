@@ -1,9 +1,9 @@
 import TransactionConnections as Connections
 from datetime import datetime
-import json
 from math import floor, ceil
 import pickle
 from AuditHandler import AuditHandler
+
 
 # TO DO:
 # MONGO DB
@@ -11,63 +11,48 @@ from AuditHandler import AuditHandler
 # Auditing - transaction numbers
 
 
-# Time Handling Method
-def default(obj):
-    if isinstance(obj, datetime):
-        return {'_isoformat': obj.isoformat()}
-    return super().default(obj)
-
-
-# Time Handling Method
-def object_hook(obj):
-    _isoformat = obj.get('_isoformat')
-    if _isoformat is not None:
-        return datetime.fromisoformat(_isoformat)
-    return obj
-
-
 # Get a current copy of DB for cache
 def fillCache():
     # Fill account_balances cache
-    dbmSocket.send(json.dumps({"command": "fillAccountCache"}).encode())
+    dbmSocket.send(pickle.dumps({"command": "fillAccountCache"}))
     results = dbmSocket.recv(4096)
     results = pickle.loads(results)
     for row in results:
         user = {"user_id": row[0], "account_balance": row[1], "reserved_balance": row[2]}
-        cache.set(row[0], json.dumps(user))
+        cache.set(row[0], pickle.dumps(user))
 
     # Fill stock_balances table
-    dbmSocket.send(json.dumps({"command": "fillStockCache"}).encode())
+    dbmSocket.send(pickle.dumps({"command": "fillStockCache"}))
     results = dbmSocket.recv(4096)
     results = pickle.loads(results)
     for row in results:
         stockBalance = {"user_id": row[0], "stock_id": row[1], "stock_amount": row[2], "stock_reserved": row[3]}
-        cache.set("{}_{}".format(row[0], row[1]), json.dumps(stockBalance))
+        cache.set("{}_{}".format(row[0], row[1]), pickle.dumps(stockBalance))
 
 
 # Updates Account Cache after a write
 def updateAccountCache(userID):
-    dbmSocket.send(json.dumps({"command": "updateAccountCache", "user_id": userID}).encode())
+    dbmSocket.send(pickle.dumps({"command": "updateAccountCache", "user_id": userID}))
     results = dbmSocket.recv(4096)
     results = pickle.loads(results)
     for row in results:
         user = {"user_id": row[0], "account_balance": row[1], "reserved_balance": row[2]}
-        cache.set(row[0], json.dumps(user))
+        cache.set(row[0], pickle.dumps(user))
 
 
 # Updates Stock Cache after a write
 def updateStockCache(userID, stockSymbol):
-    dbmSocket.send(json.dumps({"command": "updateStockCache", "user_id": userID, "stock_id": stockSymbol}).encode())
+    dbmSocket.send(pickle.dumps({"command": "updateStockCache", "user_id": userID, "stock_id": stockSymbol}))
     results = dbmSocket.recv(4096)
     results = pickle.loads(results)
     for row in results:
         stockBalance = {"user_id": row[0], "stock_id": row[1], "stock_amount": row[2], "stock_reserved": row[3]}
-        cache.set("{}_{}".format(row[0], row[1]), json.dumps(stockBalance))
+        cache.set("{}_{}".format(row[0], row[1]), pickle.dumps(stockBalance))
 
 
 # Adds the amount to the users balance.
 def add(userID, amount):
-    dbmSocket.send(json.dumps({"command": "addFunds", "user_id": userID, "amount": amount}).encode())
+    dbmSocket.send(pickle.dumps({"command": "addFunds", "user_id": userID, "amount": amount}))
     result = dbmSocket.recv(1024).decode()
     updateAccountCache(userID)
     if result == "Success":
@@ -93,12 +78,12 @@ def quote(userID, stockSymbol):
 
     if cache.exists("quotes"):
         quotes = cache.get("quotes")
-        quotes = json.loads(quotes, object_hook=object_hook)
+        quotes = pickle.loads(quotes)
         quotes[stockSymbol] = [dataReceived[0], datetime.now()]
-        cache.set("quotes", json.dumps(quotes, default=default))
+        cache.set("quotes", pickle.dumps(quotes))
     else:
         quotes = {stockSymbol: [dataReceived[0], datetime.now()]}
-        cache.set("quotes", json.dumps(quotes, default=default))
+        cache.set("quotes", pickle.dumps(quotes))
     print(dataReceived)
     return dataReceived[0]
 
@@ -106,7 +91,7 @@ def quote(userID, stockSymbol):
 # Creates a buy request to be confirmed by the user
 def buy(userID, stockSymbol, amount):
     if cache.exists(userID):
-        user = json.loads(cache.get(userID))
+        user = pickle.loads(cache.get(userID))
         price = float(quote(userID, stockSymbol))
         amountOfStock = floor(float(amount) / price)
         totalValue = price * amountOfStock
@@ -114,7 +99,7 @@ def buy(userID, stockSymbol, amount):
         if float(user["account_balance"]) >= float(amount):
             dictionary = {"user_id": userID, "stock_id": stockSymbol, "amount": totalValue,
                           "amount_of_stock": amountOfStock, "time": datetime.now()}
-            cache.set(userID + "_BUY", json.dumps(dictionary, default=default))
+            cache.set(userID + "_BUY", pickle.dumps(dictionary))
             return 1
         else:
             return f"User {userID} does not have required funds."
@@ -125,17 +110,16 @@ def buy(userID, stockSymbol, amount):
 # Confirms the buy request
 def commitBuy(userID):
     if cache.exists(userID + "_BUY"):
-        buyObj = json.loads(cache.get(userID + "_BUY"), object_hook=object_hook)
+        buyObj = pickle.loads(cache.get(userID + "_BUY"))
         now = datetime.now()
         timeDiff = (now - buyObj["time"]).total_seconds()
         if timeDiff <= 60:
-            dbmSocket.send(json.dumps({"command": "commitBuy", "user_id": userID, "value_amount": buyObj["amount"],
-                                       "stock_id": buyObj["stock_id"], "amount_of_stock": buyObj["amount_of_stock"]}
-                                      ).encode())
+            dbmSocket.send(pickle.dumps({"command": "commitBuy", "user_id": userID, "value_amount": buyObj["amount"],
+                                         "stock_id": buyObj["stock_id"], "amount_of_stock": buyObj["amount_of_stock"]}))
             result = dbmSocket.recv(1024).decode()
             cache.delete(userID + "_BUY")
             updateAccountCache(userID)
-            updateStockCache(userID, json.dumps(buyObj["stock_id"]))
+            updateStockCache(userID, buyObj["stock_id"])
             if result == "Success":
                 return 1
             else:
@@ -159,7 +143,7 @@ def cancelBuy(userID):
 # Creates a sell request to be confirmed by the user
 def sell(userID, stockSymbol, amount):
     if cache.exists(userID + "_" + stockSymbol):
-        user = json.loads(cache.get(userID + "_" + stockSymbol))
+        user = pickle.loads(cache.get(userID + "_" + stockSymbol))
         price = float(quote(userID, stockSymbol))
         amountOfStock = ceil(float(amount) / price)
         totalValue = float(amount) * price
@@ -167,7 +151,7 @@ def sell(userID, stockSymbol, amount):
         if int(user["stock_amount"]) >= amountOfStock:
             dictionary = {"user_id": userID, "stock_id": stockSymbol,
                           "amount": totalValue, "amount_of_stock": amountOfStock, "time": datetime.now()}
-            cache.set(userID + "_SELL", json.dumps(dictionary, default=default))
+            cache.set(userID + "_SELL", pickle.dumps(dictionary))
             return 1
         else:
             return 'User does not have required amount of that stock.'
@@ -178,13 +162,13 @@ def sell(userID, stockSymbol, amount):
 # Confirms the sell request
 def commitSell(userID):
     if cache.exists(userID + "_SELL"):
-        sellObj = json.loads(cache.get(userID + "_SELL"), object_hook=object_hook)
+        sellObj = pickle.loads(cache.get(userID + "_SELL"))
         now = datetime.now()
         timeDiff = (now - sellObj["time"]).total_seconds()
         if timeDiff <= 60:
-            dbmSocket.send(json.dumps({"command": "commitSell", "user_id": userID, "value_amount": sellObj["amount"],
-                                       "stock_id": sellObj["stock_id"], "amount_of_stock": sellObj["amount_of_stock"]}
-                                      ).encode())
+            dbmSocket.send(pickle.dumps({"command": "commitSell", "user_id": userID, "value_amount": sellObj["amount"],
+                                         "stock_id": sellObj["stock_id"],
+                                         "amount_of_stock": sellObj["amount_of_stock"]}))
             result = dbmSocket.recv(1024).decode()
 
             cache.delete(userID + "_SELL")
@@ -246,15 +230,13 @@ if __name__ == "__main__":
     cache = Connections.startRedis()
     cache.flushdb()
 
-
     # Web connection
     webConn = Connections.connectWeb()
     while True:
         data = webConn.recv(1024)
         if not data:
             break
-        msg = data.decode()
-        data = json.loads(msg)
+        data = pickle.loads(data)
         command = data["command"]
 
         if command == "ADD":
@@ -424,4 +406,4 @@ if __name__ == "__main__":
             response = {"status": 200}
         else:
             response = {"status": 500, "reason": response}
-        webConn.send(json.dumps(response).encode())
+        webConn.send(pickle.dumps(response))

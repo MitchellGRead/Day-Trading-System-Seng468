@@ -1,7 +1,5 @@
 import socket
 import redis
-import psycopg2
-from psycopg2 import OperationalError
 from time import sleep
 
 serviceName = 'TransactionService'
