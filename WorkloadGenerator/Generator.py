@@ -16,12 +16,12 @@ def readWorkloadFile():
 def main():
     workload_actions = readWorkloadFile()
     user_commands = [command.split(' ')[1] for command in workload_actions]
-    params = [command.split(',') for command in user_commands]
+    params = [[idx, *command.split(',')] for idx, command in enumerate(user_commands, 1)]
     command_sender = UserCommands(WEBSERVER_IP, WEBSERVER_PORT)
 
     print(params)
     for param in params:
-        command = param[0]
+        command = param[1]
 
         if command == 'ADD':
             resp = command_sender.addFundsRequest(WEBSERVER_URL, param)
