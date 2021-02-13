@@ -54,6 +54,7 @@ def updateStockCache(userID, stockSymbol):
 def add(userID, amount):
     dbmSocket.send(pickle.dumps({"command": "addFunds", "user_id": userID, "amount": amount}))
     result = dbmSocket.recv(1024).decode()
+    print(result)
     updateAccountCache(userID)
     if result == "Success":
         return 1

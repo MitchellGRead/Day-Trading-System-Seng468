@@ -5,9 +5,11 @@ from time import sleep
 serviceName = 'TransactionService'
 
 localHost = "localhost"
-# stockHost = "quoteserver.seng.uvic.ca"
-stockHost = localHost
-dbmHost = localHost
+stockHost = "192.168.4.2"
+#stockHost = localHost
+auditHost = "audit-1"
+dbmHost = "dbmgr-1"
+redisHost = "redis-1"
 
 redisPort = 6379
 stockPort = 4444
@@ -31,7 +33,7 @@ def connectWeb():
 def connectAudit():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print("Attempting Connection to Audit Server")
-    while s.connect_ex((localHost, auditPort)) != 0:
+    while s.connect_ex((auditHost, auditPort)) != 0:
         sleep(1)
     print("Quote Connection Started")
     return s
@@ -58,6 +60,6 @@ def createDatabaseManagerConn():
 
 # Starts the redis (cache) server
 def startRedis():
-    r = redis.Redis(host=localHost, port=redisPort, db=0)
+    r = redis.Redis(host=redisHost, port=redisPort, db=0)
     print("Connection to Redis Successful")
     return r
