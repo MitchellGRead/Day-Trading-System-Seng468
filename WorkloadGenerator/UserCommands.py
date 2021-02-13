@@ -22,9 +22,10 @@ class UserCommands:
         return json.loads(data)
 
     def addFundsRequest(self, server_url, params):
-        command, user_id, amount = params
+        trans_num, command, user_id, amount = params
 
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id,
             'amount': amount
@@ -35,9 +36,10 @@ class UserCommands:
         return resp
 
     def quoteRequest(self, server_url, params):
-        command, user_id, stock_symbol = params
+        trans_num, command, user_id, stock_symbol = params
 
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol
@@ -47,8 +49,9 @@ class UserCommands:
         return resp
 
     def displaySummary(self, server_url, params):
-        command, user_id = params
+        trans_num, command, user_id = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id
         }
@@ -57,18 +60,20 @@ class UserCommands:
         return resp
 
     def dumplog(self, server_url, params):
-        if len(params) == 2:
-            command, filename = params
+        if len(params) == 3:
+            trans_num, command, filename = params
             data = {
+                'transaction_num': trans_num,
                 'command': command,
                 'filename': filename
             }
             # resp = requests.get(f'{server_url}/dumplog/', json=data)
             resp = self.sendAndRecvData(data)
             return resp
-        elif len(params) == 3:
-            command, user_id, filename = params
+        elif len(params) == 4:
+            trans_num, command, user_id, filename = params
             data = {
+                'transaction_num': trans_num,
                 'command': command,
                 'user_id': user_id,
                 'filename': filename
@@ -81,8 +86,9 @@ class UserCommands:
 
     # BUY REQUESTS --------------------------------------------
     def buyRequest(self, server_url, params):
-        command, user_id, stock_symbol, amount = params
+        trans_num, command, user_id, stock_symbol, amount = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol,
@@ -93,8 +99,9 @@ class UserCommands:
         return resp
 
     def commitBuyRequest(self, server_url, params):
-        command, user_id = params
+        trans_num, command, user_id = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id
         }
@@ -103,8 +110,9 @@ class UserCommands:
         return resp
 
     def cancelBuyRequest(self, server_url, params):
-        command, user_id = params
+        trans_num, command, user_id = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id
         }
@@ -113,8 +121,9 @@ class UserCommands:
         return resp
 
     def setBuyAmountRequest(self, server_url, params):
-        command, user_id, stock_symbol, amount = params
+        trans_num, command, user_id, stock_symbol, amount = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol,
@@ -125,8 +134,9 @@ class UserCommands:
         return resp
 
     def cancelSetBuyRequest(self, server_url, params):
-        command, user_id, stock_symbol = params
+        trans_num, command, user_id, stock_symbol = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol
@@ -136,8 +146,9 @@ class UserCommands:
         return resp
 
     def setBuyTriggerRequest(self, server_url, params):
-        command, user_id, stock_symbol, amount = params
+        trans_num, command, user_id, stock_symbol, amount = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol,
@@ -151,8 +162,9 @@ class UserCommands:
 
     # BUY REQUESTS --------------------------------------------
     def cancelSellRequest(self, server_url, params):
-        command, user_id = params
+        trans_num, command, user_id = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id
         }
@@ -161,8 +173,9 @@ class UserCommands:
         return resp
 
     def commitSellRequest(self, server_url, params):
-        command, user_id = params
+        trans_num, command, user_id = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id
         }
@@ -171,8 +184,9 @@ class UserCommands:
         return resp
 
     def sellRequest(self, server_url, params):
-        command, user_id, stock_symbol, amount = params
+        trans_num, command, user_id, stock_symbol, amount = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol,
@@ -183,8 +197,9 @@ class UserCommands:
         return resp
 
     def setSellAmountRequest(self, server_url, params):
-        command, user_id, stock_symbol, amount = params
+        trans_num, command, user_id, stock_symbol, amount = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol,
@@ -195,8 +210,9 @@ class UserCommands:
         return resp
 
     def cancelSetSellRequest(self, server_url, params):
-        command, user_id, stock_symbol = params
+        trans_num, command, user_id, stock_symbol = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol
@@ -206,8 +222,9 @@ class UserCommands:
         return resp
 
     def setSellTriggerRequest(self, server_url, params):
-        command, user_id, stock_symbol, amount = params
+        trans_num, command, user_id, stock_symbol, amount = params
         data = {
+            'transaction_num': trans_num,
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol,

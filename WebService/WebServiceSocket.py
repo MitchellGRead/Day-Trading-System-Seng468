@@ -25,7 +25,7 @@ def handleCommand(data):
     command = data['command']
     if command == 'DUMPLOG' or command == 'DISPLAY_SUMMARY':
         resp = audit_handler.handleUserCommandEvent(
-            transaction_num=0,
+            transaction_num=data['transaction_num'],
             command=command,
             user_name=(data['user_id'] if 'user_id' in data else ''),
             filename=(data['filename'] if 'filename' in data else '')

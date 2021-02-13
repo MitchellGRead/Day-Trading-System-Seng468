@@ -46,11 +46,10 @@ class AuditHandler:
         )
         resp = self.sendAndRecvObject(audit_event)
 
-    def handleQuoteEvent(self, transaction_num, quote_server_time, user_name,
+    def handleQuoteEvent(self, transaction_num, user_name,
                          stock_symbol, price, crptokey):
         audit_event = QuoteServerEvent(
             server=self.service_name,
-            quoteServerTimestamp=quote_server_time,
             transactionNumber=transaction_num,
             userName=user_name,
             stockSymbol=stock_symbol,

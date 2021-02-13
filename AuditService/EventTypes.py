@@ -49,13 +49,13 @@ class SystemEvent:
 # When quote server successfully hit
 @dataclass
 class QuoteServerEvent:
-    quoteServerTimestamp: int
     server: str
     transactionNumber: int
     userName: str
     stockSymbol: str
     price: float
     cryptoKey: str
+    quoteServerTimestamp: int = timeInMs()
     timestamp: int = timeInMs()
     xmlName: str = 'quoteServer'
 
