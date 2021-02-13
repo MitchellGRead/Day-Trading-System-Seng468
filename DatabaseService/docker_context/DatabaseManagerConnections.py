@@ -1,5 +1,5 @@
 import socket
-import redis
+#import redis
 import psycopg2
 from psycopg2 import OperationalError
 from time import sleep
@@ -27,7 +27,7 @@ def createSQLConnection():
             database=dbName,
             user=dbUser,
             password=dbPassword,
-            host=localHost,
+            host="trading-db-13",
             port=dbPort
         )
         print("Connection to PostGres Successful")
