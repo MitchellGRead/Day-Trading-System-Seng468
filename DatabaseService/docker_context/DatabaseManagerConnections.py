@@ -5,7 +5,7 @@ from psycopg2 import OperationalError
 from time import sleep
 
 dbmSocket = 5656
-localHost = "localhost"
+dbmHost = "dbmgr-1"
 
 dbPort = 5432
 dbName, dbUser, dbPassword = "trading-db", "daytrader", "tothemoon"
@@ -13,7 +13,7 @@ dbName, dbUser, dbPassword = "trading-db", "daytrader", "tothemoon"
 
 def createSocket():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((localHost, dbmSocket))
+    s.bind((dbmHost, dbmSocket))
     s.listen()
     conn, addr = s.accept()
     return conn

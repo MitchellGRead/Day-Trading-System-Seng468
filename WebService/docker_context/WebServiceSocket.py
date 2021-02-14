@@ -7,9 +7,9 @@ from AuditHandler import AuditHandler
 
 server_name = 'WebService'
 
-WEBSERVER_IP, WEBSERVER_PORT = 'localhost', 5000
-TRANS_SERVER_IP, TRANS_SERVER_PORT = 'localhost', 6666
-AUDIT_SERVICE_IP, AUDIT_SERVICE_PORT = 'localhost', 6500
+WEBSERVER_IP, WEBSERVER_PORT = 'web-1', 5000
+TRANS_SERVER_IP, TRANS_SERVER_PORT = 'trsrvr-1', 6666
+AUDIT_SERVICE_IP, AUDIT_SERVICE_PORT = 'audit-1', 6500
 
 web_socket = socket(AF_INET, SOCK_STREAM)
 trans_socket = socket(AF_INET, SOCK_STREAM)
