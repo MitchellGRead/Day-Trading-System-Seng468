@@ -3,7 +3,7 @@ from AuditHandler import AuditHandler
 from AuditThread import AuditThread
 import pickle
 
-AUDIT_SERVICE_IP, AUDIT_SERVICE_PORT = 'localhost', 6500
+AUDIT_SERVICE_IP, AUDIT_SERVICE_PORT = 'audit-1', 6500
 SERVICE_NAME = 'auditService'
 
 audit_socket = socket(AF_INET, SOCK_STREAM)

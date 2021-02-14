@@ -115,7 +115,7 @@ if __name__ == "__main__":
         if not data:
             break
         data = pickle.loads(data)
-        print("Data recieved: " + data)
+        #print("Data recieved: " + data)
         command = data["command"]
 
         if command == "fillAccountCache":

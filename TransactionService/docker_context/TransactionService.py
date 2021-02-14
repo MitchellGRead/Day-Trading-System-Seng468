@@ -64,10 +64,11 @@ def add(userID, amount):
 
 # Gets a quote from the quote server and returns the information.
 def quote(transaction_num, userID, stockSymbol):
-    message = "{}, {}".format(stockSymbol, userID)
+    message = "{}, {}\n".format(stockSymbol, userID)
+    stockSocket = Connections.createQuoteConn()
     stockSocket.send(message.encode())
     dataReceived = stockSocket.recv(1024).decode()
-    dataReceived = dataReceived.split(", ")
+    dataReceived = dataReceived.split(",")
     auditHandler.handleQuoteEvent(  # Ping to quote server
         transaction_num=transaction_num,
         user_name=userID,
@@ -84,6 +85,7 @@ def quote(transaction_num, userID, stockSymbol):
     else:
         quotes = {stockSymbol: [dataReceived[0], datetime.now()]}
         cache.set("quotes", pickle.dumps(quotes))
+    stockSocket.close()
     print(dataReceived)
     return dataReceived[0]
 
@@ -220,10 +222,9 @@ def setSellTrigger(userID, stockSymbol, amount):
 
 if __name__ == "__main__":
     print("Start program")
-    global stockSocket, cache, dbmSocket, auditSocket, auditHandler
+    global cache, dbmSocket, auditSocket, auditHandler
 
     dbmSocket = Connections.createDatabaseManagerConn()
-    stockSocket = Connections.createQuoteConn()
     auditSocket = Connections.connectAudit()
     auditHandler = AuditHandler(auditSocket, Connections.serviceName)
 

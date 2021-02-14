@@ -4,11 +4,11 @@ from time import sleep
 
 serviceName = 'TransactionService'
 
-localHost = "localhost"
+transHost = 'trsrvr-1'
 stockHost = "192.168.4.2"
 #stockHost = localHost
 auditHost = "audit-1"
-dbmHost = "dbmgr-1"
+dbmHost = 'dbmgr-1'
 redisHost = "redis-1"
 
 redisPort = 6379
@@ -21,7 +21,7 @@ dbmPort = 5656
 # Creates socket for Sending/Receiving from WebService
 def connectWeb():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((localHost, transPort))
+    s.bind((transHost, transPort))
     s.listen()
     conn, addr = s.accept()
 
