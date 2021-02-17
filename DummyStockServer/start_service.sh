@@ -1,14 +1,13 @@
 #!/bin/bash
+
 curr_path=$(dirname $0)
 source $curr_path/config.sh
 
-image=$db_service_image
-cont=$db_service_name
-port=$db_service_port
-
-sudo $curr_path/runDbContainers.sh >/dev/null
+image=$dummy_service_image
+cont=$dummy_service_name
+port=$dummy_service_port
 
 $curr_path/build_service.sh 2>/dev/null
-echo 'Starting database service...'
+echo 'Starting dummy stock service...'
 sudo docker rm $cont >/dev/null 2>&1
 sudo docker run --name $cont -p $port:$port --network myNetwork -d $image > /dev/null

@@ -64,7 +64,7 @@ def add(userID, amount):
 
 # Gets a quote from the quote server and returns the information.
 def quote(transaction_num, userID, stockSymbol):
-    message = "{}, {}\n".format(stockSymbol, userID)
+    message = "{},{}".format(stockSymbol, userID)
     stockSocket = Connections.createQuoteConn()
     stockSocket.send(message.encode())
     dataReceived = stockSocket.recv(1024).decode()

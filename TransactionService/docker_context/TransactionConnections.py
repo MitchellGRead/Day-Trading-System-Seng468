@@ -5,8 +5,8 @@ from time import sleep
 serviceName = 'TransactionService'
 
 transHost = 'trsrvr-1'
-stockHost = "192.168.4.2"
-#stockHost = localHost
+# stockHost = "192.168.4.2"
+stockHost = 'dummy-stock-1'
 auditHost = "audit-1"
 dbmHost = 'dbmgr-1'
 redisHost = "redis-1"
