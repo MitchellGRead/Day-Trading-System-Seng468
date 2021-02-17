@@ -1,7 +1,9 @@
 #!/bin/bash
-name=trading-db
-tag=13
+par_path=$(dirname $curr_path)
+source $par_path/dbconfig.sh
 
-# Tear down existing image and container if they exist
-docker stop $name-$tag
-docker rm $name-$tag
+cont_name=$postgres_db_name
+
+# Tear down existing container if they exist
+sudo docker stop $cont_name
+sudo docker rm $cont_name
