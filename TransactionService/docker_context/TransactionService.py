@@ -6,9 +6,7 @@ from AuditHandler import AuditHandler
 
 
 # TO DO:
-# MONGO DB
 # TRIGGERS
-# Auditing - transaction numbers
 
 
 # Get a current copy of DB for cache
@@ -198,27 +196,61 @@ def cancelSell(userID):
 
 
 def setBuyAmount(userID, stockSymbol, amount):
-    print("to do")
+    dbmSocket.send(pickle.dumps({"command": "SET_BUY_AMOUNT", "user_id": userID, "stock_id": stockSymbol,
+                                 "amount_of_stock": amount}))
+    result = dbmSocket.recv(1024).decode()
+    if result == "Success":
+        return 1
+    else:
+        return result
 
 
 def cancelSetBuy(userID, stockSymbol):
-    print("to do")
+    dbmSocket.send(pickle.dumps({"command": "CANCEL_SET_BUY", "user_id": userID, "stock_id": stockSymbol}))
+    result = dbmSocket.recv(1024).decode()
+    if result == "Success":
+        return 1
+    else:
+        return result
 
 
 def setBuyTrigger(userID, stockSymbol, amount):
-    print("to do")
+    dbmSocket.send(pickle.dumps({"command": "SET_BUY_TRIGGER", "user_id": userID, "stock_id": stockSymbol,
+                                 "trigger_price": amount}))
+    result = dbmSocket.recv(1024).decode()
+    if result == "Success":
+        return 1
+    else:
+        return result
 
 
 def setSellAmount(userID, stockSymbol, amount):
-    print("to do")
+    dbmSocket.send(pickle.dumps({"command": "SET_SELL_AMOUNT", "user_id": userID, "stock_id": stockSymbol,
+                                 "amount_of_stock": amount}))
+    result = dbmSocket.recv(1024).decode()
+    if result == "Success":
+        return 1
+    else:
+        return result
 
 
 def cancelSetSell(userID, stockSymbol):
-    print("to do")
+    dbmSocket.send(pickle.dumps({"command": "CANCEL_SET_SELL", "user_id": userID, "stock_id": stockSymbol}))
+    result = dbmSocket.recv(1024).decode()
+    if result == "Success":
+        return 1
+    else:
+        return result
 
 
 def setSellTrigger(userID, stockSymbol, amount):
-    print("to do")
+    dbmSocket.send(pickle.dumps({"command": "SET_SELL_TRIGGER", "user_id": userID, "stock_id": stockSymbol,
+                                 "trigger_price": amount}))
+    result = dbmSocket.recv(1024).decode()
+    if result == "Success":
+        return 1
+    else:
+        return result
 
 
 if __name__ == "__main__":
