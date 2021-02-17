@@ -38,7 +38,7 @@ def createSQLConnection():
 
 
 def checkDB(connection):
-    destroyTables = "DROP TABLE IF EXISTS stocks, accounts, users CASCADE;"
+    destroyTables = "DROP TABLE IF EXISTS stocks, accounts, users, triggers CASCADE;"
     executeQuery(connection, destroyTables)
     createUser = "CREATE TABLE IF NOT EXISTS users (" \
                  "user_id VARCHAR(10) PRIMARY KEY);"
@@ -56,9 +56,19 @@ def checkDB(connection):
                    "constraint stock_reserved check (stock_reserved >= 0)," \
                    "constraint user_id FOREIGN KEY (user_id) REFERENCES users(user_id)," \
                    "PRIMARY KEY (user_id, stock_id));"
+    createTriggers = "CREATE TABLE IF NOT EXISTS triggers (" \
+                     "user_id varchar(10)," \
+                     "stock_id varchar(10)," \
+                     "type varchar(15)," \
+                     "trigger float4," \
+                     "amount float4," \
+                     "constraint user_id FOREIGN KEY (user_id) REFERENCES users(user_id)," \
+                     "PRIMARY KEY (user_id, stock_id, type)"
+
     executeQuery(connection, createUser)
     executeQuery(connection, createAccounts)
     executeQuery(connection, createStocks)
+    executeQuery(connection, createTriggers)
 
 
 # Read helper method for the SQL server
