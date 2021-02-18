@@ -4,6 +4,7 @@ import DatabaseManagerConnections as Connections
 usersTable = "users"
 accountBalancesTable = "accounts"
 stockBalancesTable = "stocks"
+triggersTable = "triggers"
 
 
 def fillAccountCache():
@@ -100,6 +101,130 @@ def commitSell(userID, stockSymbol, valueAmount, stockAmount):
     return 1
 
 
+def setBuyAmount(userID, stockSymbol, stockAmount):
+    query = "SELECT EXISTS(SELECT 1 from {TABLE} where user_id = '{USER}' AND stock_id = '{STOCK}' " \
+            "AND type = 'buy' LIMIT 1);".format(TABLE=triggersTable, USER=userID, STOCK=stockSymbol)
+    print(query)
+    if Connections.executeExist(sqlConnection, query):
+        return {'error': "A buy option for this stock already exists."}
+    else:
+        query = "INSERT INTO {TABLE} (user_id, stock_id, type, amount) VALUES " \
+                "('{USER}', '{STOCK}', 'buy', {AMOUNT});".format(TABLE=triggersTable, USER=userID,
+                                                                 STOCK=stockSymbol, AMOUNT=stockAmount)
+        print(query)
+        Connections.executeQuery(sqlConnection, query)
+        return 1
+
+
+def setBuyTrigger(userID, stockSymbol, price):
+    price = float(price)
+    query = "SELECT EXISTS(SELECT 1 from {TABLE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}' " \
+            "AND type = 'buy' LIMIT 1);".format(TABLE=triggersTable, USER=userID, STOCK=stockSymbol)
+    print(query)
+    if Connections.executeExist(sqlConnection, query):
+        query = "SELECT account_balance FROM {TABLE} WHERE user_id = '{USER}';".format(TABLE=accountBalancesTable,
+                                                                                       USER=userID)
+        print(query)
+        result = Connections.executeReadQuery(sqlConnection, query)
+        balance = result[0][0]
+        query = "SELECT amount FROM {TABLE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}' " \
+                "AND type = 'buy'".format(TABLE=triggersTable, USER=userID, STOCK=stockSymbol)
+        print(query)
+        result = Connections.executeReadQuery(sqlConnection, query)
+        stockAmount = result[0][0]
+        reserveNeeded = stockAmount * price
+        if reserveNeeded > balance:
+            return {'error': "The user doesn't have the needed amount of funds"}
+        else:
+            newBalance = balance - reserveNeeded
+            query = "UPDATE {TABLE} SET account_balance = {BALANCE}, reserve_balance = {RESERVE} " \
+                    "WHERE user_id = '{USER}';".format(TABLE=accountBalancesTable, USER=userID,
+                                                       BALANCE=newBalance, RESERVE=reserveNeeded)
+            print(query)
+            Connections.executeQuery(sqlConnection, query)
+            query = "UPDATE {TABLE} SET trigger = {PRICE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}' " \
+                    "AND type = 'buy'".format(TABLE=triggersTable, PRICE=price, USER=userID, STOCK=stockSymbol)
+            print(query)
+            Connections.executeQuery(sqlConnection, query)
+            return 1
+    else:
+        return {'error': "No set buy exists."}
+
+
+def cancelBuyTrigger(userID, stockSymbol):
+    query = "DELETE FROM {TABLE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}' " \
+            "AND type = 'buy'".format(TABLE=triggersTable, USER=userID, STOCK=stockSymbol)
+    print(query)
+    Connections.executeQuery(sqlConnection, query)
+    query = "UPDATE {TABLE} SET account_balance = account_balance + reserve_balance, reserve_balance = 0 " \
+            "WHERE user_id = '{USER}';".format(TABLE=accountBalancesTable, USER=userID)
+    print(query)
+    Connections.executeQuery(sqlConnection, query)
+    return 1
+
+
+def setSellAmount(userID, stockSymbol, stockAmount):
+    stockAmount = float(stockAmount)
+    query = "SELECT EXISTS(SELECT 1 from {TABLE} where user_id = '{USER}' AND stock_id = '{STOCK}' " \
+            "AND type = 'sell' LIMIT 1);".format(TABLE=triggersTable, USER=userID, STOCK=stockSymbol)
+    print(query)
+    if Connections.executeExist(sqlConnection, query):
+        return {'error': "A sell option for this stock already exists."}
+    else:
+        query = "SELECT EXISTS(SELECT 1 from {TABLE} where user_id = '{USER}' AND stock_id = '{STOCK}' " \
+                "LIMIT 1);".format(TABLE=stockBalancesTable, USER=userID, STOCK=stockSymbol)
+        print(query)
+        if Connections.executeExist(sqlConnection, query):
+            query = "SELECT stock_amount FROM {TABLE} WHERE user_id = '{USER}' AND " \
+                    "stock_id = '{STOCK}';".format(TABLE=stockBalancesTable, USER=userID, STOCK=stockSymbol)
+            print(query)
+            result = Connections.executeReadQuery(sqlConnection, query)
+            print(result)
+            stockHeld = result[0][0]
+            if stockAmount < stockHeld:
+                query = "UPDATE {TABLE} SET stock_amount = stock_amount - {RESERVE}, stock_reserved = {RESERVE} " \
+                        "WHERE user_id = '{USER}' AND stock_id = '{STOCK}';".format(TABLE=stockBalancesTable, USER=userID,
+                                                                                    RESERVE=stockAmount, STOCK=stockSymbol)
+                print(query)
+                Connections.executeQuery(sqlConnection, query)
+            else:
+                return {'error': "The user does not hold enough stocks to create this trigger"}
+            query = "INSERT INTO {TABLE} (user_id, stock_id, type, amount) VALUES " \
+                    "('{USER}', '{STOCK}', 'sell', {AMOUNT});".format(TABLE=triggersTable, USER=userID,
+                                                                      STOCK=stockSymbol, AMOUNT=stockAmount)
+            print(query)
+            Connections.executeQuery(sqlConnection, query)
+            return 1
+        else:
+            return {'error': "The user doesn't own this stock."}
+
+
+def setSellTrigger(userID, stockSymbol, price):
+    query = "SELECT EXISTS(SELECT 1 from {TABLE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}' " \
+            "AND type = 'sell' LIMIT 1);".format(TABLE=triggersTable, USER=userID, STOCK=stockSymbol)
+    print(query)
+    if Connections.executeExist(sqlConnection, query):
+        query = "UPDATE {TABLE} SET trigger = {PRICE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}' " \
+                "AND type = 'sell'".format(TABLE=triggersTable, USER=userID, STOCK=stockSymbol, PRICE=price)
+        print(query)
+        Connections.executeQuery(sqlConnection, query)
+        return 1
+    else:
+        return {'error': "No set sell exists"}
+
+
+def cancelSellTrigger(userID, stockSymbol):
+    query = "DELETE FROM {TABLE} WHERE user_id = '{USER}' AND stock_id = '{STOCK}' " \
+            "AND type = 'sell'".format(TABLE=triggersTable, USER=userID, STOCK=stockSymbol)
+    print(query)
+    Connections.executeQuery(sqlConnection, query)
+    query = "UPDATE {TABLE} SET stock_amount = stock_amount + stock_reserved, stock_reserved = 0 WHERE user_id = " \
+            "'{USER}' AND stock_id = '{STOCK}';".format(TABLE=stockBalancesTable, USER=userID, STOCK=stockSymbol)
+    print(query)
+    Connections.executeQuery(sqlConnection, query)
+    return 1
+
+
 if __name__ == "__main__":
     global sqlConnection
 
@@ -115,7 +240,6 @@ if __name__ == "__main__":
         if not data:
             break
         data = pickle.loads(data)
-        #print("Data recieved: " + data)
         command = data["command"]
 
         if command == "fillAccountCache":
@@ -141,25 +265,25 @@ if __name__ == "__main__":
             print("received commit sell command")
             response = commitSell(data["user_id"], data["stock_id"], data["value_amount"], data["amount_of_stock"])
 
-        # Not Implemented
         elif command == "SET_BUY_AMOUNT":
-            response = 1
             print("received set buy amount command")
+            response = setBuyAmount(data["user_id"], data["stock_id"], data["amount_of_stock"])
         elif command == "SET_BUY_TRIGGER":
-            response = 1
             print("received set buy trigger command")
+            response = setBuyTrigger(data["user_id"], data["stock_id"], data["trigger_price"])
         elif command == "CANCEL_SET_BUY":
-            response = 1
             print("received cancel set buy command")
+            response = cancelBuyTrigger(data["user_id"], data["stock_id"])
+
         elif command == "SET_SELL_AMOUNT":
-            response = 1
             print("received set sell amount command")
+            response = setSellAmount(data["user_id"], data["stock_id"], data["amount_of_stock"])
         elif command == "SET_SELL_TRIGGER":
-            response = 1
             print("received set sell trigger command")
+            response = setSellTrigger(data["user_id"], data["stock_id"], data["trigger_price"])
         elif command == "CANCEL_SET_SELL":
-            response = 1
             print("received cancel set sell command")
+            response = cancelSellTrigger(data["user_id"], data["stock_id"])
 
         else:
             response = "Unknown command"
@@ -168,5 +292,8 @@ if __name__ == "__main__":
 
         if response == 1:
             conn.send("Success".encode())
+        elif type(response) is dict:
+            error = response["error"]
+            conn.send(error.encode())
         else:
             conn.send(pickle.dumps(response))
