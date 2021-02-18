@@ -1,0 +1,1 @@
+print("The trigger service is currently not implemented.")
