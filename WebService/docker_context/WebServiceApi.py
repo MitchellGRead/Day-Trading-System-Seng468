@@ -1,178 +1,222 @@
-from flask import Flask, request, jsonify
 
-app = Flask(__name__)
-app.config["DEBUG"] = True
+from sanic import Sanic, response
+import aiohttp
 
-WEBSERVER_IP = "localhost"
-WEBSERVER_PORT = 5000
-SUCCESS_CODE = 200
+import config
+from clientInputSchema import *
+import endpoints
+import apiListeners
 
-
-
-@app.route('/', methods=['GET'])
-def home():
-    return 'Hello world!'
+app = Sanic(config.WEB_SERVER_NAME)
 
 
-@app.route('/add/funds/', methods=['POST'])
-def addToAccount():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /add/funds/ call")
+@app.route(endpoints.quote_endpoint, methods=['GET'])
+async def getQuote(request, trans_num, user_id, stock_symbol):
+    data = {
+        'transaction_num': trans_num,
+        'user_id': user_id,
+        'stock_symbol': stock_symbol
+    }
+    res, err = validateRequest(data, quote_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
 
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
-
-
-@app.route('/quote/<string:user_id>/<string:stock_symbol>/', methods=['GET'])
-def getSymbolQuote(user_id, stock_symbol):
-    print(user_id, stock_symbol)
-    return jsonify({'user_id': user_id, 'stock_symbol': stock_symbol})
-
-
-@app.route('/summary/<string:user_id>/', methods=['GET'])
-def displayUserSummary(user_id):
-    print(user_id)
-    return jsonify({'user_id': user_id})
+    data['command'] = 'QUOTE'
+    return response.json(data)
 
 
-@app.route('/dumplog/', methods=['GET'])
-def dumplog():
-    return jsonify({'command': 'all user dumplog'})
+@app.route(endpoints.display_summary_endpoint, methods=['GET'])
+async def getAccountSummary(request, trans_num, user_id):
+    data = {
+        'transaction_num': trans_num,
+        'user_id': user_id
+    }
+    res, err = validateRequest(data, display_summary_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    data['command'] = 'DISPLAY_SUMMARY'
+    return response.json(data)
 
 
-@app.route('/dumplog/<string:user_id>/', methods=['GET'])
-def userDumplog(user_id):
-    return jsonify({'command': 'dumplog', 'user_id': user_id})
+@app.route(endpoints.dumplog_endpoint, methods=['GET'])
+async def createDumplog(request, trans_num, filename):
+    user_id = request.args.get('user_id', '')
+    data = {
+        'transaction_num': trans_num,
+        'filename': filename,
+    }
+    if user_id:
+        data['user_id'] = user_id
+
+    res, err = validateRequest(data, dumplog_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    data['command'] = 'DUMPLOG'
+    return response.json(data)
 
 
-# BUY ROUTES ----------------------------------------------
-@app.route('/buy/', methods=['POST'])
-def buySymbol():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /buy/ call")
+@app.route(endpoints.add_funds_endpoint, methods=['POST'])
+async def addFunds(request):
+    res, err = validateRequest(request.json, add_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
 
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
-
-
-@app.route('/buy/commit/', methods=['POST'])
-def commitBuy():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /buy/commit/ call")
-
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
+    data = request.json
+    data['command'] = 'ADD'
+    return response.json(data)
 
 
-@app.route('/cancel/buy/', methods=['POST'])
-def cancelBuy():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /cancel/buy/ call")
+# BUY ENDPOINTS ------------------------------------------------
+@app.route(endpoints.buy_endpoint, methods=['POST'])
+async def buyStock(request):
+    res, err = validateRequest(request.json, buy_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
 
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
-
-
-@app.route('/set/buy/amount/', methods=['POST'])
-def setBuyAmount():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /buy/amount/ call")
-
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
+    data = request.json
+    data['command'] = 'BUY'
+    return response.json(data)
 
 
-@app.route('/cancel/set/buy/', methods=['POST'])
-def cancelSetBuyAmount():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /cancel/set/buy/ call")
+@app.route(endpoints.commit_buy_endpoint, methods=['POST'])
+async def commitBuy(request):
+    res, err = validateRequest(request.json, commit_buy_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
 
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
-
-
-@app.route('/set/buy/trigger/', methods=['POST'])
-def setBuyTriggerAmount():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /set/buy/trigger/ call")
-
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
-# ----------------------------------------------------------
+    data = request.json
+    data['command'] = 'COMMIT_BUY'
+    return response.json(data)
 
 
-# SELL ROUTES ----------------------------------------------
-@app.route('/sell/', methods=['POST'])
-def sellSymbol():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /sell/ call")
+@app.route(endpoints.cancel_buy_endpoint, methods=['POST'])
+async def cancelBuy(request):
+    res, err = validateRequest(request.json, cancel_buy_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
 
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
+    data = request.json
+    data['command'] = 'CANCEL_BUY'
+    return response.json(data)
 
-
-@app.route('/sell/commit/', methods=['POST'])
-def commitSell():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /sell/commit/ call")
-
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
+# --------------------------------------------------------------
 
 
-@app.route('/cancel/sell/', methods=['POST'])
-def cancelSell():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /cancel/sell/ call")
+# BUY TRIGGER ENDPOINTS ----------------------------------------
+@app.route(endpoints.set_buy_amount_endpoint, methods=['POST'])
+async def setBuyAmount(request):
+    res, err = validateRequest(request.json, set_buy_amount_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
 
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
-
-
-@app.route('/set/sell/amount/', methods=['POST'])
-def setSellAmount():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /sell/amount/ call")
-
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
+    data = request.json
+    data['command'] = 'SET_BUY_AMOUNT'
+    return response.json(data)
 
 
-@app.route('/cancel/set/sell/', methods=['POST'])
-def cancelSetSellAmount():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /cancel/set/sell/ call")
+@app.route(endpoints.set_buy_trigger_endpoint, methods=['POST'])
+async def setBuyTrigger(request):
+    res, err = validateRequest(request.json, set_buy_trigger_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
 
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
-
-
-@app.route('/set/sell/trigger/', methods=['POST'])
-def setSellTriggerAmount():
-    if checkRequest(request):
-        raise Exception("No json or user_id in /set/sell/trigger/ call")
-
-    # TODO("make call to trans server")
-    print(request.json)
-    return jsonify(request.json), SUCCESS_CODE
-# ----------------------------------------------------------
+    data = request.json
+    data['command'] = 'SET_BUY_TRIGGER'
+    return response.json(data)
 
 
-def checkRequest(api_request):
-    return not api_request.json or 'user_id' not in api_request.json
+@app.route(endpoints.cancel_set_buy_endpoint, methods=['POST'])
+async def cancelBuyTrigger(request):
+    res, err = validateRequest(request.json, cancel_set_buy_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    data['command'] = 'CANCEL_SET_BUY'
+    return response.json(data)
+# --------------------------------------------------------------
+
+
+# SELL ENDPOINTS -----------------------------------------------
+@app.route(endpoints.sell_endpoint, methods=['POST'])
+async def buyStock(request):
+    res, err = validateRequest(request.json, sell_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    data['command'] = 'SELL'
+    return response.json(data)
+
+
+@app.route(endpoints.commit_sell_endpoint, methods=['POST'])
+async def commitBuy(request):
+    res, err = validateRequest(request.json, commit_sell_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    data['command'] = 'COMMIT_SELL'
+    return response.json(data)
+
+
+@app.route(endpoints.cancel_sell_endpoint, methods=['POST'])
+async def cancelBuy(request):
+    res, err = validateRequest(request.json, cancel_sell_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    data['command'] = 'CANCEL_SELL'
+    return response.json(data)
+
+# --------------------------------------------------------------
+
+
+# SELL TRIGGER ENDPOINTS ---------------------------------------
+@app.route(endpoints.set_sell_amount_endpoint, methods=['POST'])
+async def setBuyAmount(request):
+    res, err = validateRequest(request.json, set_sell_amount_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    data['command'] = 'SET_SELL_AMOUNT'
+    return response.json(data)
+
+
+@app.route(endpoints.set_sell_trigger_endpoint, methods=['POST'])
+async def setBuyTrigger(request):
+    res, err = validateRequest(request.json, set_sell_trigger_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    data['command'] = 'SET_SELL_TRIGGER'
+    return response.json(data)
+
+
+@app.route(endpoints.cancel_set_sell_endpoint, methods=['POST'])
+async def cancelBuyTrigger(request):
+    res, err = validateRequest(request.json, cancel_set_sell_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    data['command'] = 'CANCEL_SET_SELL'
+    return response.json(data)
+# --------------------------------------------------------------
 
 
 if __name__ == '__main__':
-    app.run(host=WEBSERVER_IP, port=WEBSERVER_PORT)
+    app.register_listener(apiListeners.initClient, 'before_server_start')
+    app.register_listener(apiListeners.closeClient, 'before_server_stop')
+
+    app.run(
+        host=config.WEB_SERVER_IP,
+        port=config.WEB_SERVER_PORT,
+        debug=config.RUN_DEBUG,
+        auto_reload=True
+    )
