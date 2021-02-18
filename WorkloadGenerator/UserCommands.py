@@ -1,236 +1,209 @@
-import requests
-from socket import socket, AF_INET, SOCK_STREAM
-import json
-
 
 class UserCommands:
-    web_service_ip = None
-    web_service_port = None
-    web_service_socket = socket(AF_INET, SOCK_STREAM)
+    def __init__(self, ip, port, client):
+        self.ip = ip
+        self.port = port
+        self.url = f'http://{self.ip}:{self.port}'
+        self.client = client
 
-    def __init__(self, ip, port):
-        self.web_service_ip = ip
-        self.web_service_port = port
-        self.connectWebService()
+    async def getRequest(self, url, params=None):
+        async with self.client.get(url, params=params) as resp:
+            js = await resp.json()
+            return js
 
-    def connectWebService(self):
-        self.web_service_socket.connect((self.web_service_ip, self.web_service_port))
+    async def postRequest(self, url, data):
+        async with self.client.post(url, json=data) as resp:
+            js = await resp.json()
+            return js
 
-    def sendAndRecvData(self, data):
-        self.web_service_socket.sendall(json.dumps(data).encode())
-        data = self.web_service_socket.recv(1024).decode()
-        return json.loads(data)
+    async def quoteRequest(self, params):
+        trans_num, _, user_id, stock_symbol = params
+        url = f'{self.url}/quote/trans/{trans_num}/user/{user_id}/stock/{stock_symbol}'
 
-    def addFundsRequest(self, server_url, params):
-        trans_num, command, user_id, amount = params
+        result = await self.getRequest(url)
+        return result
 
-        data = {
-            'transaction_num': trans_num,
-            'command': command,
-            'user_id': user_id,
-            'amount': amount
-        }
-        resp = self.sendAndRecvData(data)
-        # resp = requests.post(f'{server_url}/add/funds/', json=data)
+    async def displaySummary(self, params):
+        trans_num, _, user_id = params
+        url = f'{self.url}/display_summary/trans/{trans_num}/user/{user_id}'
 
-        return resp
+        result = await self.getRequest(url)
+        return result
 
-    def quoteRequest(self, server_url, params):
-        trans_num, command, user_id, stock_symbol = params
-
-        data = {
-            'transaction_num': trans_num,
-            'command': command,
-            'user_id': user_id,
-            'stock_symbol': stock_symbol
-        }
-        # resp = requests.get(f'{server_url}/quote/{user_id}/{stock_symbol}/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
-
-    def displaySummary(self, server_url, params):
-        trans_num, command, user_id = params
-        data = {
-            'transaction_num': trans_num,
-            'command': command,
-            'user_id': user_id
-        }
-        # resp = requests.get(f'{server_url}/summary/{user_id}/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
-
-    def dumplog(self, server_url, params):
+    async def dumplog(self, params):
+        request_params = {}
         if len(params) == 3:
-            trans_num, command, filename = params
-            data = {
-                'transaction_num': trans_num,
-                'command': command,
-                'filename': filename
-            }
-            # resp = requests.get(f'{server_url}/dumplog/', json=data)
-            resp = self.sendAndRecvData(data)
-            return resp
-        elif len(params) == 4:
-            trans_num, command, user_id, filename = params
-            data = {
-                'transaction_num': trans_num,
-                'command': command,
-                'user_id': user_id,
-                'filename': filename
-            }
-            # resp = requests.get(f'{server_url}/dumplog/{user_id}/', json=data)
-            resp = self.sendAndRecvData(data)
-            return resp
+            trans_num, _, filename = params
         else:
-            return None
+            trans_num, _, user_id, filename = params
+            request_params['user_id'] = user_id
+
+        url = f'{self.url}/dumplog/trans/{trans_num}/file/{filename}'
+
+        result = await self.getRequest(url, request_params)
+        return result
+
+    async def addFundsRequest(self, params):
+        trans_num, _, user_id, amount = params
+        data = {
+            'transaction_num': trans_num,
+            'user_id': user_id,
+            'amount': float(amount)
+        }
+        url = f'{self.url}/add'
+
+        result = await self.postRequest(url, data)
+        return result
 
     # BUY REQUESTS --------------------------------------------
-    def buyRequest(self, server_url, params):
-        trans_num, command, user_id, stock_symbol, amount = params
+    async def buyRequest(self, params):
+        trans_num, _, user_id, stock_symbol, amount = params
         data = {
             'transaction_num': trans_num,
-            'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol,
-            'amount': amount
+            'amount': float(amount)
         }
-        # resp = requests.post(f'{server_url}/buy/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
+        url = f'{self.url}/buy'
 
-    def commitBuyRequest(self, server_url, params):
-        trans_num, command, user_id = params
+        result = await self.postRequest(url, data)
+        return result
+
+    def commitBuyRequest(self, params):
+        trans_num, _, user_id = params
         data = {
             'transaction_num': trans_num,
-            'command': command,
             'user_id': user_id
         }
-        # resp = requests.post(f'{server_url}/buy/commit/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
+        url = f'{self.url}/commit_buy'
 
-    def cancelBuyRequest(self, server_url, params):
-        trans_num, command, user_id = params
+        result = self.postRequest(url, data)
+        return result
+
+
+    def cancelBuyRequest(self, params):
+        trans_num, _, user_id = params
         data = {
             'transaction_num': trans_num,
-            'command': command,
             'user_id': user_id
         }
-        # resp = requests.post(f'{server_url}/cancel/buy/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
+        url = f'{self.url}/cancel_buy'
 
-    def setBuyAmountRequest(self, server_url, params):
-        trans_num, command, user_id, stock_symbol, amount = params
+        result = self.postRequest(url, data)
+        return result
+
+
+    def setBuyAmountRequest(self, params):
+        trans_num, _, user_id, stock_symbol, amount = params
         data = {
             'transaction_num': trans_num,
-            'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol,
-            'amount': amount
+            'amount': float(amount)
         }
-        # resp = requests.post(f'{server_url}/set/buy/amount/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
+        url = f'{self.url}/set_buy_amount'
 
-    def cancelSetBuyRequest(self, server_url, params):
-        trans_num, command, user_id, stock_symbol = params
+        result = self.postRequest(url, data)
+        return result
+
+    def setBuyTriggerRequest(self, params):
+        trans_num, _, user_id, stock_symbol, amount = params
         data = {
             'transaction_num': trans_num,
-            'command': command,
+            'user_id': user_id,
+            'stock_symbol': stock_symbol,
+            'amount': float(amount)
+        }
+        url = f'{self.url}/set_buy_trigger'
+
+        result = self.postRequest(url, data)
+        return result
+
+    def cancelSetBuyRequest(self, params):
+        trans_num, _, user_id, stock_symbol = params
+        data = {
+            'transaction_num': trans_num,
             'user_id': user_id,
             'stock_symbol': stock_symbol
         }
-        # resp = requests.post(f'{server_url}/cancel/set/buy/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
+        url = f'{self.url}/cancel_set_buy'
 
-    def setBuyTriggerRequest(self, server_url, params):
-        trans_num, command, user_id, stock_symbol, amount = params
-        data = {
-            'transaction_num': trans_num,
-            'command': command,
-            'user_id': user_id,
-            'stock_symbol': stock_symbol,
-            'amount': amount
-        }
-        # resp = requests.post(f'{server_url}/set/buy/trigger/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
+        result = self.postRequest(url, data)
+        return result
 
     # --------------------------------------------------------------
 
-    # BUY REQUESTS --------------------------------------------
-    def cancelSellRequest(self, server_url, params):
-        trans_num, command, user_id = params
+    # SELL REQUESTS --------------------------------------------
+    def sellRequest(self, params):
+        trans_num, _, user_id, stock_symbol, amount = params
         data = {
             'transaction_num': trans_num,
-            'command': command,
-            'user_id': user_id
-        }
-        # resp = requests.post(f'{server_url}/cancel/sell/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
-
-    def commitSellRequest(self, server_url, params):
-        trans_num, command, user_id = params
-        data = {
-            'transaction_num': trans_num,
-            'command': command,
-            'user_id': user_id
-        }
-        # resp = requests.post(f'{server_url}/buy/commit/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
-
-    def sellRequest(self, server_url, params):
-        trans_num, command, user_id, stock_symbol, amount = params
-        data = {
-            'transaction_num': trans_num,
-            'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol,
-            'amount': amount
+            'amount': float(amount)
         }
-        # resp = requests.post(f'{server_url}/sell/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
+        url = f'{self.url}/sell'
 
-    def setSellAmountRequest(self, server_url, params):
-        trans_num, command, user_id, stock_symbol, amount = params
+        result = self.postRequest(url, data)
+        return result
+
+    def commitSellRequest(self, params):
+        trans_num, _, user_id = params
         data = {
             'transaction_num': trans_num,
-            'command': command,
+            'user_id': user_id
+        }
+        url = f'{self.url}/commit_sell'
+
+        result = self.postRequest(url, data)
+        return result
+
+    def cancelSellRequest(self, params):
+        trans_num, _, user_id = params
+        data = {
+            'transaction_num': trans_num,
+            'user_id': user_id
+        }
+        url = f'{self.url}/cancel_sell'
+
+        result = self.postRequest(url, data)
+        return result
+
+    def setSellAmountRequest(self, params):
+        trans_num, _, user_id, stock_symbol, amount = params
+        data = {
+            'transaction_num': trans_num,
             'user_id': user_id,
             'stock_symbol': stock_symbol,
-            'amount': amount
+            'amount': float(amount)
         }
-        # resp = requests.post(f'{server_url}/set/sell/amount/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
+        url = f'{self.url}/set_sell_amount'
 
-    def cancelSetSellRequest(self, server_url, params):
-        trans_num, command, user_id, stock_symbol = params
+        result = self.postRequest(url, data)
+        return result
+
+    def setSellTriggerRequest(self, params):
+        trans_num, _, user_id, stock_symbol, amount = params
         data = {
             'transaction_num': trans_num,
-            'command': command,
+            'user_id': user_id,
+            'stock_symbol': stock_symbol,
+            'amount': float(amount)
+        }
+        url = f'{self.url}/set_sell_trigger'
+
+        result = self.postRequest(url, data)
+        return result
+
+    def cancelSetSellRequest(self, params):
+        trans_num, _, user_id, stock_symbol = params
+        data = {
+            'transaction_num': trans_num,
             'user_id': user_id,
             'stock_symbol': stock_symbol
         }
-        # resp = requests.post(f'{server_url}/cancel/set/sell/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
+        url = f'{self.url}/cancel_set_sell'
 
-    def setSellTriggerRequest(self, server_url, params):
-        trans_num, command, user_id, stock_symbol, amount = params
-        data = {
-            'transaction_num': trans_num,
-            'command': command,
-            'user_id': user_id,
-            'stock_symbol': stock_symbol,
-            'amount': amount
-        }
-        # resp = requests.post(f'{server_url}/set/buy/trigger/', json=data)
-        resp = self.sendAndRecvData(data)
-        return resp
+        result = self.postRequest(url, data)
+        return result
     # --------------------------------------------------------------

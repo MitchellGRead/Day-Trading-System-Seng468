@@ -1,11 +1,10 @@
-from UserCommands import UserCommands
 import datetime
-
+import asyncio
+import aiohttp
+import config
+from UserCommands import UserCommands
 
 CURRENT_FILE_NAME = "./1_user_workload.txt"
-WEBSERVER_IP, WEBSERVER_PORT = "localhost", 5000
-WEBSERVER_URL = f'{WEBSERVER_IP}:{WEBSERVER_PORT}'
-
 
 def readWorkloadFile():
     with open(CURRENT_FILE_NAME, "r") as workload:
@@ -13,72 +12,74 @@ def readWorkloadFile():
     return contents.split('\n')
 
 
-def main():
+async def main():
     workload_actions = readWorkloadFile()
     user_commands = [command.split(' ')[1] for command in workload_actions]
     params = [[idx, *command.split(',')] for idx, command in enumerate(user_commands, 1)]
-    command_sender = UserCommands(WEBSERVER_IP, WEBSERVER_PORT)
 
-    print(params)
+    client = aiohttp.ClientSession()
+    command_sender = UserCommands(config.WEB_SERVER_IP, config.WEB_SERVER_PORT, client)
+
     for param in params:
         command = param[1]
 
         if command == 'ADD':
-            resp = command_sender.addFundsRequest(WEBSERVER_URL, param)
+            resp = await command_sender.addFundsRequest(param)
             print(resp)
         elif command == 'QUOTE':
-            resp = command_sender.quoteRequest(WEBSERVER_URL, param)
+            resp = await command_sender.quoteRequest(param)
             print(resp)
         elif command == 'BUY':
-            resp = command_sender.buyRequest(WEBSERVER_URL, param)
+            resp = await command_sender.buyRequest(param)
             print(resp)
         elif command == 'COMMIT_BUY':
-            resp = command_sender.commitBuyRequest(WEBSERVER_URL, param)
+            resp = await command_sender.commitBuyRequest(param)
             print(resp)
         elif command == 'CANCEL_BUY':
-            resp = command_sender.cancelBuyRequest(WEBSERVER_URL, param)
+            resp = await command_sender.cancelBuyRequest(param)
             print(resp)
         elif command == 'SET_BUY_AMOUNT':
-            resp = command_sender.setBuyAmountRequest(WEBSERVER_URL, param)
+            resp = await command_sender.setBuyAmountRequest(param)
             print(resp)
         elif command == 'CANCEL_SET_BUY':
-            resp = command_sender.cancelSetBuyRequest(WEBSERVER_URL, param)
+            resp = await command_sender.cancelSetBuyRequest(param)
             print(resp)
         elif command == 'SET_BUY_TRIGGER':
-            resp = command_sender.setBuyTriggerRequest(WEBSERVER_URL, param)
+            resp = await command_sender.setBuyTriggerRequest(param)
             print(resp)
         elif command == 'SELL':
-            resp = command_sender.sellRequest(WEBSERVER_URL, param)
+            resp = await command_sender.sellRequest(param)
             print(resp)
         elif command == 'COMMIT_SELL':
-            resp = command_sender.commitSellRequest(WEBSERVER_URL, param)
+            resp = await command_sender.commitSellRequest(param)
             print(resp)
         elif command == 'CANCEL_SELL':
-            resp = command_sender.cancelSellRequest(WEBSERVER_URL, param)
+            resp = await command_sender.cancelSellRequest(param)
             print(resp)
         elif command == 'SET_SELL_AMOUNT':
-            resp = command_sender.setSellAmountRequest(WEBSERVER_URL, param)
+            resp = await command_sender.setSellAmountRequest(param)
             print(resp)
         elif command == 'CANCEL_SET_SELL':
-            resp = command_sender.cancelSetSellRequest(WEBSERVER_URL, param)
+            resp = await command_sender.cancelSetSellRequest(param)
             print(resp)
         elif command == 'SET_SELL_TRIGGER':
-            resp = command_sender.setSellTriggerRequest(WEBSERVER_URL, param)
+            resp = await command_sender.setSellTriggerRequest(param)
             print(resp)
         elif command == 'DISPLAY_SUMMARY':
-            resp = command_sender.displaySummary(WEBSERVER_URL, param)
+            resp = await command_sender.displaySummary(param)
             print(resp)
         elif command == 'DUMPLOG':
-            resp = command_sender.dumplog(WEBSERVER_URL, param)
+            resp = await command_sender.dumplog(param)
             print(resp)
         else:
             print(f'INVALID COMMAND: {command}')
 
+    await client.close()
     return
 
 
 if __name__ == "__main__":
     start = datetime.datetime.now()
-    main()
+    asyncio.run(main())
     end = datetime.datetime.now()
     print("Execution Time: " + str((end-start).total_seconds()*1000) + " ms")
