@@ -63,7 +63,7 @@ def checkDB(connection):
                      "trigger float4," \
                      "amount float4," \
                      "constraint user_id FOREIGN KEY (user_id) REFERENCES users(user_id)," \
-                     "PRIMARY KEY (user_id, stock_id, type)"
+                     "PRIMARY KEY (user_id, stock_id, type));"
 
     executeQuery(connection, createUser)
     executeQuery(connection, createAccounts)

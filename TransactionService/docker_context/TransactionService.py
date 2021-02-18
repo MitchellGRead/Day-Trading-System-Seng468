@@ -410,70 +410,36 @@ if __name__ == "__main__":
 
         # Not Implemented
         elif command == "SET_BUY_AMOUNT":
-            response = 1
-            auditHandler.handleErrorEvent(
-                transaction_num=data['transaction_num'],
-                command=command,
-                error_msg=f'command {command} received, however not implemented',
-                user_name=data['user_id'],
-                stock_symbol=data['stock_symbol'],
-                funds=data['amount']
-            )
+            response = setBuyAmount(data["user_id"], data["stock_symbol"], data["amount"])
+            # Do success
+            # Do error
             print("received set buy amount command")
         elif command == "SET_BUY_TRIGGER":
-            auditHandler.handleErrorEvent(
-                transaction_num=data['transaction_num'],
-                command=command,
-                error_msg=f'command {command} received, however not implemented',
-                user_name=data['user_id'],
-                stock_symbol=data['stock_symbol'],
-                funds=data['amount']
-            )
-            response = 1
+            response = setBuyTrigger(data["user_id"], data["stock_symbol"], data["amount"])
+            # Do success
+            # Do error
             print("received set buy trigger command")
         elif command == "CANCEL_SET_BUY":
-            auditHandler.handleErrorEvent(
-                transaction_num=data['transaction_num'],
-                command=command,
-                error_msg=f'command {command} received, however not implemented',
-                user_name=data['user_id'],
-                stock_symbol=data['stock_symbol']
-            )
-            response = 1
+            response = cancelSetBuy(data["user_id"], data["stock_symbol"])
+            # Do success
+            # Do error
             print("received cancel set buy command")
 
         # Not Implemented
         elif command == "SET_SELL_AMOUNT":
-            auditHandler.handleErrorEvent(
-                transaction_num=data['transaction_num'],
-                command=command,
-                error_msg=f'command {command} received, however not implemented',
-                user_name=data['user_id'],
-                stock_symbol=data['stock_symbol'],
-                funds=data['amount']
-            )
-            response = 1
+            response = setSellAmount(data["user_id"], data["stock_symbol"], data["amount"])
+            # Do success
+            # Do error
             print("received set sell amount command")
         elif command == "SET_SELL_TRIGGER":
-            auditHandler.handleErrorEvent(
-                transaction_num=data['transaction_num'],
-                command=command,
-                error_msg=f'command {command} received, however not implemented',
-                user_name=data['user_id'],
-                stock_symbol=data['stock_symbol'],
-                funds=data['amount']
-            )
-            response = 1
+            response = setSellTrigger(data["user_id"], data["stock_symbol"], data["amount"])
+            # Do success
+            # Do error
             print("received set sell trigger command")
         elif command == "CANCEL_SET_SELL":
-            auditHandler.handleErrorEvent(
-                transaction_num=data['transaction_num'],
-                command=command,
-                error_msg=f'command {command} received, however not implemented',
-                user_name=data['user_id'],
-                stock_symbol=data['stock_symbol']
-            )
-            response = 1
+            response = cancelSetSell(data["user_id"], data["stock_symbol"])
+            # Do success
+            # Do error
             print("received cancel set sell command")
 
         else:
