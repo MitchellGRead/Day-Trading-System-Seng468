@@ -131,6 +131,7 @@ error_event_schema = {
         'user_id': {'type': 'string'},
         'stock_symbol': one_to_three_letter_string,
         'amount': non_negative_number,
+        'filename': {'type': 'string'}
     },
     'required': [
         'server',
