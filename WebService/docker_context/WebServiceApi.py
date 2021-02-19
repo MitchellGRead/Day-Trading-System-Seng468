@@ -141,7 +141,7 @@ async def cancelBuyTrigger(request):
 
 # SELL ENDPOINTS -----------------------------------------------
 @app.route(endpoints.sell_endpoint, methods=['POST'])
-async def buyStock(request):
+async def sellStock(request):
     res, err = validateRequest(request.json, sell_schema)
     if not res:
         return response.json(errorResult(err, request.json), status=400)
@@ -152,7 +152,7 @@ async def buyStock(request):
 
 
 @app.route(endpoints.commit_sell_endpoint, methods=['POST'])
-async def commitBuy(request):
+async def commitSell(request):
     res, err = validateRequest(request.json, commit_sell_schema)
     if not res:
         return response.json(errorResult(err, request.json), status=400)
@@ -163,7 +163,7 @@ async def commitBuy(request):
 
 
 @app.route(endpoints.cancel_sell_endpoint, methods=['POST'])
-async def cancelBuy(request):
+async def cancelSell(request):
     res, err = validateRequest(request.json, cancel_sell_schema)
     if not res:
         return response.json(errorResult(err, request.json), status=400)
@@ -177,7 +177,7 @@ async def cancelBuy(request):
 
 # SELL TRIGGER ENDPOINTS ---------------------------------------
 @app.route(endpoints.set_sell_amount_endpoint, methods=['POST'])
-async def setBuyAmount(request):
+async def setSellAmount(request):
     res, err = validateRequest(request.json, set_sell_amount_schema)
     if not res:
         return response.json(errorResult(err, request.json), status=400)
@@ -188,7 +188,7 @@ async def setBuyAmount(request):
 
 
 @app.route(endpoints.set_sell_trigger_endpoint, methods=['POST'])
-async def setBuyTrigger(request):
+async def setSellTrigger(request):
     res, err = validateRequest(request.json, set_sell_trigger_schema)
     if not res:
         return response.json(errorResult(err, request.json), status=400)
@@ -199,7 +199,7 @@ async def setBuyTrigger(request):
 
 
 @app.route(endpoints.cancel_set_sell_endpoint, methods=['POST'])
-async def cancelBuyTrigger(request):
+async def cancelSellTrigger(request):
     res, err = validateRequest(request.json, cancel_set_sell_schema)
     if not res:
         return response.json(errorResult(err, request.json), status=400)
