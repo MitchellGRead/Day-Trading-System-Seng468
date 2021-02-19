@@ -1,5 +1,5 @@
 
-user_command_endpoint = '/user_command_event'
-system_endpoint = '/system_event'
-quote_server_endpoint = '/quote_server_event'
-error_endpoint = '/error_event'
+user_command_endpoint = '/event/user_command'
+system_endpoint = '/event/system'
+quote_server_endpoint = '/event/quote'
+error_endpoint = '/event/error'

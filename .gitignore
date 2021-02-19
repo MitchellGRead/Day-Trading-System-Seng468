@@ -2,5 +2,6 @@ venv/
 .idea/
 */__pycache__/
 */*/__pycache__/
+*/*/*/__pycache__/
 /AuditService/logfiles/*
 /EXE's/dump.rdb

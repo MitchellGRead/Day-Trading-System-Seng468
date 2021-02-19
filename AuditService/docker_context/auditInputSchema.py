@@ -9,7 +9,7 @@ def validateRequest(data, schema):
         validate(instance=data, schema=schema)
         return True, ''
     except ValidationError as err:
-        return False, str(err)
+        return False, err.message
 
 
 def errorResult(err, data):
@@ -27,7 +27,7 @@ one_to_three_letter_string = {
 
 non_negative_number = {
     'type': 'number',
-    'inclusiveMinimum': 0
+    'minimum': 0
 }
 
 user_command_event_schema = {
@@ -42,7 +42,7 @@ user_command_event_schema = {
         'amount': non_negative_number,
         'filename': {'type': 'string'}
     },
-    'oneOf': [
+    'anyOf': [
         {
             'required': [  # Regular stock commands
                 'server',
@@ -61,6 +61,14 @@ user_command_event_schema = {
                 'transaction_num',
                 'command',
                 'filename'
+            ]
+        },
+        {
+            'required': [
+                'server',
+                'timestamp',
+                'transaction_num',
+                'user_id'
             ]
         },
         {
@@ -131,6 +139,7 @@ error_event_schema = {
         'user_id': {'type': 'string'},
         'stock_symbol': one_to_three_letter_string,
         'amount': non_negative_number,
+        'filename': {'type': 'string'}
     },
     'required': [
         'server',
