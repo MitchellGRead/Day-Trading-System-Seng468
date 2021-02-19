@@ -27,7 +27,7 @@ one_to_three_letter_string = {
 
 non_negative_number = {
     'type': 'number',
-    'inclusiveMinimum': 0
+    'minimum': 0
 }
 
 base_transaction_schema = {
@@ -42,19 +42,20 @@ base_transaction_schema = {
 }
 
 
-base_user_schema = {
+base_user_symbol_schema = {
     'type': 'object',
     'properties': {
         'transaction_num': {'type': 'integer'},
-        'user_id': {'type': 'string'}
+        'user_id': {'type': 'string'},
+        'stock_symbol': one_to_three_letter_string
     },
-    'required': ['transaction_num', 'user_id']
+    'required': ['transaction_num', 'user_id', 'stock_symbol']
 }
 
 set_buy_amount_schema = base_transaction_schema
 set_buy_trigger_schema = base_transaction_schema
-cancel_buy_trigger_schema = base_user_schema
+cancel_buy_trigger_schema = base_user_symbol_schema
 
 set_sell_amount_schema = base_transaction_schema
 set_sell_trigger_schema = base_transaction_schema
-cancel_sell_trigger_schema = base_user_schema
+cancel_sell_trigger_schema = base_user_symbol_schema

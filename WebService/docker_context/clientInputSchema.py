@@ -19,20 +19,25 @@ def errorResult(err, data):
     }
 
 
+one_to_three_letter_string = {
+    'type': 'string',
+    'minLength': 1,
+    'maxLength': 3
+}
+
+non_negative_number = {
+    'type': 'number',
+    'minimum': 0
+}
+
+
 base_transaction_schema = {
     'type': 'object',
     'properties': {
         'transaction_num': {'type': 'integer'},
         'user_id': {'type': 'string'},
-        'stock_symbol': {
-            'type': 'string',
-            'minLength': 1,
-            'maxLength': 3
-        },
-        'amount': {
-            'type': 'number',
-            'inclusiveMinimum': 0
-        }
+        'stock_symbol': one_to_three_letter_string,
+        'amount': non_negative_number
     },
     'required': ['transaction_num', 'user_id', 'stock_symbol', 'amount']
 }
@@ -47,6 +52,16 @@ base_user_schema = {
     'required': ['transaction_num', 'user_id']
 }
 
+base_user_symbol_schema = {
+    'type': 'object',
+    'properties': {
+        'transaction_num': {'type': 'integer'},
+        'user_id': {'type': 'string'},
+        'stock_symbol': one_to_three_letter_string
+    },
+    'required': ['transaction_num', 'user_id', 'stock_symbol']
+}
+
 # Buy Schemas --------------------------------------------------
 
 buy_schema = base_transaction_schema
@@ -54,7 +69,7 @@ commit_buy_schema = base_user_schema
 cancel_buy_schema = base_user_schema
 set_buy_amount_schema = base_transaction_schema
 set_buy_trigger_schema = base_transaction_schema
-cancel_set_buy_schema = base_user_schema
+cancel_set_buy_schema = base_user_symbol_schema
 
 # --------------------------------------------------------------
 
@@ -65,7 +80,7 @@ commit_sell_schema = base_user_schema
 cancel_sell_schema = base_user_schema
 set_sell_amount_schema = base_transaction_schema
 set_sell_trigger_schema = base_transaction_schema
-cancel_set_sell_schema = base_user_schema
+cancel_set_sell_schema = base_user_symbol_schema
 
 # --------------------------------------------------------------
 
@@ -76,10 +91,7 @@ add_schema = {
     'properties': {
         'transaction_num': {'type': 'integer'},
         'user_id': {'type': 'string'},
-        'amount': {
-            'type': 'number',
-            'inclusiveMinimum': 0
-        }
+        'amount': non_negative_number
     },
     'required': ['transaction_num', 'user_id', 'amount']
 }
@@ -93,11 +105,7 @@ quote_schema = {
     'properties': {
         'transaction_num': {'type': 'integer'},
         'user_id': {'type': 'string'},
-        'stock_symbol': {
-            'type': 'string',
-            'minLength': 1,
-            'maxLength': 3
-        }
+        'stock_symbol': one_to_three_letter_string
     },
     'required': ['transaction_num', 'user_id', 'stock_symbol']
 }
