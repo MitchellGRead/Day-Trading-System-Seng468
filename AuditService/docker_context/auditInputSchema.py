@@ -27,7 +27,7 @@ one_to_three_letter_string = {
 
 non_negative_number = {
     'type': 'number',
-    'inclusiveMinimum': 0
+    'minimum': 0
 }
 
 user_command_event_schema = {
@@ -42,7 +42,7 @@ user_command_event_schema = {
         'amount': non_negative_number,
         'filename': {'type': 'string'}
     },
-    'oneOf': [
+    'anyOf': [
         {
             'required': [  # Regular stock commands
                 'server',
@@ -61,6 +61,14 @@ user_command_event_schema = {
                 'transaction_num',
                 'command',
                 'filename'
+            ]
+        },
+        {
+            'required': [
+                'server',
+                'timestamp',
+                'transaction_num',
+                'user_id'
             ]
         },
         {
