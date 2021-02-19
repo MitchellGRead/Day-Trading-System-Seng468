@@ -2,6 +2,7 @@ import aiohttp
 import config
 from sanic.log import logger
 from audit.AuditHandler import AuditHandler
+from ServiceLogic import ServiceLogic
 
 
 async def initClient(app, loop):
@@ -20,4 +21,12 @@ def initAudit(app, loop):
         config.WEB_SERVER_NAME,
         config.AUDIT_SERVER_IP,
         config.AUDIT_SERVER_PORT
+    )
+
+
+def initServiceLogic(app, loop):
+    logger.debug('Creating api logic handler')
+    app.config['logic'] = ServiceLogic(
+        app.config['client'],
+        app.config['audit']
     )
