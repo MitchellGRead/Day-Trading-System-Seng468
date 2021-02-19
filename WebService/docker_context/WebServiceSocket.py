@@ -3,7 +3,7 @@ import json
 from time import sleep
 import pickle
 
-from AuditHandler import AuditHandler
+from WebService.docker_context.audit.AuditHandler import AuditHandler
 
 server_name = 'WebService'
 
