@@ -22,7 +22,12 @@ class ServiceLogic:
         )
 
     async def handleQuote(self, data):
-        # Auditing is handled in transaction service
+        await self.audit.handleUserCommand(
+            trans_num=data['transaction_num'],
+            command=data['command'],
+            user_id=data['user_id'],
+            stock_symbol=data['stock_symbol']
+        )
         # TODO send command to transaction service
         return
 
