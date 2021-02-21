@@ -1,5 +1,6 @@
 import os
 
+
 class XmlWriter:
     SAVE_PATH = 'logfiles/'
 
@@ -11,74 +12,74 @@ class XmlWriter:
 
     def writeUserCommand(self, event):
         log = self.writeCommon(event) + \
-              f'\t\t<command>{event.command}</command>\n'
+              f'\t\t<command>{event["command"]}</command>\n'
 
-        if event.funds:
-            log += f'\t\t<funds>{self.ensureTrailingZeros(event.funds)}</funds>\n'
-        if event.filename:
-            log += f'\t\t<filename>{event.filename}</filename>\n'
-        if event.stockSymbol:
-            log += f'\t\t<stockSymbol>{event.stockSymbol}</stockSymbol>\n'
+        if event.get('amount', ''):
+            log += f'\t\t<funds>{self.ensureTrailingZeros(event["amount"])}</funds>\n'
+        if event.get('filename', ''):
+            log += f'\t\t<filename>{event["filename"]}</filename>\n'
+        if event.get('stock_symbol', ''):
+            log += f'\t\t<stockSymbol>{event["stock_symbol"]}</stockSymbol>\n'
 
-        log += f'\t</{event.xmlName}>\n'
+        log += f'\t</{event["xmlName"]}>\n'
         return log
 
     def writeAccountTransaction(self, event):
         log = self.writeCommon(event) + \
-              f'\t\t<action>{event.action}</action>\n' \
-              f'\t\t<funds>{self.ensureTrailingZeros(event.funds)}</funds>\n' \
-              f'\t</{event.xmlName}>\n'
+              f'\t\t<action>{event["action"]}</action>\n' \
+              f'\t\t<funds>{self.ensureTrailingZeros(event["amount"])}</funds>\n' \
+              f'\t</{event["xmlName"]}>\n'
 
         return log
 
     def writeSystemEvent(self, event):
         log = self.writeCommon(event) + \
-              f'\t\t<command>{event.command}</command>\n'
+              f'\t\t<command>{event["command"]}</command>\n'
 
-        if event.stockSymbol:
-            log += f'\t\t<stockSymbol>{event.stockSymbol}</stockSymbol>\n'
-        if event.funds:
-            log += f'\t\t<funds>{self.ensureTrailingZeros(event.funds)}</funds>\n'
-        if event.filename:
-            log += f'\t\t<filename>{event.filename}</filename>\n'
+        if event.get('stock_symbol', ''):
+            log += f'\t\t<stockSymbol>{event["stock_symbol"]}</stockSymbol>\n'
+        if event.get('amount', ''):
+            log += f'\t\t<funds>{self.ensureTrailingZeros(event["amount"])}</funds>\n'
+        if event.get('filename', ''):
+            log += f'\t\t<filename>{event["filename"]}</filename>\n'
 
-        log += f'\t</{event.xmlName}>\n'
+        log += f'\t</{event["xmlName"]}>\n'
 
         return log
 
     def writeQuoteServerEvent(self, event):
         log = self.writeCommon(event) + \
-              f'\t\t<quoteServerTime>{event.quoteServerTimestamp}</quoteServerTime>\n' \
-              f'\t\t<stockSymbol>{event.stockSymbol}</stockSymbol>\n' \
-              f'\t\t<price>{self.ensureTrailingZeros(event.price)}</price>\n' \
-              f'\t\t<cryptokey>{event.cryptoKey}</cryptokey>\n' \
-              f'\t</{event.xmlName}>\n'
+              f'\t\t<quoteServerTime>{event["quote_server_timestamp"]}</quoteServerTime>\n' \
+              f'\t\t<stockSymbol>{event["stock_symbol"]}</stockSymbol>\n' \
+              f'\t\t<price>{self.ensureTrailingZeros(event["price"])}</price>\n' \
+              f'\t\t<cryptokey>{event["cryptokey"]}</cryptokey>\n' \
+              f'\t</{event["xmlName"]}>\n'
 
         return log
 
     def writeErrorEvent(self, event):
         log = self.writeCommon(event) + \
-            f'\t\t<errorMessage>{event.errorMessage}</errorMessage>\n' \
-            f'\t\t<command>{event.command}</command>\n'
+            f'\t\t<errorMessage>{event["error_msg"]}</errorMessage>\n' \
+            f'\t\t<command>{event["command"]}</command>\n'
 
-        if event.stockSymbol:
-            log += f'\t\t<stockSymbol>{event.stockSymbol}</stockSymbol>\n'
-        if event.filename:
-            log += f'\t\t<filename>{event.filename}</filename>\n'
-        if event.funds:
-            log += f'\t\t<funds>{self.ensureTrailingZeros(event.funds)}</funds>\n'
+        if event.get('stock_symbol', ''):
+            log += f'\t\t<stockSymbol>{event["stock_symbol"]}</stockSymbol>\n'
+        if event.get('filename', ''):
+            log += f'\t\t<filename>{event["filename"]}</filename>\n'
+        if event.get('amount', ''):
+            log += f'\t\t<funds>{self.ensureTrailingZeros(event["amount"])}</funds>\n'
 
-        log += f'\t</{event.xmlName}>\n'
+        log += f'\t</{event["xmlName"]}>\n'
         return log
 
     def writeCommon(self, event):
-        log = f'\t<{event.xmlName}>\n' \
-               f'\t\t<timestamp>{event.timestamp}</timestamp>\n' \
-               f'\t\t<server>{event.server}</server>\n' \
-               f'\t\t<transactionNum>{event.transactionNumber}</transactionNum>\n'
+        log = f'\t<{event["xmlName"]}>\n' \
+               f'\t\t<timestamp>{event["timestamp"]}</timestamp>\n' \
+               f'\t\t<server>{event["server"]}</server>\n' \
+               f'\t\t<transactionNum>{event["transaction_num"]}</transactionNum>\n'
 
-        if event.userName:
-            log += f'\t\t<username>{event.userName}</username>\n'
+        if event.get('user_id', ''):
+            log += f'\t\t<username>{event["user_id"]}</username>\n'
 
         return log
 
@@ -90,7 +91,7 @@ class XmlWriter:
                  '<log>\n'
 
         for event in audit_events:
-            xml_tag = event.xmlName
+            xml_tag = event['xmlName']
             if xml_tag == 'userCommand':
                 content += self.writeUserCommand(event)
             elif xml_tag == 'accountTransaction':
