@@ -14,11 +14,11 @@ class XmlWriter:
         log = self.writeCommon(event) + \
               f'\t\t<command>{event["command"]}</command>\n'
 
-        if event.get('amount', ''):
+        if 'amount' in event:
             log += f'\t\t<funds>{self.ensureTrailingZeros(event["amount"])}</funds>\n'
-        if event.get('filename', ''):
+        if 'filename' in event:
             log += f'\t\t<filename>{event["filename"]}</filename>\n'
-        if event.get('stock_symbol', ''):
+        if 'stock_symbol' in event:
             log += f'\t\t<stockSymbol>{event["stock_symbol"]}</stockSymbol>\n'
 
         log += f'\t</{event["xmlName"]}>\n'
@@ -36,11 +36,11 @@ class XmlWriter:
         log = self.writeCommon(event) + \
               f'\t\t<command>{event["command"]}</command>\n'
 
-        if event.get('stock_symbol', ''):
+        if 'stock_symbol' in event:
             log += f'\t\t<stockSymbol>{event["stock_symbol"]}</stockSymbol>\n'
-        if event.get('amount', ''):
+        if 'amount' in event:
             log += f'\t\t<funds>{self.ensureTrailingZeros(event["amount"])}</funds>\n'
-        if event.get('filename', ''):
+        if 'filename' in event:
             log += f'\t\t<filename>{event["filename"]}</filename>\n'
 
         log += f'\t</{event["xmlName"]}>\n'
@@ -62,11 +62,11 @@ class XmlWriter:
             f'\t\t<errorMessage>{event["error_msg"]}</errorMessage>\n' \
             f'\t\t<command>{event["command"]}</command>\n'
 
-        if event.get('stock_symbol', ''):
+        if 'stock_symbol' in event:
             log += f'\t\t<stockSymbol>{event["stock_symbol"]}</stockSymbol>\n'
-        if event.get('filename', ''):
+        if 'filename' in event:
             log += f'\t\t<filename>{event["filename"]}</filename>\n'
-        if event.get('amount', ''):
+        if 'amount' in event:
             log += f'\t\t<funds>{self.ensureTrailingZeros(event["amount"])}</funds>\n'
 
         log += f'\t</{event["xmlName"]}>\n'
@@ -78,7 +78,7 @@ class XmlWriter:
                f'\t\t<server>{event["server"]}</server>\n' \
                f'\t\t<transactionNum>{event["transaction_num"]}</transactionNum>\n'
 
-        if event.get('user_id', ''):
+        if 'user_id' in event:
             log += f'\t\t<username>{event["user_id"]}</username>\n'
 
         return log
