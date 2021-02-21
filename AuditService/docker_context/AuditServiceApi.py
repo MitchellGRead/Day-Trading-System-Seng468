@@ -1,6 +1,5 @@
 
 from sanic import Sanic, response
-import aiohttp
 
 import config
 from auditInputSchema import *
@@ -15,6 +14,20 @@ async def userCommandEvent(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
+    data = request.json
+    data['xmlName'] = 'userCommand'
+    print(request.json)
+    return response.json(request.json)
+
+
+@app.route(endpoints.account_transaction_endpoint, methods=['POST'])
+async def accountTransactionEvent(request):
+    res, err = validateRequest(request.json, account_transaction_event_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    data['xmlName'] = 'accountTransaction'
     print(request.json)
     return response.json(request.json)
 
@@ -25,6 +38,8 @@ async def systemEvent(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
+    data = request.json
+    data['xmlName'] = 'systemEvent'
     print(request.json)
     return response.json(request.json)
 
@@ -35,6 +50,8 @@ async def quoteServerEvent(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
+    data = request.json
+    data['xmlName'] = 'quoteServer'
     print(request.json)
     return response.json(request.json)
 
@@ -45,6 +62,8 @@ async def errorEvent(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
+    data = request.json
+    data['xmlName'] = 'errorEvent'
     print(request.json)
     return response.json(request.json)
 

@@ -64,23 +64,34 @@ user_command_event_schema = {
             ]
         },
         {
-            'required': [
-                'server',
-                'timestamp',
-                'transaction_num',
-                'user_id'
-            ]
-        },
-        {
-            'required': [  # ADD commands
+            'required': [  # Display Summary, commit, and cancel commands
                 'server',
                 'timestamp',
                 'transaction_num',
                 'command',
-                'user_id',
-                'amount'
+                'user_id'
             ]
         }
+    ]
+}
+
+account_transaction_event_schema = {
+    'type': 'object',
+    'properties': {
+        'server': {'type': 'string'},
+        'timestamp': {'type': 'integer'},
+        'transaction_num': {'type': 'integer'},
+        'action': {'type': 'string'},  # add or remove
+        'user_id': {'type': 'string'},
+        'amount': non_negative_number
+    },
+    'required': [
+        'server',
+        'timestamp',
+        'transaction_num',
+        'action',
+        'user_id',
+        'amount'
     ]
 }
 
