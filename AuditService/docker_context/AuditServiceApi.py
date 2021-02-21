@@ -2,8 +2,9 @@
 from sanic import Sanic, response
 
 import config
-from auditInputSchema import *
 import endpoints
+import apiListeners
+from auditInputSchema import *
 
 app = Sanic(config.AUDIT_SERVER_NAME)
 
@@ -16,7 +17,7 @@ async def userCommandEvent(request):
 
     data = request.json
     data['xmlName'] = 'userCommand'
-    print(request.json)
+    app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
@@ -28,7 +29,7 @@ async def accountTransactionEvent(request):
 
     data = request.json
     data['xmlName'] = 'accountTransaction'
-    print(request.json)
+    app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
@@ -40,7 +41,7 @@ async def systemEvent(request):
 
     data = request.json
     data['xmlName'] = 'systemEvent'
-    print(request.json)
+    app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
@@ -52,7 +53,7 @@ async def quoteServerEvent(request):
 
     data = request.json
     data['xmlName'] = 'quoteServer'
-    print(request.json)
+    app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
@@ -64,11 +65,16 @@ async def errorEvent(request):
 
     data = request.json
     data['xmlName'] = 'errorEvent'
-    print(request.json)
+    app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
 if __name__ == '__main__':
+    app.register_listener(apiListeners.initClient, 'before_server_start')
+    app.register_listener(apiListeners.initServiceLogic, 'before_server_start')
+
+    app.register_listener(apiListeners.closeClient, 'before_server_stop')
+
     app.run(
         host=config.AUDIT_SERVER_IP,
         port=config.AUDIT_SERVER_PORT,
