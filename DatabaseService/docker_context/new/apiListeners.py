@@ -3,9 +3,10 @@ from handlers.PostgresHandler import PostgresHandler
 from ServiceLogic import ServiceLogic
 
 
-def initDbConnections(app, loop):
-    logger.debig('Creating database connections')
+async def initDbConnections(app, loop):
+    logger.debug('Creating database connections')
     app.config['psqlHandler'] = PostgresHandler(loop)
+    await app.config['psqlHandler'].initializePool()
 
 def initServiceLogic(app, loop):
     logger.debug('Creating api logic handler')
@@ -13,6 +14,6 @@ def initServiceLogic(app, loop):
         app.config['psqlHandler']
     )
 
-def closeDbConnections(app, loop):
+async def closeDbConnections(app, loop):
     logger.debug('Closing database connections')
-    app.config['psqlHandler'].closeConnection()
+    await app.config['psqlHandler'].closeConnection()

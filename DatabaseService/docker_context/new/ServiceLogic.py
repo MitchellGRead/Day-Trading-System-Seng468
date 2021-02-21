@@ -1,4 +1,4 @@
-
+#TODO: Return response code along with data
 class ServiceLogic:
 
     def __init__(self, postgresHandler):
@@ -16,14 +16,14 @@ class ServiceLogic:
         # TODO: Talk to both Postgres and Mongo to get the required data
         return None
 
-    async def handleAddFundsCommand(self, data):
-        result = await self.psqlHandler.handleAddFundsCommand(data)
+    async def handleAddFundsCommand(self, user_id, funds):
+        result = await self.psqlHandler.handleAddFundsCommand(user_id, funds)
         return result
 
-    async def handleBuyStocksCommand(self, data):
-        result = await self.psqlHandler.handleBuyStocksCommand(data)
+    async def handleBuyStocksCommand(self, user_id, stock_id, stock_num, funds):
+        result = await self.psqlHandler.handleBuyStocksCommand(user_id, stock_id, stock_num, funds)
         return result
 
-    async def handleSellStocksCommand(self, data):
-        result = await self.psqlHandler.handleSellStocksCommand(data)
+    async def handleSellStocksCommand(self, user_id, stock_id, stock_num, funds):
+        result = await self.psqlHandler.handleSellStocksCommand(user_id, stock_id, stock_num, funds)
         return result
