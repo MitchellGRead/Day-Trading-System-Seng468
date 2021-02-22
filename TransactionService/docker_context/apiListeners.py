@@ -1,6 +1,12 @@
 import aiohttp
 import aioredis
 import config
+from sanic.log import logger
+from handlers.AuditHandler import AuditHandler
+from handlers.BaseLogicHandler import BaseLogicHandler
+from handlers.LegacyStockServerHandler import LegacyStockServerHandler
+from handlers.RedisHandler import RedisHandler
+from ServiceLogic import ServiceLogic
 
 
 async def initClient(app, loop):
@@ -18,6 +24,42 @@ async def connectRedis(app, loop):
         maxsize=10,
         loop=loop
     )
+
+
+async def initRedisHandler(app, loop):
+    app.config['redisHandler'] = RedisHandler(app.config['redisPool'], app.config['client'], config.DATABASE_SERVER_IP,
+                                              config.DATABASE_SERVER_PORT)
+
+
+async def initAudit(app, loop):
+    logger.debug('Creating audit handler')
+    app.config['audit'] = AuditHandler(
+        app.config['client'],
+        config.WEB_SERVER_NAME,
+        config.AUDIT_SERVER_IP,
+        config.AUDIT_SERVER_PORT
+    )
+
+
+async def initLegacyStock(app, loop):
+    # stockHost = "192.168.4.2"
+    stockHost = 'dummy-stock-1'
+
+    stockPort = 4444
+    app.config['legacyStock'] = LegacyStockServerHandler(stockHost, stockPort, app.config['redisPool'],
+                                                         app.config['audit'])
+
+
+async def initBaseLogic(app, loop):
+    app.config['baseLogic'] = BaseLogicHandler(app.config['legacyStock'], app.config['redisPool'],
+                                               app.config['redisHandler'], app.config['audit'],
+                                               app.config['client'], config.DATABASE_SERVER_IP,
+                                               config.DATABASE_SERVER_PORT)
+
+
+async def initServiceLogic(app, loop):
+    app.config['serviceLogic'] = ServiceLogic(app.config['baseLogic'], app.config['redisHandler'],
+                                              app.config['legacyStock'])
 
 
 async def closeRedis(app, loop):
