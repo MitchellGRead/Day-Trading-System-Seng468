@@ -42,12 +42,8 @@ async def initAudit(app, loop):
 
 
 async def initLegacyStock(app, loop):
-    # stockHost = "192.168.4.2"
-    stockHost = 'dummy-stock-1'
-
-    stockPort = 4444
-    app.config['legacyStock'] = LegacyStockServerHandler(stockHost, stockPort, app.config['redisPool'],
-                                                         app.config['audit'])
+    app.config['legacyStock'] = LegacyStockServerHandler(config.LEGACY_STOCK_SERVER_IP, config.LEGACY_STOCK_SERVER_PORT,
+                                                         app.config['redisPool'], app.config['audit'])
 
 
 async def initBaseLogic(app, loop):
