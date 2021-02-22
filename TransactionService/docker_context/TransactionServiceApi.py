@@ -29,10 +29,10 @@ async def getQuote(request, trans_num, user_id, stock_symbol):
 # BUY ENDPOINTS ------------------------------------------------
 @app.route(endpoints.buy_endpoint, methods=['POST'])
 async def buyStock(request):
-    data = request.json
-    res, err = validateRequest(data, buy_schema)
+    res, err = validateRequest(request.json, buy_schema)
     if not res:
-        return response.json(errorResult(err, data), status=400)
+        return response.json(errorResult(err, request.json), status=400)
+    data = request.json
 
     data = app.config['serviceLogic'].buyStock(data['trans_num'], data['user_id'], data['stock_symbol'], data['amount'])
 
@@ -41,10 +41,10 @@ async def buyStock(request):
 
 @app.route(endpoints.commit_buy_endpoint, methods=['POST'])
 async def commitBuy(request):
-    data = request.json
-    res, err = validateRequest(data, commit_buy_schema)
+    res, err = validateRequest(request.json, commit_buy_schema)
     if not res:
-        return response.json(errorResult(err, data), status=400)
+        return response.json(errorResult(err, request.json), status=400)
+    data = request.json
 
     data = app.config['serviceLogic'].commitBuy(data['trans_num'], data['user_id'])
 
@@ -53,10 +53,10 @@ async def commitBuy(request):
 
 @app.route(endpoints.cancel_buy_endpoint, methods=['POST'])
 async def cancelBuy(request):
-    data = request.json
-    res, err = validateRequest(data, cancel_buy_schema)
+    res, err = validateRequest(request.json, cancel_buy_schema)
     if not res:
-        return response.json(errorResult(err, data), status=400)
+        return response.json(errorResult(err, request.json), status=400)
+    data = request.json
 
     data = app.config['serviceLogic'].cancelBuy(data['trans_num'], data['user_id'])
 
@@ -67,10 +67,10 @@ async def cancelBuy(request):
 # SELL ENDPOINTS ------------------------------------------------
 @app.route(endpoints.sell_endpoint, methods=['POST'])
 async def sellStock(request):
-    data = request.json
-    res, err = validateRequest(data, sell_schema)
+    res, err = validateRequest(request.json, sell_schema)
     if not res:
-        return response.json(errorResult(err, data), status=400)
+        return response.json(errorResult(err, request.json), status=400)
+    data = request.json
 
     data = app.config['serviceLogic'].sellStock(data['trans_num'], data['user_id'],
                                                 data['stock_symbol'], data['amount'])
@@ -80,10 +80,10 @@ async def sellStock(request):
 
 @app.route(endpoints.commit_sell_endpoint, methods=['POST'])
 async def commitSell(request):
-    data = request.json
-    res, err = validateRequest(data, commit_sell_schema)
+    res, err = validateRequest(request.json, commit_sell_schema)
     if not res:
-        return response.json(errorResult(err, data), status=400)
+        return response.json(errorResult(err, request.json), status=400)
+    data = request.json
 
     data = app.config['serviceLogic'].commitSell(data['trans_num'], data['user_id'])
 
@@ -92,10 +92,10 @@ async def commitSell(request):
 
 @app.route(endpoints.cancel_sell_endpoint, methods=['POST'])
 async def cancelSell(request):
-    data = request.json
-    res, err = validateRequest(data, cancel_sell_schema)
+    res, err = validateRequest(request.json, cancel_sell_schema)
     if not res:
-        return response.json(errorResult(err, data), status=400)
+        return response.json(errorResult(err, request.json), status=400)
+    data = request.json
 
     data = app.config['serviceLogic'].cancelSell(data['trans_num'], data['user_id'])
 
