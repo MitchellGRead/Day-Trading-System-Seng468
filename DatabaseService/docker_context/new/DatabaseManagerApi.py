@@ -12,15 +12,15 @@ app = Sanic(config.DATABASE_SERVER_NAME)
 # GET ENDPOINTS -----------------------------------------------
 
 
-# Get the user's available funds
-@app.route(endpoints.get_funds_endpoint, methods=['GET'])
+# Get the user's funds
+@app.route(endpoints.get_user_funds_endpoint, methods=['GET'])
 async def getFundsBalance(request, user_id):
     result = await app.config['logic'].handleGetFundsCommand(user_id)
     return response.json(result)
 
 
 # Get the user's existing stocks
-@app.route(endpoints.get_stocks_endpoint, methods=['GET'])
+@app.route(endpoints.get_user_stocks_endpoint, methods=['GET'])
 async def getStocksBalance(request, user_id):
     stock_id = request.args.get('stock_symbol', '')
     result = None
