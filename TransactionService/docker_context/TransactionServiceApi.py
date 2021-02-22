@@ -9,8 +9,12 @@ app = Sanic(config.TRANSACTION_SERVER_NAME)
 
 
 @app.route(endpoints.quote_endpoint, methods=['GET'])
-async def getQuote(request):
-    data = request.json
+async def getQuote(request, trans_num, user_id, stock_symbol):
+    data = {
+        'transaction_num': trans_num,
+        'user_id': user_id,
+        'stock_symbol': stock_symbol
+    }
     res, err = validateRequest(data, quote_schema)
     if not res:
         return response.json(errorResult(err, data), status=400)
