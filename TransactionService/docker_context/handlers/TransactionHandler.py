@@ -9,7 +9,7 @@ class TransactionHandler:
         self.RedisHandler = RedisHandler
         self.audit = audit
         self.client = client
-        self.dbmURL = f'HTTP://{ip}:{port}'
+        self.dbmURL = f'http://{ip}:{port}'
 
     async def getRequest(self, url, params=None):
         async with self.client.get(url, params=params) as resp:
@@ -30,7 +30,7 @@ class TransactionHandler:
         result = await self.LegacyStockServer.getQuote(trans_num, user_id, stock_id)
         return result
 
-    async def BuyStock(self, trans_num, user_id, stock_symbol, amount):
+    async def buyStock(self, trans_num, user_id, stock_symbol, amount):
         if self.redis.exists(user_id):
             user = pickle.loads(self.redis.get(user_id))
             price = float(await self.LegacyStockServer.getQuote(trans_num, user_id, stock_symbol))
