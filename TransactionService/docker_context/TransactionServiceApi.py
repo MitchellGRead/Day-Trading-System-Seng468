@@ -122,7 +122,7 @@ if __name__ == '__main__':
     app.register_listener(apiListeners.initRedisHandler, 'before_server_start')
     app.register_listener(apiListeners.initAudit, 'before_server_start')
     app.register_listener(apiListeners.initLegacyStock, 'before_server_start')
-    app.register_listener(apiListeners.initBaseLogic, 'before_server_start')
+    app.register_listener(apiListeners.initTransactionLogic, 'before_server_start')
 
     app.register_listener(apiListeners.closeClient, 'before_server_stop')
     app.register_listener(apiListeners.closeRedis, 'before_server_stop')

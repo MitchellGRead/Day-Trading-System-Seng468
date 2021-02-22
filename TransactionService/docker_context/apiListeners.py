@@ -3,7 +3,7 @@ import aioredis
 import config
 from sanic.log import logger
 from handlers.AuditHandler import AuditHandler
-from handlers.BaseLogicHandler import BaseLogicHandler
+from handlers.TransactionHandler import TransactionHandler
 from handlers.LegacyStockServerHandler import LegacyStockServerHandler
 from handlers.RedisHandler import RedisHandler
 from ServiceLogic import ServiceLogic
@@ -46,15 +46,15 @@ async def initLegacyStock(app, loop):
                                                          app.config['redisPool'], app.config['audit'])
 
 
-async def initBaseLogic(app, loop):
-    app.config['baseLogic'] = BaseLogicHandler(app.config['legacyStock'], app.config['redisPool'],
-                                               app.config['redisHandler'], app.config['audit'],
-                                               app.config['client'], config.DATABASE_SERVER_IP,
-                                               config.DATABASE_SERVER_PORT)
+async def initTransactionLogic(app, loop):
+    app.config['transactionLogic'] = TransactionHandler(app.config['legacyStock'], app.config['redisPool'],
+                                                        app.config['redisHandler'], app.config['audit'],
+                                                        app.config['client'], config.DATABASE_SERVER_IP,
+                                                        config.DATABASE_SERVER_PORT)
 
 
 async def initServiceLogic(app, loop):
-    app.config['serviceLogic'] = ServiceLogic(app.config['baseLogic'], app.config['redisHandler'],
+    app.config['serviceLogic'] = ServiceLogic(app.config['transactionLogic'], app.config['redisHandler'],
                                               app.config['legacyStock'])
 
 
