@@ -1,15 +1,24 @@
 #TODO: Return response code along with data
+
 class ServiceLogic:
 
     def __init__(self, postgresHandler):
         self.psqlHandler = postgresHandler
 
+    async def handleGetAllFundsCommand(self):
+        result = await self.psqlHandler.handleGetAllFundsCommand()
+        return result
+
     async def handleGetFundsCommand(self, user_id):    
-        result = await self.psqlHandler.handleGetFundsCommand(user_id)
+        result = await self.psqlHandler.handleGetUserFundsCommand(user_id)
+        return result
+
+    async def handleGetAllStocksCommand(self):
+        result = await self.psqlHandler.handleGetAllStocksCommand()
         return result
 
     async def handleGetStocksCommand(self, user_id, stock_id):
-        result = await self.psqlHandler.handleGetStocksCommand(user_id, stock_id)
+        result = await self.psqlHandler.handleGetUserStocksCommand(user_id, stock_id)
         return result
     
     async def handleGetSummaryCommand(self, user_id):

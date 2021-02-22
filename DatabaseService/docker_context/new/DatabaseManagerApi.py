@@ -11,19 +11,31 @@ app = Sanic(config.DATABASE_SERVER_NAME)
 
 # GET ENDPOINTS -----------------------------------------------
 
+# Get all users' funds
+@app.route(endpoints.get_all_funds_endpoint, methods=['GET'])
+async def getAllFunds(request):
+    result = await app.config['logic'].handleGetAllFundsCommand()
+    return response.json(result)
+
 
 # Get the user's funds
 @app.route(endpoints.get_user_funds_endpoint, methods=['GET'])
-async def getFundsBalance(request, user_id):
+async def getUserFunds(request, user_id):
     result = await app.config['logic'].handleGetFundsCommand(user_id)
     return response.json(result)
 
 
-# Get the user's existing stocks
+#Get all users' stocks
+@app.route(endpoints.get_all_stocks_endpoint, methods=['GET'])
+async def getAllStocks(request):
+    result = await app.config['logic'].handleGetAllStocksCommand()
+    return response.json(result)
+
+
+# Get the user's stocks
 @app.route(endpoints.get_user_stocks_endpoint, methods=['GET'])
-async def getStocksBalance(request, user_id):
-    stock_id = request.args.get('stock_symbol', '')
-    result = None
+async def getUserStocks(request, user_id):
+    stock_id = request.args.get('stock_id', '')
 
     if stock_id:
         res, err = validateRequest(stock_id, one_to_three_letter_string)
