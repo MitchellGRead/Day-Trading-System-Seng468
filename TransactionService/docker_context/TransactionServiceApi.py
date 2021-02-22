@@ -1,4 +1,3 @@
-
 from sanic import Sanic, response
 
 import config
@@ -10,17 +9,15 @@ app = Sanic(config.TRANSACTION_SERVER_NAME)
 
 
 @app.route(endpoints.quote_endpoint, methods=['GET'])
-async def getQuote(request, trans_num, user_id, stock_symbol):
-    data = {
-        'transaction_num': trans_num,
-        'user_id': user_id,
-        'stock_symbol': stock_symbol
-    }
+async def getQuote(request):
+    data = request.json
     res, err = validateRequest(data, quote_schema)
     if not res:
         return response.json(errorResult(err, data), status=400)
 
-    # quote logic would go here. try to keep api clean
+    data = app.config['serviceLogic'].getQuote(data['trans_num'], data['user_id'], data['stock_symbol'])
+
+    # Format RETURNS for all commands
 
     return response.json(data)
 
@@ -28,31 +25,37 @@ async def getQuote(request, trans_num, user_id, stock_symbol):
 # BUY ENDPOINTS ------------------------------------------------
 @app.route(endpoints.buy_endpoint, methods=['POST'])
 async def buyStock(request):
-    res, err = validateRequest(request.json, buy_schema)
-    if not res:
-        return response.json(errorResult(err, request.json), status=400)
-
     data = request.json
+    res, err = validateRequest(data, buy_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    data = app.config['serviceLogic'].buyStock(data['trans_num'], data['user_id'], data['stock_symbol'], data['amount'])
+
     return response.json(data)
 
 
 @app.route(endpoints.commit_buy_endpoint, methods=['POST'])
 async def commitBuy(request):
-    res, err = validateRequest(request.json, commit_buy_schema)
-    if not res:
-        return response.json(errorResult(err, request.json), status=400)
-
     data = request.json
+    res, err = validateRequest(data, commit_buy_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    data = app.config['serviceLogic'].commitBuy(data['trans_num'], data['user_id'])
+
     return response.json(data)
 
 
 @app.route(endpoints.cancel_buy_endpoint, methods=['POST'])
 async def cancelBuy(request):
-    res, err = validateRequest(request.json, cancel_buy_schema)
-    if not res:
-        return response.json(errorResult(err, request.json), status=400)
-
     data = request.json
+    res, err = validateRequest(data, cancel_buy_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    data = app.config['serviceLogic'].cancelBuy(data['trans_num'], data['user_id'])
+
     return response.json(data)
 # --------------------------------------------------------------
 
@@ -60,31 +63,38 @@ async def cancelBuy(request):
 # SELL ENDPOINTS ------------------------------------------------
 @app.route(endpoints.sell_endpoint, methods=['POST'])
 async def sellStock(request):
-    res, err = validateRequest(request.json, sell_schema)
-    if not res:
-        return response.json(errorResult(err, request.json), status=400)
-
     data = request.json
+    res, err = validateRequest(data, sell_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    data = app.config['serviceLogic'].sellStock(data['trans_num'], data['user_id'],
+                                                data['stock_symbol'], data['amount'])
+
     return response.json(data)
 
 
 @app.route(endpoints.commit_sell_endpoint, methods=['POST'])
 async def commitSell(request):
-    res, err = validateRequest(request.json, commit_sell_schema)
-    if not res:
-        return response.json(errorResult(err, request.json), status=400)
-
     data = request.json
+    res, err = validateRequest(data, commit_sell_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    data = app.config['serviceLogic'].commitSell(data['trans_num'], data['user_id'])
+
     return response.json(data)
 
 
 @app.route(endpoints.cancel_sell_endpoint, methods=['POST'])
 async def cancelSell(request):
-    res, err = validateRequest(request.json, cancel_sell_schema)
-    if not res:
-        return response.json(errorResult(err, request.json), status=400)
-
     data = request.json
+    res, err = validateRequest(data, cancel_sell_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    data = app.config['serviceLogic'].cancelSell(data['trans_num'], data['user_id'])
+
     return response.json(data)
 # --------------------------------------------------------------
 
@@ -104,11 +114,14 @@ async def getRequest(self, url, params=None):
 
 if __name__ == '__main__':
     app.register_listener(apiListeners.initClient, 'before_server_start')
-    # uncomment when redis is setup
-    # app.register_listener(apiListeners.connectRedis, 'before_server_start')
+    app.register_listener(apiListeners.connectRedis, 'before_server_start')
+    app.register_listener(apiListeners.initRedisHandler, 'before_server_start')
+    app.register_listener(apiListeners.initAudit, 'before_server_start')
+    app.register_listener(apiListeners.initLegacyStock, 'before_server_start')
+    app.register_listener(apiListeners.initBaseLogic, 'before_server_start')
 
     app.register_listener(apiListeners.closeClient, 'before_server_stop')
-    # app.register_listener(apiListeners.closeRedis, 'before_server_stop')
+    app.register_listener(apiListeners.closeRedis, 'before_server_stop')
 
     app.run(
         host=config.TRANSACTION_SERVER_IP,
