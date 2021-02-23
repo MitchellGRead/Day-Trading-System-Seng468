@@ -1,10 +1,10 @@
 
 from sanic import Sanic, response
-import aiohttp
 
 import config
-from auditInputSchema import *
 import endpoints
+import apiListeners
+from auditInputSchema import *
 
 app = Sanic(config.AUDIT_SERVER_NAME)
 
@@ -15,7 +15,21 @@ async def userCommandEvent(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
-    print(request.json)
+    data = request.json
+    data['xmlName'] = 'userCommand'
+    app.config['logic'].logEvent(data)
+    return response.json(request.json)
+
+
+@app.route(endpoints.account_transaction_endpoint, methods=['POST'])
+async def accountTransactionEvent(request):
+    res, err = validateRequest(request.json, account_transaction_event_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    data['xmlName'] = 'accountTransaction'
+    app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
@@ -25,7 +39,9 @@ async def systemEvent(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
-    print(request.json)
+    data = request.json
+    data['xmlName'] = 'systemEvent'
+    app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
@@ -35,7 +51,9 @@ async def quoteServerEvent(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
-    print(request.json)
+    data = request.json
+    data['xmlName'] = 'quoteServer'
+    app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
@@ -45,11 +63,18 @@ async def errorEvent(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
-    print(request.json)
+    data = request.json
+    data['xmlName'] = 'errorEvent'
+    app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
 if __name__ == '__main__':
+    app.register_listener(apiListeners.initClient, 'before_server_start')
+    app.register_listener(apiListeners.initServiceLogic, 'before_server_start')
+
+    app.register_listener(apiListeners.closeClient, 'before_server_stop')
+
     app.run(
         host=config.AUDIT_SERVER_IP,
         port=config.AUDIT_SERVER_PORT,
