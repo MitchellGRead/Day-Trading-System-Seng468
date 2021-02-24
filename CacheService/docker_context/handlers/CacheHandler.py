@@ -26,7 +26,7 @@ class CacheHandler:
         self.audit = audit
         self.client = client
         self.dbmURL = f'http://{ip}:{port}'
-        await self.RedisHandler.fillUserCache()
+        self.RedisHandler.fillUserCache()
 
     async def getUserFunds(self, user_id):
         result = await self.RedisHandler.rExists(user_id)
