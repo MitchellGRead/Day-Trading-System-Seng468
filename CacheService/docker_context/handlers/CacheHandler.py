@@ -97,6 +97,7 @@ class CacheHandler:
         if result.status == 200:
             await self.RedisHandler.updateAccountCache(user_id)
             await self.RedisHandler.updateStockCache(user_id, buy_request['stock_id'])
+        await self.RedisHandler.rDelete(user_id + "_BUY")
         return result
 
     async def commitSellStocks(self, user_id):
@@ -107,6 +108,8 @@ class CacheHandler:
         if result.status == 200:
             await self.RedisHandler.updateAccountCache(user_id)
             await self.RedisHandler.updateStockCache(user_id, sell_request['stock_id'])
+        await self.RedisHandler.rDelete(user_id + "_BUY")
+        return result
 
     async def cancelBuy(self, user_id):
         result = self.RedisHandler.rExists(user_id + "_BUY")
