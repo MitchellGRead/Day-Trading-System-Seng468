@@ -34,8 +34,14 @@ class AuditHandler:
             'command': command
         }
 
-    async def handleQuoteEvent(self):
-        # create the quote event handler
+    async def handleUserCommand(self, trans_num, command, user_id='', stock_symbol='', amount=0, filename=''):
+        event = {
+            **self.baseEvent(trans_num, command),
+            **addKeyValuePairs(user_id, stock_symbol, amount, filename)
+        }
+
+        resp = await self.postRequest('/event/user_command', event)
+        logger.debug(resp)
         return
 
     async def handleError(self, trans_num, command, error_msg, user_id='', stock_symbol='', amount=0, filename=''):
