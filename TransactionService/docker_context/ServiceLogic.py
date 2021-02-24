@@ -1,14 +1,11 @@
 class ServiceLogic:
 
-    def __init__(self, BaseLogic, RedisHandler, LegacyStockServerHandler):
+    def __init__(self, BaseLogic, LegacyStockServerHandler):
         self.BaseLogic = BaseLogic
-        self.RedisHandler = RedisHandler
         self.LegacyStockServerHandler = LegacyStockServerHandler
-        await self.RedisHandler.fillCache()
 
     def addFunds(self, trans_num, user_id, amount):
         result = await self.BaseLogic.addFunds(trans_num, user_id, amount)
-        await self.RedisHandler.updateAccountCache(user_id)
         return result
 
     def getQuote(self, trans_num, user_id, stock_id):
