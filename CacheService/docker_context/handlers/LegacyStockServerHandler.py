@@ -1,7 +1,5 @@
 import socket
 from time import sleep
-from datetime import datetime
-import pickle
 
 
 class LegacyStockServerHandler:
@@ -35,5 +33,7 @@ class LegacyStockServerHandler:
             "cryptokey": dataReceived[4],
             "quoteTime": dataReceived[3]
         }
+
+        # DO AUDIT
 
         return dataReceived[0]

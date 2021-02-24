@@ -1,8 +1,7 @@
 class ServiceLogic:
 
-    def __init__(self, BaseLogic, LegacyStockServerHandler):
+    def __init__(self, BaseLogic):
         self.BaseLogic = BaseLogic
-        self.LegacyStockServerHandler = LegacyStockServerHandler
 
     def addFunds(self, trans_num, user_id, amount):
         result = await self.BaseLogic.addFunds(trans_num, user_id, amount)

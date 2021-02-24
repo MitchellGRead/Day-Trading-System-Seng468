@@ -122,7 +122,6 @@ if __name__ == '__main__':
     app.register_listener(apiListeners.initTransactionLogic, 'before_server_start')
 
     app.register_listener(apiListeners.closeClient, 'before_server_stop')
-    app.register_listener(apiListeners.closeRedis, 'before_server_stop')
 
     app.run(
         host=config.TRANSACTION_SERVER_IP,

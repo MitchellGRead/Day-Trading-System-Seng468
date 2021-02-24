@@ -58,7 +58,7 @@ async def initCacheLogic(app, loop):
 
 
 async def initServiceLogic(app, loop):
-    app.config['serviceLogic'] = ServiceLogic(app.config['cacheLogic'], app.config['redisHandler'])
+    app.config['serviceLogic'] = ServiceLogic(app.config['cacheLogic'])
 
 
 async def closeRedis(app, loop):

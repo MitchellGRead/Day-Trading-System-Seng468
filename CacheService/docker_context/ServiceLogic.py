@@ -3,9 +3,8 @@ from datetime import datetime
 
 class ServiceLogic:
 
-    def __init__(self, CacheLogic, RedisHandler):
+    def __init__(self, CacheLogic):
         self.CacheLogic = CacheLogic
-        self.RedisHandler = RedisHandler
 
     async def getUserFunds(self, user_id):
         return await self.CacheLogic.getUserFunds(user_id)

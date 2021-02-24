@@ -31,10 +31,5 @@ async def initTransactionLogic(app, loop):
 
 
 async def initServiceLogic(app, loop):
-    app.config['serviceLogic'] = ServiceLogic(app.config['transactionLogic'], app.config['legacyStock'])
+    app.config['serviceLogic'] = ServiceLogic(app.config['transactionLogic'])
 
-
-async def closeRedis(app, loop):
-    redis_pool = app.config['redisPool']
-    redis_pool.close()
-    await redis_pool.await_closed()
