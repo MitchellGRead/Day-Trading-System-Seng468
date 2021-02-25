@@ -40,7 +40,8 @@ funds_schema = {
     'type': 'object',
     'properties': {
         'user_id': {'type': 'string'},
-        'funds': non_negative_number
+        'funds': non_negative_number,
+        'command': {'type': 'string'}
     },
     'required': ['user_id', 'funds']
 }
@@ -51,7 +52,8 @@ stocks_query_schema = {
         'user_id': {'type': 'string'},
         'stock_symbol': one_to_three_letter_string,
         'stock_amount': non_negative_number,
-        'funds': non_negative_number
+        'funds': non_negative_number,
+        'command': {'type': 'string'}
     },
     'required': ['user_id', 'stock_symbol', 'stock_amount', 'funds']
 }
@@ -59,7 +61,8 @@ stocks_query_schema = {
 user_schema = {
     'type': 'object',
     'properties': {
-        'user_id': {'type': 'string'}
+        'user_id': {'type': 'string'},
+        'command': {'type': 'string'}
     },
     'required': ['user_id']
 }
