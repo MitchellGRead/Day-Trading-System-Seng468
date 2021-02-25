@@ -77,7 +77,7 @@ async def addFunds(request):
 
     data = request.json
     result = await app.config['serviceLogic'].addFunds(data['user_id'], data['funds'])
-    return result
+    return response.json(await result.json(), status=result.status)
 
 
 # Remove funds from user's account

@@ -32,7 +32,7 @@ class RedisHandler:
                 userData = results[key]
                 user = {"user_id": user_id, "account_balance": userData['available_funds'],
                         "reserved_balance": userData['reserved_funds']}
-                self.redis.set(user_id, pickle.dumps(user))
+                await self.redis.set(user_id, pickle.dumps(user))
             return response.json(goodResult(msg="Pulled Data", data=''), status=200)
         else:
             return results
@@ -48,7 +48,7 @@ class RedisHandler:
                         stockInfo = dictionary[stock]
                         stockBalance = {"user_id": user_id, "stock_id": stock,
                                         "stock_amount": stockInfo[0], "stock_reserved": stockInfo[1]}
-                        self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stockBalance))
+                        await self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stockBalance))
             return response.json(goodResult(msg="Pulled Data", data=''), status=200)
         else:
             return results
@@ -59,7 +59,7 @@ class RedisHandler:
             data = await results.json()
             user = {"user_id": user_id, "account_balance": data['available_funds'],
                     "reserved_balance": data['reserved_funds']}
-            self.redis.set(user_id, pickle.dumps(user))
+            await self.redis.set(user_id, pickle.dumps(user))
             return response.json(goodResult(msg="Pulled Data", data=''), status=200)
         else:
             return results
@@ -72,26 +72,26 @@ class RedisHandler:
                 stockInfo = data[stock]
                 stockBalance = {"user_id": user_id, "stock_id": stock, "stock_amount":
                                 stockInfo['stock_available'], "stock_reserved": stockInfo['stock_reserved']}
-                self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stockBalance))
+                await self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stockBalance))
             return response.json(goodResult(msg="Pulled Data", data=''), status=200)
         else:
             return results
 
     async def rSet(self, key, values):
-        self.redis.set(key, pickle.dumps(values))
+        await self.redis.set(key, pickle.dumps(values))
         return
 
     async def rGet(self, key):
-        result = self.redis.get(key)
+        result = await self.redis.get(key)
         result = pickle.loads(result)
         return result
 
     async def rExists(self, key):
-        result = self.redis.exists(key)
+        result = await self.redis.exists(key)
         return result
 
     async def rDelete(self, key):
-        self.redis.delete(key)
+        await self.redis.delete(key)
         return
 
     async def getRequest(self, url, params=None):
