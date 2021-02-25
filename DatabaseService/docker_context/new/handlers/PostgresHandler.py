@@ -183,7 +183,7 @@ class PostgresHandler:
         
         if curr_funds < funds:
             return {
-                'status': 'failed', 'message': 'Not enough funds in account.'
+                'status': 'failure', 'message': 'Not enough funds in account.'
             }
 
         buy_stock_query = to_table_where_user_query.format(
@@ -217,7 +217,7 @@ class PostgresHandler:
             }
 
         return {
-            'status':'failed', 'message':'Failed to update user account.'
+            'status':'failure', 'message':'Failed to update user account.'
         }
 
     async def handleSellStocksCommand(self, user_id, stock_id, stock_num, funds):
@@ -241,7 +241,7 @@ class PostgresHandler:
 
             if available_stock < stock_num:
                 return {
-                    'status': 'failed', 'message': 'Not enough stocks in account.'
+                    'status': 'failure', 'message': 'Not enough stocks in account.'
                 }
 
         sell_stock_query = to_table_where_user_query.format(
@@ -274,7 +274,7 @@ class PostgresHandler:
             }
 
         return {
-            'status':'failed', 'message':'Failed to update user account.'
+            'status':'failure', 'message':'Failed to update user account.'
         }
 
     async def executeQuery(self, query):
