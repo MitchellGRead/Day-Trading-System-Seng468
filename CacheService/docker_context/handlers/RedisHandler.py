@@ -26,7 +26,7 @@ class RedisHandler:
     async def fillUserCache(self):
         results = await self.getRequest(self.url + '/funds/get/all')
         if results.status == 200:
-            data = results.json
+            data = await results.json()
             for key in data:
                 user_id = key
                 userData = results[key]
@@ -40,7 +40,7 @@ class RedisHandler:
     async def fillStockCache(self):
         results = await self.getRequest(self.url + '/stocks/get/all')
         if results.status == 200:
-            data = results.json
+            data = await results.json()
             for user_id in data:
                 usersData = data[user_id]
                 for dictionary in usersData:
@@ -56,7 +56,7 @@ class RedisHandler:
     async def updateAccountCache(self, user_id):
         results = await self.getRequest(self.url + '/funds/get/user/' + user_id)
         if results.status == 200:
-            data = results.json
+            data = await results.json()
             user = {"user_id": user_id, "account_balance": data['available_funds'],
                     "reserved_balance": data['reserved_funds']}
             self.redis.set(user_id, pickle.dumps(user))
@@ -67,7 +67,7 @@ class RedisHandler:
     async def updateStockCache(self, user_id, stock_symbol):
         results = await self.getRequest(self.url + '/stocks/get/user/' + user_id + "?stock_id=" + stock_symbol)
         if results.status == 200:
-            data = results.json
+            data = await results.json()
             for stock in data:
                 stockInfo = data[stock]
                 stockBalance = {"user_id": user_id, "stock_id": stock, "stock_amount":
@@ -97,9 +97,9 @@ class RedisHandler:
     async def getRequest(self, url, params=None):
         async with self.client.get(url, params=params) as resp:
             js = await resp.json()
-            return js
+            return resp
 
     async def postRequest(self, url, data):
         async with self.client.post(url, json=data) as resp:
             js = await resp.json()
-            return js
+            return resp

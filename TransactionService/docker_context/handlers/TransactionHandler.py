@@ -44,7 +44,7 @@ class TransactionHandler:
         totalStock = floor(float(amount)/float(quotePrice))
         totalValue = quotePrice*totalStock
         userBal = await self.getRequest(self.cacheURL + f"/funds/get/user/{user_id}")
-        userBal = userBal.data
+        userBal = userBal.json()
         if totalValue > float(userBal):
             return response.json(errorResult(err="User doesn't have required funds", data=''), status=400)
         data = {'user_id': user_id, 'stock_symbol': stock_symbol, 'stock_amount': totalStock, 'funds': totalValue}
@@ -57,7 +57,6 @@ class TransactionHandler:
 
     async def commitBuy(self, trans_num, user_id):
         check = await self.getBuy(user_id)
-        check = check.data
         if check.status == 200:
             data = {'user_id': user_id}
             then = check['time']
@@ -81,7 +80,7 @@ class TransactionHandler:
         totalStock = ceil(float(amount) / float(quotePrice))
         totalValue = quotePrice * totalStock
         stockBal = await self.getRequest(self.cacheURL + f"/stocks/get/user/{user_id}/{stock_symbol}")
-        stockBal = stockBal.data
+        stockBal = stockBal.json()
         if totalValue > stockBal:
             return response.json(errorResult(err="User doesn't have required stocks", data=''), status=400)
         data = {'user_id': user_id, 'stock_symbol': stock_symbol, 'stock_amount': totalStock, 'funds': totalValue}
@@ -94,7 +93,6 @@ class TransactionHandler:
 
     async def commitSell(self, trans_num, user_id):
         check = await self.getSell(user_id)
-        check = check.data
         if check.status == 200:
             data = {'user_id': user_id}
             then = check['time']
@@ -118,9 +116,9 @@ class TransactionHandler:
     async def getRequest(self, url, params=None):
         async with self.client.get(url, params=params) as resp:
             js = await resp.json()
-            return js
+            return resp
 
     async def postRequest(self, url, data):
         async with self.client.post(url, json=data) as resp:
             js = await resp.json()
-            return js
+            return resp

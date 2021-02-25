@@ -54,7 +54,7 @@ class CacheHandler:
 
     async def addFunds(self, user_id, funds):
         data = {"user_id": user_id, "funds": float(funds)}
-        req, result = await self.postRequest(self.dbmURL + "/funds/add_funds", data)
+        result = await self.postRequest(self.dbmURL + "/funds/add_funds", data)
         if result.status == 200:
             loop = 0
             while loop < 5:
@@ -159,9 +159,9 @@ class CacheHandler:
     async def getRequest(self, url, params=None):
         async with self.client.get(url, params=params) as resp:
             js = await resp.json()
-            return js
+            return resp
 
     async def postRequest(self, url, data):
         async with self.client.post(url, json=data) as resp:
             js = await resp.json()
-            return js
+            return resp
