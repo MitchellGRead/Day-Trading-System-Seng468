@@ -13,8 +13,8 @@ app = Sanic(config.CACHE_SERVER_NAME)
 # Get the user's funds
 @app.route(endpoints.get_user_funds_endpoint, methods=['GET'])
 async def getUserFunds(request, user_id):
-    result = await app.config['serviceLogic'].getUserFunds(user_id)
-    return result
+    result, status = await app.config['serviceLogic'].getUserFunds(user_id)
+    return response.json(result, status=status)
 
 
 # Get the user's stocks
@@ -25,8 +25,8 @@ async def getUserStocks(request, user_id, stock_id):
         if not res:
             return response.json(errorResult(err, stock_id), status=400)
 
-    result = await app.config['serviceLogic'].getUserStocks(user_id, stock_id)
-    return result
+    result, status = await app.config['serviceLogic'].getUserStocks(user_id, stock_id)
+    return response.json(result, status=status)
 
 
 # Gets a quote price
@@ -37,8 +37,8 @@ async def getQuote(request, user_id, stock_id, trans_num):
         if not res:
             return response.json(errorResult(err, stock_id), status=400)
 
-    result = await app.config['serviceLogic'].getQuote(trans_num, user_id, stock_id)
-    return result
+    result, status = await app.config['serviceLogic'].getQuote(trans_num, user_id, stock_id)
+    return response.json(result, status=status)
 
 
 # Get active buy command
@@ -49,8 +49,8 @@ async def getBuyStocks(request, user_id):
         if not res:
             return response.json(errorResult(err, user_id), status=400)
 
-    result = await app.config['serviceLogic'].getBuyStocks(user_id)
-    return result
+    result, status = await app.config['serviceLogic'].getBuyStocks(user_id)
+    return response.json(result, status=status)
 
 
 # Get active sell command
@@ -61,8 +61,8 @@ async def getSellStocks(request, user_id):
         if not res:
             return response.json(errorResult(err, user_id), status=400)
 
-    result = await app.config['serviceLogic'].getSellStocks(user_id)
-    return result
+    result, status = await app.config['serviceLogic'].getSellStocks(user_id)
+    return response.json(result, status=status)
 
 
 # POST ENDPOINTS -----------------------------------------------
@@ -76,8 +76,8 @@ async def addFunds(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result = await app.config['serviceLogic'].addFunds(data['user_id'], data['funds'])
-    return response.json(await result.json(), status=result.status)
+    result, status = await app.config['serviceLogic'].addFunds(data['user_id'], data['funds'])
+    return response.json(result, status=status)
 
 
 # Remove funds from user's account
@@ -99,9 +99,9 @@ async def buyStocks(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result = await app.config['serviceLogic'].buyStocks(data['user_id'], data['stock_symbol'],
-                                                                     data['stock_amount'], data['funds'])
-    return result
+    result, status = await app.config['serviceLogic'].buyStocks(data['user_id'], data['stock_symbol'],
+                                                                data['stock_amount'], data['funds'])
+    return response.json(result, status=status)
 
 
 # Sell stocks endpoint -- add funds and removes stocks
@@ -112,9 +112,9 @@ async def sellStocks(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result = await app.config['serviceLogic'].sellStocks(data['user_id'], data['stock_symbol'],
-                                                         data['stock_amount'], data['funds'])
-    return result
+    result, status = await app.config['serviceLogic'].sellStocks(data['user_id'], data['stock_symbol'],
+                                                                 data['stock_amount'], data['funds'])
+    return response.json(result, status=status)
 
 
 # Get active buy command
@@ -125,8 +125,8 @@ async def commitBuyStocks(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result = await app.config['serviceLogic'].commitBuyStocks(data['user_id'])
-    return result
+    result, status = await app.config['serviceLogic'].commitBuyStocks(data['user_id'])
+    return response.json(result, status=status)
 
 
 # Get active buy command
@@ -137,8 +137,8 @@ async def commitSellStocks(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result = await app.config['serviceLogic'].commitSellStocks(data['user_id'])
-    return result
+    result, status = await app.config['serviceLogic'].commitSellStocks(data['user_id'])
+    return response.json(result, status=status)
 
 
 # Get active buy command
@@ -149,8 +149,8 @@ async def cancelBuy(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result = await app.config['serviceLogic'].cancelBuy(data['user_id'])
-    return result
+    result, status = await app.config['serviceLogic'].cancelBuy(data['user_id'])
+    return response.json(result, status=status)
 
 
 # Get active buy command
@@ -161,8 +161,8 @@ async def cancelSell(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result = await app.config['serviceLogic'].cancelSell(data['user_id'])
-    return result
+    result, status = await app.config['serviceLogic'].cancelSell(data['user_id'])
+    return response.json(result, status=status)
 
 
 # DB SERVICE INITIALIZATION -----------------------------------------------

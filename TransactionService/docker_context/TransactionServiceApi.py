@@ -19,9 +19,10 @@ async def getQuote(request, trans_num, user_id, stock_symbol):
     if not res:
         return response.json(errorResult(err, data), status=400)
 
-    resp = await app.config['serviceLogic'].getQuote(data['transaction_num'], data['user_id'], data['stock_symbol'])
+    result, status = await app.config['serviceLogic'].getQuote(data['transaction_num'], data['user_id'],
+                                                               data['stock_symbol'])
 
-    return resp
+    return response.json(result, status=status)
 
 
 @app.route(endpoints.add_funds_endpoint, methods=['POST'])
@@ -31,8 +32,8 @@ async def addFunds(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    resp = await app.config['serviceLogic'].addFunds(data['transaction_num'], data['user_id'], data['amount'])
-    return resp
+    result, status = await app.config['serviceLogic'].addFunds(data['transaction_num'], data['user_id'], data['amount'])
+    return response.json(result, status=status)
 
 
 # BUY ENDPOINTS ------------------------------------------------
@@ -43,10 +44,9 @@ async def buyStock(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    resp = await app.config['serviceLogic'].buyStock(data['transaction_num'], data['user_id'], data['stock_symbol'],
-                                                     data['amount'])
-
-    return resp
+    result, status = await app.config['serviceLogic'].buyStock(data['transaction_num'], data['user_id'],
+                                                               data['stock_symbol'], data['amount'])
+    return response.json(result, status=status)
 
 
 @app.route(endpoints.commit_buy_endpoint, methods=['POST'])
@@ -56,9 +56,8 @@ async def commitBuy(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    resp = await app.config['serviceLogic'].commitBuy(data['transaction_num'], data['user_id'])
-
-    return resp
+    result, status = await app.config['serviceLogic'].commitBuy(data['transaction_num'], data['user_id'])
+    return response.json(result, status=status)
 
 
 @app.route(endpoints.cancel_buy_endpoint, methods=['POST'])
@@ -68,9 +67,8 @@ async def cancelBuy(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    resp = await app.config['serviceLogic'].cancelBuy(data['transaction_num'], data['user_id'])
-
-    return resp
+    result, status = await app.config['serviceLogic'].cancelBuy(data['transaction_num'], data['user_id'])
+    return response.json(result, status=status)
 
 
 # --------------------------------------------------------------
@@ -84,10 +82,9 @@ async def sellStock(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    resp = await app.config['serviceLogic'].sellStock(data['transaction_num'], data['user_id'],
-                                                      data['stock_symbol'], data['amount'])
-
-    return resp
+    result, status = await app.config['serviceLogic'].sellStock(data['transaction_num'], data['user_id'],
+                                                                data['stock_symbol'], data['amount'])
+    return response.json(result, status=status)
 
 
 @app.route(endpoints.commit_sell_endpoint, methods=['POST'])
@@ -97,9 +94,9 @@ async def commitSell(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    resp = await app.config['serviceLogic'].commitSell(data['transaction_num'], data['user_id'])
+    result, status = await app.config['serviceLogic'].commitSell(data['transaction_num'], data['user_id'])
 
-    return resp
+    return response.json(result, status=status)
 
 
 @app.route(endpoints.cancel_sell_endpoint, methods=['POST'])
@@ -109,9 +106,8 @@ async def cancelSell(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    resp = await app.config['serviceLogic'].cancelSell(data['transaction_num'], data['user_id'])
-
-    return resp
+    result, status = await app.config['serviceLogic'].cancelSell(data['transaction_num'], data['user_id'])
+    return response.json(result, status=status)
 
 
 # --------------------------------------------------------------

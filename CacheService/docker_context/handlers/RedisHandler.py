@@ -24,23 +24,21 @@ class RedisHandler:
         self.url = f"http://{ip}:{port}"
 
     async def fillUserCache(self):
-        results = await self.getRequest(self.url + '/funds/get/all')
-        if results.status == 200:
-            data = await results.json()
+        data, status = await self.getRequest(self.url + '/funds/get/all')
+        if status == 200:
             for key in data:
                 user_id = key
-                userData = results[key]
+                userData = data[key]
                 user = {"user_id": user_id, "account_balance": userData['available_funds'],
                         "reserved_balance": userData['reserved_funds']}
                 await self.redis.set(user_id, pickle.dumps(user))
-            return response.json(goodResult(msg="Pulled Data", data=''), status=200)
+            return goodResult(msg="Pulled Data", data=''), 200
         else:
-            return results
+            return data, status
 
     async def fillStockCache(self):
-        results = await self.getRequest(self.url + '/stocks/get/all')
-        if results.status == 200:
-            data = await results.json()
+        data, status = await self.getRequest(self.url + '/stocks/get/all')
+        if status == 200:
             for user_id in data:
                 usersData = data[user_id]
                 for dictionary in usersData:
@@ -49,33 +47,31 @@ class RedisHandler:
                         stockBalance = {"user_id": user_id, "stock_id": stock,
                                         "stock_amount": stockInfo[0], "stock_reserved": stockInfo[1]}
                         await self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stockBalance))
-            return response.json(goodResult(msg="Pulled Data", data=''), status=200)
+            return goodResult(msg="Pulled Data", data=''), 200
         else:
-            return results
+            return data, status
 
     async def updateAccountCache(self, user_id):
-        results = await self.getRequest(self.url + '/funds/get/user/' + user_id)
-        if results.status == 200:
-            data = await results.json()
+        data, status = await self.getRequest(self.url + '/funds/get/user/' + user_id)
+        if status == 200:
             user = {"user_id": user_id, "account_balance": data['available_funds'],
                     "reserved_balance": data['reserved_funds']}
             await self.redis.set(user_id, pickle.dumps(user))
-            return response.json(goodResult(msg="Pulled Data", data=''), status=200)
+            return goodResult(msg="Pulled Data", data=''), 200
         else:
-            return results
+            return data, status
 
     async def updateStockCache(self, user_id, stock_symbol):
-        results = await self.getRequest(self.url + '/stocks/get/user/' + user_id + "?stock_id=" + stock_symbol)
-        if results.status == 200:
-            data = await results.json()
+        data, status = await self.getRequest(self.url + '/stocks/get/user/' + user_id + "?stock_id=" + stock_symbol)
+        if status == 200:
             for stock in data:
                 stockInfo = data[stock]
                 stockBalance = {"user_id": user_id, "stock_id": stock, "stock_amount":
                                 stockInfo['stock_available'], "stock_reserved": stockInfo['stock_reserved']}
                 await self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stockBalance))
-            return response.json(goodResult(msg="Pulled Data", data=''), status=200)
+            return goodResult(msg="Pulled Data", data=''), 200
         else:
-            return results
+            return data, status
 
     async def rSet(self, key, values):
         await self.redis.set(key, pickle.dumps(values))
@@ -97,9 +93,11 @@ class RedisHandler:
     async def getRequest(self, url, params=None):
         async with self.client.get(url, params=params) as resp:
             js = await resp.json()
-            return resp
+            status = await resp.status
+            return js, status
 
     async def postRequest(self, url, data):
         async with self.client.post(url, json=data) as resp:
             js = await resp.json()
-            return resp
+            status = await resp.status
+            return js, status
