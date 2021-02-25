@@ -30,25 +30,38 @@ non_negative_number = {
     'inclusiveMinimum': 0
 }
 
+
 base_transaction_schema = {
     'type': 'object',
     'properties': {
         'transaction_num': {'type': 'integer'},
         'user_id': {'type': 'string'},
         'stock_symbol': one_to_three_letter_string,
-        'amount': non_negative_number
+        'amount': non_negative_number,
+        'command': {'type': 'string'}
     },
-    'required': ['transaction_num', 'user_id', 'stock_symbol', 'amount']
+    'required': ['transaction_num', 'user_id', 'stock_symbol', 'amount', 'command']
 }
 
+funds_schema = {
+    'type': 'object',
+    'properties': {
+        'transaction_num': {'type': 'integer'},
+        'user_id': {'type': 'string'},
+        'amount': non_negative_number,
+        'command': {'type': 'string'}
+    },
+    'required': ['transaction_num', 'user_id', 'amount', 'command']
+}
 
 base_user_schema = {
     'type': 'object',
     'properties': {
         'transaction_num': {'type': 'integer'},
-        'user_id': {'type': 'string'}
+        'user_id': {'type': 'string'},
+        'command': {'type': 'string'}
     },
-    'required': ['transaction_num', 'user_id']
+    'required': ['transaction_num', 'user_id', 'command']
 }
 
 quote_schema = {
@@ -56,9 +69,10 @@ quote_schema = {
     'properties': {
         'transaction_num': {'type': 'integer'},
         'user_id': {'type': 'string'},
-        'stock_symbol': one_to_three_letter_string
+        'stock_symbol': one_to_three_letter_string,
+        'command': {'type': 'string'}
     },
-    'required': ['transaction_num', 'user_id', 'stock_symbol']
+    'required': ['transaction_num', 'user_id', 'stock_symbol', 'command']
 }
 
 buy_schema = base_transaction_schema
@@ -68,3 +82,5 @@ cancel_buy_schema = base_user_schema
 sell_schema = base_transaction_schema
 commit_sell_schema = base_transaction_schema
 cancel_sell_schema = base_user_schema
+
+add_funds_schema = funds_schema
