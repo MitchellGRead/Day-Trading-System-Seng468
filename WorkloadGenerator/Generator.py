@@ -6,6 +6,7 @@ from UserCommands import UserCommands
 
 CURRENT_FILE_NAME = "./1_user_workload.txt"
 
+
 def readWorkloadFile():
     with open(CURRENT_FILE_NAME, "r") as workload:
         contents = workload.read()
@@ -21,58 +22,7 @@ async def main():
     command_sender = UserCommands(config.WEB_SERVER_IP, config.WEB_SERVER_PORT, client)
 
     for param in params:
-        command = param[1]
-
-        if command == 'ADD':
-            resp = await command_sender.addFundsRequest(param)
-            print(resp)
-        elif command == 'QUOTE':
-            resp = await command_sender.quoteRequest(param)
-            print(resp)
-        elif command == 'BUY':
-            resp = await command_sender.buyRequest(param)
-            print(resp)
-        elif command == 'COMMIT_BUY':
-            resp = await command_sender.commitBuyRequest(param)
-            print(resp)
-        elif command == 'CANCEL_BUY':
-            resp = await command_sender.cancelBuyRequest(param)
-            print(resp)
-        elif command == 'SET_BUY_AMOUNT':
-            resp = await command_sender.setBuyAmountRequest(param)
-            print(resp)
-        elif command == 'CANCEL_SET_BUY':
-            resp = await command_sender.cancelSetBuyRequest(param)
-            print(resp)
-        elif command == 'SET_BUY_TRIGGER':
-            resp = await command_sender.setBuyTriggerRequest(param)
-            print(resp)
-        elif command == 'SELL':
-            resp = await command_sender.sellRequest(param)
-            print(resp)
-        elif command == 'COMMIT_SELL':
-            resp = await command_sender.commitSellRequest(param)
-            print(resp)
-        elif command == 'CANCEL_SELL':
-            resp = await command_sender.cancelSellRequest(param)
-            print(resp)
-        elif command == 'SET_SELL_AMOUNT':
-            resp = await command_sender.setSellAmountRequest(param)
-            print(resp)
-        elif command == 'CANCEL_SET_SELL':
-            resp = await command_sender.cancelSetSellRequest(param)
-            print(resp)
-        elif command == 'SET_SELL_TRIGGER':
-            resp = await command_sender.setSellTriggerRequest(param)
-            print(resp)
-        elif command == 'DISPLAY_SUMMARY':
-            resp = await command_sender.displaySummary(param)
-            print(resp)
-        elif command == 'DUMPLOG':
-            resp = await command_sender.dumplog(param)
-            print(resp)
-        else:
-            print(f'INVALID COMMAND: {command}')
+        await command_sender.handleCommand(param)
 
     await client.close()
     return
