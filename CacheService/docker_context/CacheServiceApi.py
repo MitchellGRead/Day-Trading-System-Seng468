@@ -172,6 +172,7 @@ if __name__ == "__main__":
     # Before app start
     app.register_listener(apiListeners.initClient, 'before_server_start')
     app.register_listener(apiListeners.connectRedis, 'before_server_start')
+    app.register_listener(apiListeners.initRedisHandler, 'before_server_start')
     app.register_listener(apiListeners.initAudit, 'before_server_start')
     app.register_listener(apiListeners.initLegacyStock, 'before_server_start')
     app.register_listener(apiListeners.initCacheLogic, 'before_server_start')

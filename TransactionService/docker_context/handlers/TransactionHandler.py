@@ -31,7 +31,7 @@ class TransactionHandler:
 
     async def addFunds(self, trans_num, user_id, amount):
         data = {'user_id': user_id, 'funds': float(amount)}
-        result = await self.postRequest(self.cacheURL+"/funds/add_funds", data)
+        req, result = await self.postRequest(self.cacheURL+"/funds/add_funds", data)
         return result
 
     async def getQuote(self, trans_num, user_id, stock_id):

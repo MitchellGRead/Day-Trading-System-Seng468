@@ -3,8 +3,8 @@ from sanic.log import logger
 import asyncpg
 
 connection_string = "postgres://{user}:{password}@{host}:{port}/{database}".format(
-        user='daytrader', password='tothemoon', host='localhost',
-        port=5432, database='trading-db')
+    user='daytrader', password='tothemoon', host='localhost',
+    port=5432, database='trading-db')
 
 users_table = 'users'
 funds_table = 'account_balances'
@@ -13,8 +13,9 @@ from_table_where_user_query = "select {columns} from {table} where user_id = '{u
 from_table_where_query = "select {columns} from {table} {where};"
 to_table_where_user_query = "update {table} set {fields} where user_id = '{user}';"
 
-#TODO: Implement the handler's methods
-#TODO: Return response code along with data
+
+# TODO: Implement the handler's methods
+# TODO: Return response code along with data
 class PostgresHandler:
 
     def __init__(self, loop):
@@ -22,21 +23,21 @@ class PostgresHandler:
 
     async def initializePool(self):
         self.pool = await asyncpg.create_pool(
-            dsn = connection_string, 
-            min_size = 25,
-            max_size = 25,
-            max_queries = 100,
-            max_inactive_connection_lifetime = 0,
-            loop = self.loop)
+            dsn=connection_string,
+            min_size=25,
+            max_size=25,
+            max_queries=100,
+            max_inactive_connection_lifetime=0,
+            loop=self.loop)
 
     def getPool(self):
         return self.pool
 
     async def handleGetAllFundsCommand(self):
         get_funds_query = from_table_where_query.format(
-            columns = '*',
-            table = funds_table,
-            where = ''
+            columns='*',
+            table=funds_table,
+            where=''
         )
 
         result = await self.fetchQuery(get_funds_query)
@@ -61,10 +62,10 @@ class PostgresHandler:
             }
 
         get_funds_query = from_table_where_user_query.format(
-            columns='*', 
-            table=funds_table, 
+            columns='*',
+            table=funds_table,
             user=user_id)
-            
+
         result = await self.fetchQuery(get_funds_query)
 
         if result == [] or result is None or len(result) != 1:
@@ -82,9 +83,9 @@ class PostgresHandler:
 
     async def handleGetAllStocksCommand(self):
         get_stocks_query = from_table_where_query.format(
-            columns = '*',
-            table = stocks_table,
-            where = ''
+            columns='*',
+            table=stocks_table,
+            where=''
         )
 
         result = await self.fetchQuery(get_stocks_query)
@@ -104,7 +105,7 @@ class PostgresHandler:
             resp_list[record[0]] = stocks_list
 
         return resp_list
-        
+
     async def handleGetUserStocksCommand(self, user_id, stock_id):
         user_exists = await self._checkUserExists(user_id)
 
@@ -117,11 +118,11 @@ class PostgresHandler:
 
         if (stock_id):
             where_clause = where_clause + " AND stock_id = '{stock}'".format(stock=stock_id)
-        
+
         get_stocks_query = from_table_where_query.format(columns='*', table=stocks_table, where=where_clause)
 
         result = await self.fetchQuery(get_stocks_query)
-        
+
         if result is None:
             return {
                 'errorMessage': 'Unexpected error. Could not get stocks.'
@@ -130,33 +131,33 @@ class PostgresHandler:
         resp_list = {}
         for record in result:
             resp_list[record[1]] = [record[2], record[3]]
- 
+
         return resp_list
 
     async def handleAddFundsCommand(self, user_id, funds):
         user_exists = await self._checkUserExists(user_id)
-        
+
         if not user_exists:
             await self._addUser(user_id)
 
-        error_resp = {'status': 'failure','message': 'Unexpected error. Could not add funds.'}
+        error_resp = {'status': 'failure', 'message': 'Unexpected error. Could not add funds.'}
         success_resp = {'status': 'success', 'message': 'Funds successfully added.'}
-        
+
         balances = await self.handleGetUserFundsCommand(user_id)
-        curr_funds = balances['available_funds'] 
+        curr_funds = balances['available_funds']
 
         add_funds_query = to_table_where_user_query.format(
             table=funds_table,
-            fields='account_balance={f}'.format(f=funds+curr_funds), 
+            fields='account_balance={f}'.format(f=funds + curr_funds),
             user=user_id)
-        
+
         result = await self.executeQuery(add_funds_query)
 
         if type(result) != str:
             return error_resp
-        
+
         result = result.lower().split(' ')
-        
+
         if len(result) == 2 and result[0] == 'update' and result[1] == '1':
             return success_resp
 
@@ -167,7 +168,7 @@ class PostgresHandler:
 
         if not user_exists:
             return {
-                'status':'failure', 'message': 'Specified user does not exist.'
+                'status': 'failure', 'message': 'Specified user does not exist.'
             }
 
         balances = await self.handleGetUserFundsCommand(user_id)
@@ -180,7 +181,7 @@ class PostgresHandler:
         if len(stocks) >= 2:
             available_stock = stocks[stock_id][0]
             reserved_stock = stocks[stock_id][1]
-        
+
         if curr_funds < funds:
             return {
                 'status': 'failure', 'message': 'Not enough funds in account.'
@@ -188,36 +189,36 @@ class PostgresHandler:
 
         buy_stock_query = to_table_where_user_query.format(
             table=funds_table,
-            fields='account_balance = {f}'.format(f=curr_funds-funds),
+            fields='account_balance = {f}'.format(f=curr_funds - funds),
             user=user_id
         )
         buy_stock_query = buy_stock_query + \
-        "insert into {table} values ('{user}', '{stock}', {stock_amount}, {stock_res}) on conflict (user_id, stock_id) do update" \
-            " set stock_balance={new_balance};".format(
-            table=stocks_table,
-            user=user_id,
-            stock=stock_id,
-            stock_amount=available_stock+stock_num,
-            stock_res=reserved_stock,
-            new_balance=available_stock+stock_num
-        )
+                          "insert into {table} values ('{user}', '{stock}', {stock_amount}, {stock_res}) on conflict (user_id, stock_id) do update" \
+                          " set stock_balance={new_balance};".format(
+                              table=stocks_table,
+                              user=user_id,
+                              stock=stock_id,
+                              stock_amount=available_stock + stock_num,
+                              stock_res=reserved_stock,
+                              new_balance=available_stock + stock_num
+                          )
 
         result = await self.executeQuery(buy_stock_query)
-        
+
         if type(result) != str:
             return {
-                'status':'failure', 'message':'Could not buy stocks.'
+                'status': 'failure', 'message': 'Could not buy stocks.'
             }
 
         result = result.lower().split(' ')
         # Checks we get back "insert <some_num> 1" as our status string for the INSERT query
         if len(result) == 3 and result[0] == 'insert' and result[2] == '1':
             return {
-                'status':'success', 'message':'Successfully bought stocks.'
+                'status': 'success', 'message': 'Successfully bought stocks.'
             }
 
         return {
-            'status':'failure', 'message':'Failed to update user account.'
+            'status': 'failure', 'message': 'Failed to update user account.'
         }
 
     async def handleSellStocksCommand(self, user_id, stock_id, stock_num, funds):
@@ -225,7 +226,7 @@ class PostgresHandler:
 
         if not user_exists:
             return {
-                'status':'failure', 'message': 'Specified user does not exist.'
+                'status': 'failure', 'message': 'Specified user does not exist.'
             }
 
         balances = await self.handleGetUserFundsCommand(user_id)
@@ -246,35 +247,35 @@ class PostgresHandler:
 
         sell_stock_query = to_table_where_user_query.format(
             table=funds_table,
-            fields='account_balance = {f}'.format(f=curr_funds+funds),
+            fields='account_balance = {f}'.format(f=curr_funds + funds),
             user=user_id
         )
         sell_stock_query = sell_stock_query + \
-        "insert into {table} values ('{user}', '{stock}', {stock_amount}, {stock_res}) on conflict (user_id, stock_id) do update" \
-            " set stock_balance={stock_amount};".format(
-            table=stocks_table,
-            user=user_id,
-            stock=stock_id,
-            stock_amount=available_stock-stock_num,
-            stock_res=reserved_stock
-        )
+                           "insert into {table} values ('{user}', '{stock}', {stock_amount}, {stock_res}) on conflict (user_id, stock_id) do update" \
+                           " set stock_balance={stock_amount};".format(
+                               table=stocks_table,
+                               user=user_id,
+                               stock=stock_id,
+                               stock_amount=available_stock - stock_num,
+                               stock_res=reserved_stock
+                           )
 
         result = await self.executeQuery(sell_stock_query)
-        
+
         if type(result) != str:
             return {
-                'status':'failure', 'message':'Could not sell stocks.'
+                'status': 'failure', 'message': 'Could not sell stocks.'
             }
 
         result = result.lower().split(' ')
         # Checks we get back "insert <some_num> 1" as our status string for the INSERT query
         if len(result) == 3 and result[0] == 'insert' and result[2] == '1':
             return {
-                'status':'success', 'message':'Successfully sold stocks.'
+                'status': 'success', 'message': 'Successfully sold stocks.'
             }
 
         return {
-            'status':'failure', 'message':'Failed to update user account.'
+            'status': 'failure', 'message': 'Failed to update user account.'
         }
 
     async def executeQuery(self, query):
@@ -309,7 +310,7 @@ class PostgresHandler:
     async def _checkUserExists(self, user_id):
         check_user_query = from_table_where_user_query.format(
             columns='user_id',
-            table=users_table, 
+            table=users_table,
             user=user_id)
 
         result = await self.fetchQuery(check_user_query)
@@ -317,18 +318,23 @@ class PostgresHandler:
 
     async def _addUser(self, user_id):
         user_exists = await self._checkUserExists(user_id)
-        
+
         if user_exists:
             return True
 
         add_user_query = "insert into {table} values ('{user}');".format(table=users_table, user=user_id)
-        add_user_query = add_user_query + "insert into {table} values ('{user}', {balance}, {reserve});".format(
+        result = await self.executeQuery(add_user_query)
+
+        if type(result) != str:
+            return False
+
+        add_user_query = "insert into {table} values ('{user}', {balance}, {reserve});".format(
             table=funds_table,
             user=user_id,
             balance=0,
             reserve=0)
         result = await self.executeQuery(add_user_query)
-    
+
         if type(result) != str:
             return False
 

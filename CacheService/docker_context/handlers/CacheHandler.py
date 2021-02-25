@@ -1,6 +1,5 @@
-import pickle
 from datetime import datetime
-from sanic import Sanic, response
+from sanic import response
 
 
 def errorResult(err, data):
@@ -26,7 +25,6 @@ class CacheHandler:
         self.audit = audit
         self.client = client
         self.dbmURL = f'http://{ip}:{port}'
-        self.RedisHandler.fillUserCache()
 
     async def getUserFunds(self, user_id):
         result = await self.RedisHandler.rExists(user_id)
@@ -47,18 +45,23 @@ class CacheHandler:
             data = await self.RedisHandler.rGet(user_id + "_" + stock_id)
             return response.json(goodResult(msg="Stock Data", data=data['stock_amount']), status=200)
         else:
-            result = await self.RedisHandler.updateStockCache(user_id, stock_id)
-            if result.status == 200:
+            stockResult = await self.RedisHandler.updateStockCache(user_id, stock_id)
+            if stockResult.status == 200:
                 data = await self.RedisHandler.rGet(user_id + "_" + stock_id)
                 return response.json(goodResult(msg="Stock Data", data=data['stock_amount']), status=200)
             else:
-                return result
+                return stockResult
 
     async def addFunds(self, user_id, funds):
         data = {"user_id": user_id, "funds": float(funds)}
-        result = await self.postRequest(self.dbmURL + "/funds/add_funds", data)
+        req, result = await self.postRequest(self.dbmURL + "/funds/add_funds", data)
         if result.status == 200:
-            await self.RedisHandler.updateAccountCache(user_id)
+            loop = 0
+            while loop < 5:
+                accountResult = await self.RedisHandler.updateAccountCache(user_id)
+                if accountResult.status == 200:
+                    break
+                loop += 1
         return result
 
     async def buyStocks(self, user_id, stock_symbol, stock_amount, totalValue):
@@ -95,8 +98,13 @@ class CacheHandler:
                 "stock_symbol": buy_request['stock_id'], "stock_amount": buy_request['amount_of_stock']}
         result = await self.postRequest(self.dbmURL + '/stocks/buy_stocks', data)
         if result.status == 200:
-            await self.RedisHandler.updateAccountCache(user_id)
-            await self.RedisHandler.updateStockCache(user_id, buy_request['stock_id'])
+            loop = 0
+            while loop < 5:
+                accountResult = await self.RedisHandler.updateAccountCache(user_id)
+                stockResult = await self.RedisHandler.updateStockCache(user_id, buy_request['stock_id'])
+                if accountResult.status == 200 and stockResult.status == 200:
+                    break
+                loop += 1
         await self.RedisHandler.rDelete(user_id + "_BUY")
         return result
 
@@ -106,8 +114,13 @@ class CacheHandler:
                 "stock_symbol": sell_request["stock_id"], "stock_amount": sell_request["amount_of_stock"]}
         result = await self.postRequest(self.dbmURL + '/stocks/sell_stocks', data)
         if result.status == 200:
-            await self.RedisHandler.updateAccountCache(user_id)
-            await self.RedisHandler.updateStockCache(user_id, sell_request['stock_id'])
+            loop = 0
+            while loop < 5:
+                accountResult = await self.RedisHandler.updateAccountCache(user_id)
+                stockResult = await self.RedisHandler.updateStockCache(user_id, sell_request['stock_id'])
+                if accountResult.status == 200 and stockResult.status == 200:
+                    break
+                loop += 1
         await self.RedisHandler.rDelete(user_id + "_BUY")
         return result
 
