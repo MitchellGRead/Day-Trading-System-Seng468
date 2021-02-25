@@ -63,11 +63,12 @@ class RedisHandler:
 
     async def updateStockCache(self, user_id, stock_symbol):
         data, status = await self.getRequest(self.url + '/stocks/get/user/' + user_id + "?stock_id=" + stock_symbol)
+        print(data)
         if status == 200:
             for stock in data:
                 stockInfo = data[stock]
                 stockBalance = {"user_id": user_id, "stock_id": stock, "stock_amount":
-                                stockInfo['stock_available'], "stock_reserved": stockInfo['stock_reserved']}
+                                stockInfo[0], "stock_reserved": stockInfo[1]}
                 await self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stockBalance))
             return goodResult(msg="Pulled Data", data=''), 200
         else:
@@ -93,11 +94,11 @@ class RedisHandler:
     async def getRequest(self, url, params=None):
         async with self.client.get(url, params=params) as resp:
             js = await resp.json()
-            status = await resp.status
+            status = resp.status
             return js, status
 
     async def postRequest(self, url, data):
         async with self.client.post(url, json=data) as resp:
             js = await resp.json()
-            status = await resp.status
+            status = resp.status
             return js, status

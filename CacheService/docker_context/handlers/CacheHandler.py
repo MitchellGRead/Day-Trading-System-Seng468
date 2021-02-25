@@ -1,5 +1,5 @@
-from datetime import datetime
 from sanic import response
+from time import time
 
 
 def errorResult(err, data):
@@ -14,6 +14,10 @@ def goodResult(msg, data):
         'message': msg,
         'content': data
     }
+
+
+def currentTime():
+    return time()
 
 
 class CacheHandler:
@@ -66,13 +70,13 @@ class CacheHandler:
 
     async def buyStocks(self, user_id, stock_symbol, stock_amount, totalValue):
         data = {"user_id": user_id, "stock_id": stock_symbol, "amount": totalValue,
-                "amount_of_stock": stock_amount, "time": datetime.now()}
+                "amount_of_stock": stock_amount, "time": currentTime()}
         await self.RedisHandler.rSet(user_id + "_BUY", data)
         return goodResult(msg="Buy created", data=''), 200
 
     async def sellStocks(self, user_id, stock_symbol, amountOfStock, totalValue):
         data = {"user_id": user_id, "stock_id": stock_symbol,
-                "amount": totalValue, "amount_of_stock": amountOfStock, "time": datetime.now()}
+                "amount": totalValue, "amount_of_stock": amountOfStock, "time": currentTime()}
         await self.RedisHandler.rSet(user_id + "_SELL", data)
         return goodResult(msg="Sell created", data=''), 200
 
@@ -142,26 +146,29 @@ class CacheHandler:
         check = await self.RedisHandler.rExists(stock_id)
         if check:
             quote = await self.RedisHandler.rGet(stock_id)
-            then = quote['time']
-            now = datetime.now()
-            difference = (now - then).total_seconds()
+            then = float(quote['time'])
+            now = currentTime()
+            difference = (now - then)
             if difference < 10:
-                return goodResult(msg="Quote price", data=quote['price']), 200
+                return goodResult(msg="Quote price", data={'price': quote['price']}), 200
 
-        result = await self.LegacyStock.getQuote(trans_num, user_id, stock_id)
-        await self.RedisHandler.rSet(stock_id, {'stock_id': stock_id, 'price': result, 'time': datetime.now()})
-        return goodResult(msg="Quote price", data=result), 200
+        result, status = await self.LegacyStock.getQuote(trans_num, user_id, stock_id)
+        if status == 200:
+            await self.RedisHandler.rSet(stock_id, {'stock_id': stock_id, 'price': result['price'], 'time': currentTime()})
+            return goodResult(msg="Quote price", data=result), 200
+        else:
+            return result, status
 
     # __________________________________________________________________________________________________________________
 
     async def getRequest(self, url, params=None):
         async with self.client.get(url, params=params) as resp:
             js = await resp.json()
-            status = await resp.status
+            status = resp.status
             return js, status
 
     async def postRequest(self, url, data):
         async with self.client.post(url, json=data) as resp:
             js = await resp.json()
-            status = await resp.status
+            status = resp.status
             return js, status

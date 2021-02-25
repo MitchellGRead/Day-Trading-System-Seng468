@@ -1,4 +1,4 @@
-from datetime import datetime
+from time import time
 from math import ceil, floor
 from sanic import Sanic, response
 
@@ -15,6 +15,10 @@ def goodResult(msg, data):
         'message': msg,
         'content': data
     }
+
+
+def currentTime():
+    return time()
 
 
 class TransactionHandler:
@@ -36,21 +40,23 @@ class TransactionHandler:
 
     async def getQuote(self, trans_num, user_id, stock_id):
         result, status = await self.getRequest(self.cacheURL + f"/quote/get/{user_id}/{stock_id}/{trans_num}")
-        return result
+        return result, status
 
     async def buyStock(self, trans_num, user_id, stock_symbol, amount):
         result, status = await self.getQuote(trans_num, user_id, stock_symbol)
         if status == 200:
-            quotePrice = result
+            quotePrice = float(result['content']['price'])
+            if float(quotePrice) > float(amount):
+                return errorResult(err="Not enough capital to buy this stock.", data=''), 400
             totalStock = floor(float(amount)/float(quotePrice))
-            totalValue = quotePrice*totalStock
+            totalValue = round(quotePrice*totalStock, 2)
             result, status = await self.getRequest(self.cacheURL + f"/funds/get/user/{user_id}")
             if status == 200:
-                userBal = result
+                userBal = result['content']
                 if totalValue > float(userBal):
                     return errorResult(err="User doesn't have required funds", data=''), 400
                 data = {'user_id': user_id, 'stock_symbol': stock_symbol, 'stock_amount': totalStock, 'funds': totalValue}
-                result, status = await self.postRequest(self.cacheURL+"/stocks/buy_stock", data)
+                result, status = await self.postRequest(self.cacheURL+"/stocks/buy_stocks", data)
                 return result, status
             else:
                 return result, status
@@ -64,11 +70,11 @@ class TransactionHandler:
     async def commitBuy(self, trans_num, user_id):
         result, status = await self.getBuy(user_id)
         if status == 200:
-            check = result
+            check = result['content']
             data = {'user_id': user_id}
-            then = check['time']
-            now = datetime.now()
-            difference = (now-then).total_seconds()
+            then = float(check['time'])
+            now = currentTime()
+            difference = (now-then)
             if difference < 60:
                 result, status = await self.postRequest(self.cacheURL + "/stocks/commit_buy", data)
                 return result, status
@@ -85,19 +91,20 @@ class TransactionHandler:
     async def sellStock(self, trans_num, user_id, stock_symbol, amount):
         result, status = await self.getQuote(trans_num, user_id, stock_symbol)
         if status == 200:
-            quotePrice = result
-        else:
-            return result, status
-        totalStock = ceil(float(amount) / float(quotePrice))
-        totalValue = quotePrice * totalStock
-        result, status = await self.getRequest(self.cacheURL + f"/stocks/get/user/{user_id}/{stock_symbol}")
-        if status == 200:
-            stockBal = result
-            if totalValue > stockBal:
-                return errorResult(err="User doesn't have required stocks", data=''), 400
-            data = {'user_id': user_id, 'stock_symbol': stock_symbol, 'stock_amount': totalStock, 'funds': totalValue}
-            result, status = await self.postRequest(self.cacheURL + "/stocks/sell_stock", data)
-            return result, status
+            quotePrice = float(result['content']['price'])
+            totalStock = ceil(float(amount) / float(quotePrice))
+            totalValue = round(quotePrice * totalStock, 2)
+            result, status = await self.getRequest(self.cacheURL + f"/stocks/get/user/{user_id}/{stock_symbol}")
+            if status == 200:
+                stockBal = result['content']
+                if totalValue > stockBal:
+                    return errorResult(err="User doesn't have required stocks", data=''), 400
+                data = {'user_id': user_id, 'stock_symbol': stock_symbol, 'stock_amount': totalStock,
+                        'funds': totalValue}
+                result, status = await self.postRequest(self.cacheURL + "/stocks/sell_stocks", data)
+                return result, status
+            else:
+                return result, status
         else:
             return result, status
 
@@ -108,11 +115,11 @@ class TransactionHandler:
     async def commitSell(self, trans_num, user_id):
         result, status = await self.getSell(user_id)
         if status == 200:
-            check = result
+            check = result['content']
             data = {'user_id': user_id}
-            then = check['time']
-            now = datetime.now()
-            difference = (now - then).total_seconds()
+            then = float(check['time'])
+            now = currentTime()
+            difference = (now - then)
             if difference < 60:
                 result, status = await self.postRequest(self.cacheURL + "/stocks/commit_sell", data)
                 return result, status
@@ -131,11 +138,11 @@ class TransactionHandler:
     async def getRequest(self, url, params=None):
         async with self.client.get(url, params=params) as resp:
             js = await resp.json()
-            status = await resp.status
+            status = resp.status
             return js, status
 
     async def postRequest(self, url, data):
         async with self.client.post(url, json=data) as resp:
             js = await resp.json()
-            status = await resp.status
+            status = resp.status
             return js, status

@@ -6,7 +6,7 @@ localHost = "dummy-stock-1"
 
 
 def randomNumber():
-    rand = round(random.uniform(1, 400), 2)
+    rand = round(random.uniform(1, 50), 2)
     return rand
 
 
