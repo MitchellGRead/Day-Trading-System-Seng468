@@ -63,7 +63,8 @@ class RedisHandler:
 
     async def updateStockCache(self, user_id, stock_symbol):
         data, status = await self.getRequest(self.url + '/stocks/get/user/' + user_id + "?stock_id=" + stock_symbol)
-        print(data)
+        if not data:
+            return errorResult("The user doesn't hold that stock", ''), 404
         if status == 200:
             for stock in data:
                 stockInfo = data[stock]
