@@ -48,7 +48,31 @@ stocks_query_schema = {
     'required': ['user_id', 'stock_symbol', 'stock_amount', 'funds']
 }
 
+triggers_amount_schema = {
+    'type': 'object',
+    'properties': {
+        'user_id': {'type': 'string'},
+        'stock_symbol': one_to_three_letter_string,
+        'amount': non_negative_number
+    },
+    'required': ['user_id', 'stock_symbol', 'amount']
+}
+
+triggers_price_schema = {
+    'type': 'object',
+    'properties': {
+        'user_id': {'type': 'string'},
+        'stock_symbol': one_to_three_letter_string,
+        'price': non_negative_number
+    },
+    'required': ['user_id', 'stock_symbol', 'price']
+}
+
 add_funds_schema = funds_schema
 remove_funds_schema = funds_schema
 buy_stock_schema = stocks_query_schema
 sell_stock_schema = stocks_query_schema
+buy_trigger_amount_schema = triggers_amount_schema
+buy_trigger_price_schema = triggers_price_schema
+sell_trigger_amount_schema = triggers_amount_schema
+sell_trigger_price_schema = triggers_price_schema
