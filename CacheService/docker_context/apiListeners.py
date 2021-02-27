@@ -18,15 +18,9 @@ async def closeClient(app, loop):
 
 
 async def connectRedis(app, loop):
-    app.config['redisPool'] = await aioredis.create_pool(
-        (config.CACHE_REDIS_IP, config.CACHE_REDIS_PORT),
-        minsize=5,
-        maxsize=10,
-        loop=loop
-    )
-    await app.config['redisPool'].commands.ServerCommandsMixin.config_set(parameter='maxmemory', value='2gb')
-    await app.config['redisPool'].commands.ServerCommandsMixin.config_set(parameter='maxmemory-policy',
-                                                                          value='allkeys-lru')
+    app.config['redisPool'] = await aioredis.create_redis_pool(f'redis://{config.CACHE_REDIS_IP}:{config.CACHE_REDIS_PORT}')
+    await app.config['redisPool'].config_set(parameter='maxmemory', value='2gb')
+    await app.config['redisPool'].config_set(parameter='maxmemory-policy', value='allkeys-lru')
 
 
 async def initRedisHandler(app, loop):

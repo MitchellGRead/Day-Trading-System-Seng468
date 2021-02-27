@@ -30,7 +30,6 @@ non_negative_number = {
     'inclusiveMinimum': 0
 }
 
-
 base_transaction_schema = {
     'type': 'object',
     'properties': {
@@ -75,12 +74,21 @@ quote_schema = {
     'required': ['transaction_num', 'user_id', 'stock_symbol', 'command']
 }
 
+base_commit_schema = {
+    'type': 'object',
+    'properties': {
+        'transaction_num': {'type': 'integer'},
+        'user_id': {'type': 'string'},
+    },
+    'required': ['transaction_num', 'user_id']
+}
+
 buy_schema = base_transaction_schema
-commit_buy_schema = base_transaction_schema
+commit_buy_schema = base_commit_schema
 cancel_buy_schema = base_user_schema
 
 sell_schema = base_transaction_schema
-commit_sell_schema = base_transaction_schema
+commit_sell_schema = base_commit_schema
 cancel_sell_schema = base_user_schema
 
 add_funds_schema = funds_schema

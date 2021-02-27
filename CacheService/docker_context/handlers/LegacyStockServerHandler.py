@@ -9,7 +9,7 @@ class LegacyStockServerHandler:
         self.port = port
         self.audit = audit
 
-    def quoteSocket(self):
+    async def quoteSocket(self):
         stockSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print("Attempting Connection to Quote Server")
         while stockSocket.connect_ex((self.ip, self.port)) != 0:
@@ -17,8 +17,8 @@ class LegacyStockServerHandler:
         print("Quote Connection Started")
         return stockSocket
 
-    def getQuote(self, trans_num, user_id, stock_symbol):
-        stockSocket = self.quoteSocket()
+    async def getQuote(self, trans_num, user_id, stock_symbol):
+        stockSocket = await self.quoteSocket()
         message = "{},{}\n".format(stock_symbol, user_id)
         stockSocket.send(message.encode())
         dataReceived = stockSocket.recv(1024).decode()
@@ -35,5 +35,5 @@ class LegacyStockServerHandler:
         }
 
         # DO AUDIT
-
-        return dataReceived[0]
+        # DO FAILURE
+        return {'price': dataReceived[0]}, 200
