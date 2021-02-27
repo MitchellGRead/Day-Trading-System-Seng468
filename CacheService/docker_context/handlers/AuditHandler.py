@@ -26,23 +26,15 @@ class AuditHandler:
         self.service_name = service_name
         self.url = f'http://{ip}:{port}'
 
-    def baseEvent(self, trans_num, command):
-        return {
+    def baseEvent(self, trans_num, command=''):  # command is optional only for quote events
+        event = {
             'server': self.service_name,
             'timestamp': currentTimeMs(),
             'transaction_num': trans_num,
-            'command': command
         }
-
-    async def handleUserCommand(self, trans_num, command, user_id='', stock_symbol='', amount=0, filename=''):
-        event = {
-            **self.baseEvent(trans_num, command),
-            **addKeyValuePairs(user_id, stock_symbol, amount, filename)
-        }
-
-        resp = await self.postRequest('/event/user_command', event)
-        logger.debug(resp)
-        return
+        if command:
+            event['command'] = command
+        return event
 
     async def handleError(self, trans_num, command, error_msg, user_id='', stock_symbol='', amount=0, filename=''):
         event = {
@@ -62,6 +54,19 @@ class AuditHandler:
         }
 
         resp = await self.postRequest('/event/system', event)
+        logger.debug(resp)
+        return
+
+    async def handleQuote(self, trans_num, user_id, stock_symbol, price, quote_server_time, crptokey):
+        event = {
+            **self.baseEvent(trans_num),
+            **addKeyValuePairs(user_id, stock_symbol),
+            'price': price,
+            'quote_server_timestamp': quote_server_time,
+            'cryptokey': crptokey
+        }
+
+        resp = await self.postRequest('event/quote', event)
         logger.debug(resp)
         return
 

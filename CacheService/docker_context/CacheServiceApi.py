@@ -44,11 +44,6 @@ async def getQuote(request, user_id, stock_id, trans_num):
 # Get active buy command
 @app.route(endpoints.get_buy_endpoint, methods=['GET'])
 async def getBuyStocks(request, user_id):
-    if user_id:
-        res, err = validateRequest(user_id, is_user_id)
-        if not res:
-            return response.json(errorResult(err, user_id), status=400)
-
     result, status = await app.config['serviceLogic'].getBuyStocks(user_id)
     return response.json(result, status=status)
 
@@ -56,11 +51,6 @@ async def getBuyStocks(request, user_id):
 # Get active sell command
 @app.route(endpoints.get_sell_endpoint, methods=['GET'])
 async def getSellStocks(request, user_id):
-    if user_id:
-        res, err = validateRequest(user_id, is_user_id)
-        if not res:
-            return response.json(errorResult(err, user_id), status=400)
-
     result, status = await app.config['serviceLogic'].getSellStocks(user_id)
     return response.json(result, status=status)
 
