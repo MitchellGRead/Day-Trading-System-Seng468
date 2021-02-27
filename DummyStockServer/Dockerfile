@@ -1,5 +1,5 @@
 FROM python:3.9.1-buster
 
 WORKDIR /usr/src/app
-COPY ./* ./
+COPY . .
 CMD ["python", "./DummyStock.py"]
