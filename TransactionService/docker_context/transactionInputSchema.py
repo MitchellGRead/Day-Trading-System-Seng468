@@ -9,7 +9,7 @@ def validateRequest(data, schema):
         validate(instance=data, schema=schema)
         return True, ''
     except ValidationError as err:
-        return False, str(err)
+        return False, err.message
 
 
 def errorResult(err, data):
