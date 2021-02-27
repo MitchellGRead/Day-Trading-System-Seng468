@@ -1,5 +1,4 @@
 import aiohttp
-import aioredis
 import config
 from sanic.log import logger
 from handlers.AuditHandler import AuditHandler
@@ -19,7 +18,7 @@ async def initAudit(app, loop):
     logger.debug('Creating audit handler')
     app.config['audit'] = AuditHandler(
         app.config['client'],
-        config.WEB_SERVER_NAME,
+        config.TRANSACTION_SERVER_NAME,
         config.AUDIT_SERVER_IP,
         config.AUDIT_SERVER_PORT
     )

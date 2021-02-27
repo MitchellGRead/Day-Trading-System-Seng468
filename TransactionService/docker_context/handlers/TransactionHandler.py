@@ -1,6 +1,5 @@
 from time import time
 from math import ceil, floor
-from sanic import Sanic, response
 
 
 def errorResult(err, data):
@@ -34,12 +33,12 @@ class TransactionHandler:
         self.cacheURL = f'http://{ip}:{port}'
 
     async def addFunds(self, trans_num, user_id, amount):
-        data = {'user_id': user_id, 'funds': float(amount)}
-        result, status = await self.postRequest(self.cacheURL+"/funds/add_funds", data)
+        data = {'transaction_num': trans_num, 'user_id': user_id, 'funds': float(amount)}
+        result, status = await self.postRequest(f"{self.cacheURL}/funds/add_funds", data)
         return result, status
 
     async def getQuote(self, trans_num, user_id, stock_id):
-        result, status = await self.getRequest(self.cacheURL + f"/quote/get/{user_id}/{stock_id}/{trans_num}")
+        result, status = await self.getRequest(f"{self.cacheURL}/quote/get/{user_id}/{stock_id}/{trans_num}")
         return result, status
 
     async def buyStock(self, trans_num, user_id, stock_symbol, amount):
@@ -47,16 +46,23 @@ class TransactionHandler:
         if status == 200:
             quotePrice = float(result['content']['price'])
             if float(quotePrice) > float(amount):
-                return errorResult(err="Not enough capital to buy this stock.", data=''), 400
+                err_msg = "Not enough capital to buy this stock."
+                await self.audit.handleError(trans_num, 'BUY', err_msg, user_id, stock_symbol, amount)
+                return errorResult(err=err_msg, data=''), 400
+
             totalStock = floor(float(amount)/float(quotePrice))
             totalValue = round(quotePrice*totalStock, 2)
-            result, status = await self.getRequest(self.cacheURL + f"/funds/get/user/{user_id}")
+            result, status = await self.getRequest(f"{self.cacheURL}/funds/get/user/{user_id}")
             if status == 200:
                 userBal = result['content']
+
                 if totalValue > float(userBal):
-                    return errorResult(err="User doesn't have required funds", data=''), 400
-                data = {'user_id': user_id, 'stock_symbol': stock_symbol, 'stock_amount': totalStock, 'funds': totalValue}
-                result, status = await self.postRequest(self.cacheURL+"/stocks/buy_stocks", data)
+                    err_msg = "User doesn't have required funds"
+                    await self.audit.handleError(trans_num, 'BUY', err_msg, user_id, stock_symbol, amount)
+                    return errorResult(err=err_msg, data=''), 400
+
+                data = {'transaction_num': trans_num, 'user_id': user_id, 'stock_symbol': stock_symbol, 'stock_amount': totalStock, 'funds': totalValue}
+                result, status = await self.postRequest(f"{self.cacheURL}/stocks/buy_stocks", data)
                 return result, status
             else:
                 return result, status
@@ -64,28 +70,30 @@ class TransactionHandler:
             return result, status
 
     async def getBuy(self, user_id):
-        result, status = await self.getRequest(self.cacheURL + f"/stocks/get_buy/{user_id}")
+        result, status = await self.getRequest(f"{self.cacheURL}/stocks/get_buy/{user_id}")
         return result, status
 
     async def commitBuy(self, trans_num, user_id):
         result, status = await self.getBuy(user_id)
         if status == 200:
             check = result['content']
-            data = {'user_id': user_id}
+            data = {'transaction_num': trans_num, 'user_id': user_id}
             then = float(check['time'])
             now = currentTime()
             difference = (now-then)
             if difference < 60:
-                result, status = await self.postRequest(self.cacheURL + "/stocks/commit_buy", data)
+                result, status = await self.postRequest(f"{self.cacheURL}/stocks/commit_buy", data)
                 return result, status
             else:
-                return errorResult(err="Previous buy has expired", data=''), 400
+                err_msg = "Previous buy has expired"
+                await self.audit.handleError(trans_num, 'COMMIT_BUY', err_msg, user_id)
+                return errorResult(err=err_msg, data=''), 400
         else:
             return result, status
 
     async def cancelBuy(self, trans_num, user_id):
-        data = {'user_id': user_id}
-        result, status = await self.postRequest(self.cacheURL + "/stocks/cancel_buy", data)
+        data = {'transaction_num': trans_num, 'user_id': user_id}
+        result, status = await self.postRequest(f"{self.cacheURL}/stocks/cancel_buy", data)
         return result, status
 
     async def sellStock(self, trans_num, user_id, stock_symbol, amount):
@@ -94,13 +102,16 @@ class TransactionHandler:
             quotePrice = float(result['content']['price'])
             totalStock = ceil(float(amount) / float(quotePrice))
             totalValue = round(quotePrice * totalStock, 2)
-            result, status = await self.getRequest(self.cacheURL + f"/stocks/get/user/{user_id}/{stock_symbol}")
+            result, status = await self.getRequest(f"{self.cacheURL}/stocks/get/user/{user_id}/{stock_symbol}")
             if status == 200:
                 stockBal = result['content']
                 if totalValue > stockBal:
+                    err_msg = "User doesn't have required stocks"
+                    await self.audit.handleError(trans_num, 'SELL', err_msg, user_id)
                     return errorResult(err="User doesn't have required stocks", data=''), 400
-                data = {'user_id': user_id, 'stock_symbol': stock_symbol, 'stock_amount': totalStock,
-                        'funds': totalValue}
+
+                data = {'transaction_num': trans_num, 'user_id': user_id, 'stock_symbol': stock_symbol,
+                        'stock_amount': totalStock, 'funds': totalValue}
                 result, status = await self.postRequest(self.cacheURL + "/stocks/sell_stocks", data)
                 return result, status
             else:
@@ -109,28 +120,30 @@ class TransactionHandler:
             return result, status
 
     async def getSell(self, user_id):
-        result, status = await self.getRequest(self.cacheURL + f"/stocks/get_sell/{user_id}")
+        result, status = await self.getRequest(f"{self.cacheURL}/stocks/get_sell/{user_id}")
         return result, status
 
     async def commitSell(self, trans_num, user_id):
         result, status = await self.getSell(user_id)
         if status == 200:
             check = result['content']
-            data = {'user_id': user_id}
+            data = {'transaction_num': trans_num, 'user_id': user_id}
             then = float(check['time'])
             now = currentTime()
             difference = (now - then)
             if difference < 60:
-                result, status = await self.postRequest(self.cacheURL + "/stocks/commit_sell", data)
+                result, status = await self.postRequest(f"{self.cacheURL}/stocks/commit_sell", data)
                 return result, status
             else:
-                return errorResult(err="Previous sell has expired", data=''), 400
+                err_msg = "Previous sell has expired"
+                await self.audit.handleError(trans_num, 'COMMIT_SELL', err_msg, user_id)
+                return errorResult(err=err_msg, data=''), 400
         else:
             return result, status
 
     async def cancelSell(self, trans_num, user_id):
-        data = {'user_id': user_id}
-        result, status = await self.postRequest(self.cacheURL + "/stocks/cancel_sell", data)
+        data = {'transaction_num': trans_num, 'user_id': user_id}
+        result, status = await self.postRequest(f"{self.cacheURL}/stocks/cancel_sell", data)
         return result, status
 
     # __________________________________________________________________________________________________________________
