@@ -66,7 +66,7 @@ class AuditHandler:
             'cryptokey': crptokey
         }
 
-        resp = await self.postRequest('event/quote', event)
+        resp = await self.postRequest('/event/quote', event)
         logger.debug(resp)
         return
 
