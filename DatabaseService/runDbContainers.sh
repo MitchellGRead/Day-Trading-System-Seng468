@@ -8,7 +8,7 @@ mongo_id=$(sudo -s docker ps -aq --filter NAME=$mongo_db_name)
 if [[ -z $pgres_id  ]]
 then
 	echo "Starting Postgres container"
-	$(dirname $0)/PostgreSQL/start_container.sh
+	$(dirname $0)/PostgreSQL/start_container.sh > /dev/null
 else
 	:
 fi
