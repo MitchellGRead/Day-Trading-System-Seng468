@@ -3,7 +3,7 @@ from sanic.log import logger
 import asyncpg
 
 connection_string = "postgres://{user}:{password}@{host}:{port}/{database}".format(
-    user='daytrader', password='tothemoon', host='localhost',
+    user='daytrader', password='tothemoon', host='trading-db-13',
     port=5432, database='trading-db')
 
 users_table = 'users'
