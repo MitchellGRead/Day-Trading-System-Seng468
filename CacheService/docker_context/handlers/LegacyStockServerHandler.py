@@ -25,15 +25,18 @@ class LegacyStockServerHandler:
         dataReceived = dataReceived.split(",")
         stockSocket.close()
 
+        price, _, _, quote_time, cryptokey = dataReceived
+        price = float(price)
+        quote_time = int(quote_time)
         result = {
             "transaction_num": trans_num,
             "user_id": user_id,
             "stock_symbol": stock_symbol,
-            "price": dataReceived[0],
-            "cryptokey": dataReceived[4],
-            "quoteTime": dataReceived[3]
+            "price": price,
+            "cryptokey": cryptokey,
+            "quoteTime": quote_time
         }
 
-        # DO AUDIT
+        await self.audit.handleQuote(trans_num, user_id, stock_symbol, price, quote_time, cryptokey)
         # DO FAILURE
-        return {'price': dataReceived[0]}, 200
+        return {'price': price}, 200
