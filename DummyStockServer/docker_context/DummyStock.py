@@ -1,8 +1,9 @@
 import socket
 import random
+import config
 
-stockPort = 4444
-localHost = "dummy-stock-1"
+stockPort = config.DUMMY_STOCK_SERVER_PORT
+stockIp = config.DUMMY_STOCK_SERVER_IP
 
 
 def randomNumber():
@@ -11,7 +12,7 @@ def randomNumber():
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((localHost, stockPort))
+s.bind((stockIp, stockPort))
 s.listen()
 
 while True:
