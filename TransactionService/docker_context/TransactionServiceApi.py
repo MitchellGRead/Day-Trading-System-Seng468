@@ -1,4 +1,5 @@
 from sanic import Sanic, response
+from sanic.log import logger
 
 import config
 from transactionInputSchema import *
@@ -17,6 +18,7 @@ async def getQuote(request, trans_num, user_id, stock_symbol):
     }
     res, err = validateRequest(data, quote_schema)
     if not res:
+        logger.debug("FAILED VALIDATION")
         return response.json(errorResult(err, data), status=400)
 
     result, status = await app.config['serviceLogic'].getQuote(data['transaction_num'], data['user_id'],
