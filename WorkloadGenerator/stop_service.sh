@@ -2,7 +2,7 @@
 
 source $(dirname $0)/config.sh
 
-cont=$web_service_name
+cont=$generator_name
 
 echo 'Stopping generator...'
 sudo docker stop $cont > /dev/null
