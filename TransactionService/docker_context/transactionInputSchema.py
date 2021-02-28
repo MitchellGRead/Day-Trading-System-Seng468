@@ -79,8 +79,9 @@ base_commit_schema = {
     'properties': {
         'transaction_num': {'type': 'integer'},
         'user_id': {'type': 'string'},
+        'command': {'type': 'string'}
     },
-    'required': ['transaction_num', 'user_id']
+    'required': ['transaction_num', 'user_id', 'command']
 }
 
 buy_schema = base_transaction_schema
