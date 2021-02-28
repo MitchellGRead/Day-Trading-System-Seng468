@@ -1,4 +1,4 @@
-from sanic import response
+from sanic.log import logger
 from time import time
 
 
@@ -41,6 +41,7 @@ class CacheHandler:
                 data = await self.RedisHandler.rGet(user_id)
                 return goodResult(msg="User Data", data=data['account_balance']), 200
             else:
+                logger.debug(result, status)
                 return result, status
 
     async def getUserStocks(self, user_id, stock_id):
@@ -54,6 +55,7 @@ class CacheHandler:
                 data = await self.RedisHandler.rGet(user_id + "_" + stock_id)
                 return goodResult(msg="Stock Data", data=data['stock_amount']), 200
             else:
+                logger.debug(stockResult, stockStatus)
                 return stockResult, stockStatus
 
     async def addFunds(self, user_id, funds):
