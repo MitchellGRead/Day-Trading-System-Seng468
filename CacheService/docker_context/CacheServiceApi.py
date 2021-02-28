@@ -1,4 +1,5 @@
 from sanic import Sanic, response
+from sanic.log import logger
 
 import config
 import endpoints
@@ -32,6 +33,7 @@ async def getUserStocks(request, user_id, stock_id):
 # Gets a quote price
 @app.route(endpoints.get_quote_endpoint, methods=['GET'])
 async def getQuote(request, user_id, stock_id, trans_num):
+    logger.debug(stock_id)
     if stock_id:
         res, err = validateRequest(stock_id, one_to_three_letter_string)
         if not res:
