@@ -1,6 +1,8 @@
 from time import time
 from math import ceil, floor
 
+import aiohttp
+
 
 def errorResult(err, data):
     return {
@@ -149,13 +151,15 @@ class TransactionHandler:
     # __________________________________________________________________________________________________________________
 
     async def getRequest(self, url, params=None):
-        async with self.client.get(url, params=params) as resp:
-            js = await resp.json()
-            status = resp.status
-            return js, status
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params) as resp:
+                js = await resp.json()
+                status = resp.status
+                return js, status
 
     async def postRequest(self, url, data):
-        async with self.client.post(url, json=data) as resp:
-            js = await resp.json()
-            status = resp.status
-            return js, status
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=data) as resp:
+                js = await resp.json()
+                status = resp.status
+                return js, status
