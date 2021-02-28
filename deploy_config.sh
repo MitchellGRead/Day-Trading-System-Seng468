@@ -15,3 +15,6 @@ cp $curr_path/config.sh $curr_path/RedisService/config.sh
 
 cp $curr_path/config.py $curr_path/CacheService/docker_context
 cp $curr_path/config.sh $curr_path/CacheService/config.sh
+
+cp $curr_path/config.py $curr_path/TransactionService/docker_context
+cp $curr_path/config.sh $curr_path/TransactionService/config.sh
