@@ -15,7 +15,7 @@ async def getQuote(request, trans_num, user_id, stock_symbol):
         'transaction_num': trans_num,
         'user_id': user_id,
         'stock_symbol': stock_symbol,
-        'command': 'QUOTE'
+        'command': "QUOTE"
     }
     res, err = validateRequest(data, quote_schema)
     if not res:
