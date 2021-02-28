@@ -49,3 +49,11 @@ trans_service_port=6666
 
 trans_service_image=$trans_base_name:$trans_base_num
 trans_service_name=$trans_base_name-$trans_base_num
+
+trigger_base_name=trigger
+trigger_base_num=1
+
+trigger_service_port=7000
+
+trigger_service_image=$trigger_base_name:$trigger_base_num
+trigger_service_name=$trigger_base_name-$trigger_base_num
