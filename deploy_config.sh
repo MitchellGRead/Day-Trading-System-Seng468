@@ -22,5 +22,5 @@ cp $curr_path/config.sh $curr_path/TransactionService/config.sh
 cp $curr_path/config.py $curr_path/TriggerService/docker_context
 cp $curr_path/config.sh $curr_path/TriggerService/config.sh
 
-# cp $curr_path/config.py $curr_path/TransactionService/docker_context
-# cp $curr_path/config.sh $curr_path/TransactionService/config.sh
+cp $curr_path/config.py $curr_path/WebService/docker_context
+cp $curr_path/config.sh $curr_path/WebService/config.sh
