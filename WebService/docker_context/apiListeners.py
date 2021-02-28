@@ -1,12 +1,15 @@
 import aiohttp
-import config
+import asyncio
 from sanic.log import logger
-from audit.AuditHandler import AuditHandler
+
+import config
 from ServiceLogic import ServiceLogic
+from audit.AuditHandler import AuditHandler
 
 
 async def initClient(app, loop):
     logger.debug('Starting http client')
+    app.config['sem'] = asyncio.Semaphore(10, loop=loop)
     app.config['client'] = aiohttp.ClientSession(loop=loop)
 
 
@@ -28,5 +31,6 @@ def initServiceLogic(app, loop):
     logger.debug('Creating api logic handler')
     app.config['logic'] = ServiceLogic(
         app.config['client'],
-        app.config['audit']
+        app.config['audit'],
+        app.config['sem']
     )
