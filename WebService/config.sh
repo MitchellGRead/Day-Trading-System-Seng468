@@ -40,7 +40,7 @@ cache_base_num=1
 cache_service_port=9999
 
 cache_service_image=$cache_base_name:$cache_base_num
-cache_service_name=$cache_base_name-$cache_base_numaudit_service_image
+cache_service_name=$cache_base_name-$cache_base_num
 
 trans_base_name=trsrvr
 trans_base_num=1
