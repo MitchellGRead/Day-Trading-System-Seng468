@@ -236,5 +236,7 @@ if __name__ == '__main__':
         host=config.WEB_SERVER_IP,
         port=config.WEB_SERVER_PORT,
         debug=config.RUN_DEBUG,
-        auto_reload=True
+        access_log=config.RUN_DEBUG,
+        auto_reload=True,
+        workers=config.WEB_SERVER_WORKERS
     )
