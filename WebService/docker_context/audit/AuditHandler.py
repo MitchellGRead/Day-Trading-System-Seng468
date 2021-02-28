@@ -70,6 +70,6 @@ class AuditHandler:
     async def postRequest(self, endpoint, data):
         url = f'{self.url}{endpoint}'
         async with aiohttp.ClientSession() as session:
-            async with self.client.post(url, json=data) as resp:
+            async with session.post(url, json=data) as resp:
                 js = await resp.json()
                 return js
