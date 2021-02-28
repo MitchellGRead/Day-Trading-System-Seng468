@@ -17,7 +17,7 @@ async def userCommandEvent(request):
 
     data = request.json
     data['xmlName'] = 'userCommand'
-    app.config['logic'].logEvent(data)
+    await app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
@@ -29,7 +29,7 @@ async def accountTransactionEvent(request):
 
     data = request.json
     data['xmlName'] = 'accountTransaction'
-    app.config['logic'].logEvent(data)
+    await app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
@@ -41,7 +41,7 @@ async def systemEvent(request):
 
     data = request.json
     data['xmlName'] = 'systemEvent'
-    app.config['logic'].logEvent(data)
+    await app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
@@ -53,7 +53,7 @@ async def quoteServerEvent(request):
 
     data = request.json
     data['xmlName'] = 'quoteServer'
-    app.config['logic'].logEvent(data)
+    await app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
@@ -65,7 +65,7 @@ async def errorEvent(request):
 
     data = request.json
     data['xmlName'] = 'errorEvent'
-    app.config['logic'].logEvent(data)
+    await app.config['logic'].logEvent(data)
     return response.json(request.json)
 
 
