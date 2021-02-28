@@ -88,5 +88,7 @@ if __name__ == '__main__':
         host=config.TRIGGER_SERVER_IP,
         port=config.TRIGGER_SERVER_PORT,
         debug=config.RUN_DEBUG,
-        auto_reload=True
+        access_log=config.RUN_DEBUG,
+        auto_reload=True,
+        workers=config.TRIGGER_SERVICE_WORKERS
     )

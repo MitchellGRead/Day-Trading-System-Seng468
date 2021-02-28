@@ -177,5 +177,7 @@ if __name__ == "__main__":
         host=config.CACHE_SERVER_IP,
         port=config.CACHE_SERVER_PORT,
         debug=config.RUN_DEBUG,
-        auto_reload=True
+        access_log=config.RUN_DEBUG,
+        auto_reload=True,
+        workers=config.CACHE_SERVICE_WORKERS
     )

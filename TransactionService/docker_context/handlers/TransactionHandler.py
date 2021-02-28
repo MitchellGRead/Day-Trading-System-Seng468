@@ -105,7 +105,7 @@ class TransactionHandler:
             result, status = await self.getRequest(f"{self.cacheURL}/stocks/get/user/{user_id}/{stock_symbol}")
             if status == 200:
                 stockBal = result['content']
-                if totalValue > stockBal:
+                if totalStock > stockBal:
                     err_msg = "User doesn't have required stocks"
                     await self.audit.handleError(trans_num, 'SELL', err_msg, user_id)
                     return errorResult(err="User doesn't have required stocks", data=''), 400
