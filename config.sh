@@ -33,3 +33,11 @@ redis_service_port=6379
 
 redis_service_image=$redis_base_name:latest
 redis_service_name=$redis_base_name-$redis_base_num
+
+cache_base_name=cache
+cache_base_num=1
+
+cache_service_port=9999
+
+cache_service_image=$cache_base_name:$cache_base_num
+cache_service_name=$cache_base_name-$cache_base_numaudit_service_image
