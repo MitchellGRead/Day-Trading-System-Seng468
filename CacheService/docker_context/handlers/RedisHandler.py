@@ -1,5 +1,6 @@
 import pickle
 from sanic import response
+from sanic.log import logger
 
 
 def errorResult(err, data):
@@ -59,6 +60,7 @@ class RedisHandler:
             await self.redis.set(user_id, pickle.dumps(user))
             return goodResult(msg="Pulled Data", data=''), 200
         else:
+            logger.debug(data, status)
             return data, status
 
     async def updateStockCache(self, user_id, stock_symbol):
@@ -73,6 +75,7 @@ class RedisHandler:
                 await self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stockBalance))
             return goodResult(msg="Pulled Data", data=''), 200
         else:
+            logger.debug(data, status)
             return data, status
 
     async def rSet(self, key, values):
