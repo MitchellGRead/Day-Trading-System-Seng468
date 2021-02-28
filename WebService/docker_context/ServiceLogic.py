@@ -1,11 +1,18 @@
+import asyncio
+
+from aiohttp import ClientResponseError
+from sanic.log import logger
+
 import config
+
 
 class ServiceLogic:
 
-    def __init__(self, client, audit):
+    def __init__(self, client, audit, limit):
         self.client = client
         self.audit = audit
         self.trans_url = f'http://{config.TRANSACTION_SERVER_IP}:{config.TRANSACTION_SERVER_PORT}'
+        self.limit = limit
 
     # HELPER FUNCTIONS -----------------------------------------
     async def __auditTransactionCommand(self, data):
@@ -24,15 +31,27 @@ class ServiceLogic:
             user_id=data['user_id']
         )
 
+    async def __getResult(self, resp):
+        try:
+            result = await resp.json()
+        except ClientResponseError as err:
+            logger.debug(f'{config.WEB_SERVER_NAME} - {err.message}')
+            result = {'status': 500, 'err_msg': err.message}
+        except asyncio.TimeoutError as err:
+            logger.debug(f'{config.WEB_SERVER_NAME} - {err}')
+            result = {'status': 500, 'err_msg': err}
+        except Exception as err:
+            logger.debug(f'{config.WEB_SERVER_NAME} - {err}')
+            result = {'status': 500, 'err_msg': err}
+        return result
+
     async def __getRequest(self, url, params=None):
-        async with self.client.get(url, params=params) as resp:
-            js = await resp.json()
-            return js
+        async with self.limit, self.client.get(url, params=params) as resp:
+            return await self.__getResult(resp)
 
     async def __postRequest(self, url, data):
-        async with self.client.post(url, json=data) as resp:
-            js = await resp.json()
-            return js
+        async with self.limit, self.client.post(url, json=data) as resp:
+            return await self.__getResult(resp)
     # ----------------------------------------------------------
 
     async def handleQuote(self, data):
