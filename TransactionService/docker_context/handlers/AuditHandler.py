@@ -1,4 +1,6 @@
 from time import time
+
+import aiohttp
 from sanic.log import logger
 
 
@@ -57,6 +59,7 @@ class AuditHandler:
 
     async def postRequest(self, endpoint, data):
         url = f'{self.url}{endpoint}'
-        async with self.client.post(url, json=data) as resp:
-            js = await resp.json()
-            return js
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=data) as resp:
+                js = await resp.json()
+                return js
