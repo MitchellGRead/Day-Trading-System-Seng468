@@ -42,16 +42,16 @@ class PostgresHandler:
 
         result = await self.fetchQuery(get_funds_query)
 
-        if result is None:
+        if result is None or result == [] or result == {}:
             return {
                 'errorMessage': 'Unexpected error. Could not get funds.'
-            }
+            }, 404
 
         resp_list = {}
         for record in result:
             resp_list[record[0]] = {'available_funds': record[1], 'reserved_funds': record[2]}
 
-        return resp_list
+        return resp_list, 200
 
     async def handleGetUserFundsCommand(self, user_id):
         user_exists = await self._checkUserExists(user_id)
@@ -59,7 +59,7 @@ class PostgresHandler:
         if not user_exists:
             return {
                 'errorMessage': 'Specified user does not exist'
-            }
+            }, 404
 
         get_funds_query = from_table_where_user_query.format(
             columns='*',
@@ -71,7 +71,7 @@ class PostgresHandler:
         if result == [] or result is None or len(result) != 1:
             return {
                 'errorMessage': 'Unexpected error. Could not get funds.'
-            }
+            }, 404
 
         available_funds = result[0][1]
         reserved_funds = result[0][2]
@@ -79,7 +79,7 @@ class PostgresHandler:
             'available_funds': available_funds,
             'reserved_funds': reserved_funds
         }
-        return result
+        return result, 200
 
     async def handleGetAllStocksCommand(self):
         get_stocks_query = from_table_where_query.format(
@@ -90,10 +90,10 @@ class PostgresHandler:
 
         result = await self.fetchQuery(get_stocks_query)
         logger.debug(str(result))
-        if result is None:
+        if result is None or result == [] or result == {}:
             return {
                 'errorMessage': 'Unexpected error. Could not get stocks.'
-            }
+            }, 404
 
         resp_list = {}
         for record in result:
@@ -104,7 +104,7 @@ class PostgresHandler:
             stocks_list[record[1]] = [record[2], record[3]]
             resp_list[record[0]] = stocks_list
 
-        return resp_list
+        return resp_list, 200
 
     async def handleGetUserStocksCommand(self, user_id, stock_id):
         user_exists = await self._checkUserExists(user_id)
@@ -112,7 +112,7 @@ class PostgresHandler:
         if not user_exists:
             return {
                 'errorMessage': 'Specified user does not exist.'
-            }
+            }, 404
 
         where_clause = "where user_id = '{user}'".format(user=user_id)
 
@@ -123,16 +123,16 @@ class PostgresHandler:
 
         result = await self.fetchQuery(get_stocks_query)
 
-        if result is None:
+        if result is None or result == [] or result == {}:
             return {
                 'errorMessage': 'Unexpected error. Could not get stocks.'
-            }
+            }, 404
 
         resp_list = {}
         for record in result:
             resp_list[record[1]] = [record[2], record[3]]
 
-        return resp_list
+        return resp_list, 200
 
     async def handleAddFundsCommand(self, user_id, funds):
         user_exists = await self._checkUserExists(user_id)
@@ -154,14 +154,14 @@ class PostgresHandler:
         result = await self.executeQuery(add_funds_query)
 
         if type(result) != str:
-            return error_resp
+            return error_resp, 500
 
         result = result.lower().split(' ')
 
         if len(result) == 2 and result[0] == 'update' and result[1] == '1':
-            return success_resp
+            return success_resp, 200
 
-        return error_resp
+        return error_resp, 500
 
     async def handleBuyStocksCommand(self, user_id, stock_id, stock_num, funds):
         user_exists = await self._checkUserExists(user_id)
@@ -169,7 +169,7 @@ class PostgresHandler:
         if not user_exists:
             return {
                 'status': 'failure', 'message': 'Specified user does not exist.'
-            }
+            }, 404
 
         balances = await self.handleGetUserFundsCommand(user_id)
         curr_funds = balances['available_funds']
@@ -185,7 +185,7 @@ class PostgresHandler:
         if curr_funds < funds:
             return {
                 'status': 'failure', 'message': 'Not enough funds in account.'
-            }
+            }, 404
 
         buy_stock_query = to_table_where_user_query.format(
             table=funds_table,
@@ -208,18 +208,18 @@ class PostgresHandler:
         if type(result) != str:
             return {
                 'status': 'failure', 'message': 'Could not buy stocks.'
-            }
+            }, 500
 
         result = result.lower().split(' ')
         # Checks we get back "insert <some_num> 1" as our status string for the INSERT query
         if len(result) == 3 and result[0] == 'insert' and result[2] == '1':
             return {
                 'status': 'success', 'message': 'Successfully bought stocks.'
-            }
+            }, 200
 
         return {
             'status': 'failure', 'message': 'Failed to update user account.'
-        }
+        }, 500
 
     async def handleSellStocksCommand(self, user_id, stock_id, stock_num, funds):
         user_exists = await self._checkUserExists(user_id)
@@ -227,7 +227,7 @@ class PostgresHandler:
         if not user_exists:
             return {
                 'status': 'failure', 'message': 'Specified user does not exist.'
-            }
+            }, 404
 
         balances = await self.handleGetUserFundsCommand(user_id)
         curr_funds = balances['available_funds']
@@ -243,7 +243,7 @@ class PostgresHandler:
             if available_stock < stock_num:
                 return {
                     'status': 'failure', 'message': 'Not enough stocks in account.'
-                }
+                }, 404
 
         sell_stock_query = to_table_where_user_query.format(
             table=funds_table,
@@ -265,18 +265,18 @@ class PostgresHandler:
         if type(result) != str:
             return {
                 'status': 'failure', 'message': 'Could not sell stocks.'
-            }
+            }, 500
 
         result = result.lower().split(' ')
         # Checks we get back "insert <some_num> 1" as our status string for the INSERT query
         if len(result) == 3 and result[0] == 'insert' and result[2] == '1':
             return {
                 'status': 'success', 'message': 'Successfully sold stocks.'
-            }
+            }, 200
 
         return {
             'status': 'failure', 'message': 'Failed to update user account.'
-        }
+        }, 500
 
     async def executeQuery(self, query):
         result = None
