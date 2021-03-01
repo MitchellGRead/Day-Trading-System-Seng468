@@ -14,22 +14,22 @@ app = Sanic(config.DATABASE_SERVER_NAME)
 # Get all users' funds
 @app.route(endpoints.get_all_funds_endpoint, methods=['GET'])
 async def getAllFunds(request):
-    result = await app.config['logic'].handleGetAllFundsCommand()
-    return response.json(result)
+    result, status = await app.config['logic'].handleGetAllFundsCommand()
+    return response.json(result, status=status)
 
 
 # Get the user's funds
 @app.route(endpoints.get_user_funds_endpoint, methods=['GET'])
 async def getUserFunds(request, user_id):
-    result = await app.config['logic'].handleGetFundsCommand(user_id)
-    return response.json(result)
+    result, status = await app.config['logic'].handleGetFundsCommand(user_id)
+    return response.json(result, status=status)
 
 
 #Get all users' stocks
 @app.route(endpoints.get_all_stocks_endpoint, methods=['GET'])
 async def getAllStocks(request):
-    result = await app.config['logic'].handleGetAllStocksCommand()
-    return response.json(result)
+    result, status = await app.config['logic'].handleGetAllStocksCommand()
+    return response.json(result, status=status)
 
 
 # Get the user's stocks
@@ -42,15 +42,15 @@ async def getUserStocks(request, user_id):
         if not res:
             return response.json(errorResult(err, stock_id), status=400)
 
-    result = await app.config['logic'].handleGetStocksCommand(user_id, stock_id)
-    return response.json(result)
+    result, status = await app.config['logic'].handleGetStocksCommand(user_id, stock_id)
+    return response.json(result, status=status)
 
 
 # Get the system's summary
 @app.route(endpoints.get_summary_endpoint, methods=['GET'])
 async def getSummary(request, user_id):
-    result = await app.config['logic'].handleGetSummaryCommand(user_id)
-    return response.json(result)
+    result, status = await app.config['logic'].handleGetSummaryCommand(user_id)
+    return response.json(result, status=status)
 
 
 # POST ENDPOINTS -----------------------------------------------
@@ -64,8 +64,8 @@ async def addFunds(request):
         return response.json(errorResult(err, request.json), status=400)
     
     data = request.json 
-    result = await app.config['logic'].handleAddFundsCommand(data['user_id'], data['funds'])
-    return response.json(result)
+    result, status = await app.config['logic'].handleAddFundsCommand(data['user_id'], data['funds'])
+    return response.json(result, status=status)
 
 
 # Remove funds from user's account
