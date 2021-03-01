@@ -174,7 +174,7 @@ class PostgresHandler:
         balances, status = await self.handleGetUserFundsCommand(user_id)
         curr_funds = balances['available_funds']
 
-        stocks = await self.handleGetUserStocksCommand(user_id, stock_id)
+        stocks, status = await self.handleGetUserStocksCommand(user_id, stock_id)
         available_stock = 0
         reserved_stock = 0
 
@@ -232,7 +232,7 @@ class PostgresHandler:
         balances, status = await self.handleGetUserFundsCommand(user_id)
         curr_funds = balances['available_funds']
 
-        stocks = await self.handleGetUserStocksCommand(user_id, stock_id)
+        stocks, status = await self.handleGetUserStocksCommand(user_id, stock_id)
         available_stock = 0
         reserved_stock = 0
 
