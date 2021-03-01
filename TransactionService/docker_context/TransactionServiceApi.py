@@ -141,7 +141,7 @@ if __name__ == '__main__':
         host=config.TRANSACTION_SERVER_IP,
         port=config.TRANSACTION_SERVER_PORT,
         debug=config.RUN_DEBUG,
-        access_log=config.RUN_DEBUG,
+        access_log=config.ACCESS_LOGS,
         auto_reload=True,
         workers=config.TRANSACTION_SERVICE_WORKERS
     )

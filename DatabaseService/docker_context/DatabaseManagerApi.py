@@ -118,7 +118,7 @@ if __name__ == "__main__":
         host=config.DATABASE_SERVER_IP,
         port=config.DATABASE_SERVER_PORT,
         debug=config.RUN_DEBUG,
-        access_log=config.RUN_DEBUG,
+        access_log=config.ACCESS_LOGS,
         auto_reload=True,
         workers=config.DATABASE_SERVICE_WORKERS
     )
