@@ -9,7 +9,7 @@ from audit.AuditHandler import AuditHandler
 
 async def initClient(app, loop):
     logger.debug('Starting http client')
-    app.config['sem'] = asyncio.Semaphore(10, loop=loop)
+    app.config['sem'] = asyncio.Semaphore(200, loop=loop)
     app.config['client'] = aiohttp.ClientSession(loop=loop)
 
 
