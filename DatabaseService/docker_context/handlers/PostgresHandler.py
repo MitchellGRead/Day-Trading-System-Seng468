@@ -143,7 +143,7 @@ class PostgresHandler:
         error_resp = {'status': 'failure', 'message': 'Unexpected error. Could not add funds.'}
         success_resp = {'status': 'success', 'message': 'Funds successfully added.'}
 
-        balances = await self.handleGetUserFundsCommand(user_id)
+        balances, status = await self.handleGetUserFundsCommand(user_id)
         curr_funds = balances['available_funds']
 
         add_funds_query = to_table_where_user_query.format(
@@ -171,7 +171,7 @@ class PostgresHandler:
                 'status': 'failure', 'message': 'Specified user does not exist.'
             }, 404
 
-        balances = await self.handleGetUserFundsCommand(user_id)
+        balances, status = await self.handleGetUserFundsCommand(user_id)
         curr_funds = balances['available_funds']
 
         stocks = await self.handleGetUserStocksCommand(user_id, stock_id)
@@ -229,7 +229,7 @@ class PostgresHandler:
                 'status': 'failure', 'message': 'Specified user does not exist.'
             }, 404
 
-        balances = await self.handleGetUserFundsCommand(user_id)
+        balances, status = await self.handleGetUserFundsCommand(user_id)
         curr_funds = balances['available_funds']
 
         stocks = await self.handleGetUserStocksCommand(user_id, stock_id)
