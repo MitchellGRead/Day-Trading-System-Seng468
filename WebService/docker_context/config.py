@@ -1,5 +1,6 @@
 
-RUN_DEBUG = True
+RUN_DEBUG = False
+ACCESS_LOGS = True
 
 WEB_SERVER_NAME = 'WebService'
 WEB_SERVER_IP = 'web-1'

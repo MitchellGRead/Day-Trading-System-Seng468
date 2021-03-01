@@ -4,7 +4,7 @@ import aiohttp
 import config
 from UserCommands import UserCommands
 
-CURRENT_FILE_NAME = "./45_user_workload.txt"
+CURRENT_FILE_NAME = "./100_user_workload.txt"
 
 
 def readWorkloadFile():

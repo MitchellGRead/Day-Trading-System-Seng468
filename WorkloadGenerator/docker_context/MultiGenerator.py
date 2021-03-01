@@ -5,8 +5,8 @@ import config
 from User import User
 from UserCommands import UserCommands
 
-CURRENT_FILE_NAME = "./45_user_workload.txt"
-NUM_USERS = 45
+CURRENT_FILE_NAME = "./100_user_workload.txt"
+NUM_USERS = 100
 
 
 def readWorkloadFile():

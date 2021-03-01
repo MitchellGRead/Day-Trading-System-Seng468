@@ -8,12 +8,22 @@ class UserCommands:
 
     async def getRequest(self, url, params=None):
         async with self.client.get(url, params=params) as resp:
-            js = await resp.json()
+            js = {}
+            try:
+                js = await resp.json()
+            except:
+                js = {'status':500, 'message':f'JSON conversion failed for {data} to {url}'}
+            
             return js
 
     async def postRequest(self, url, data):
         async with self.client.post(url, json=data) as resp:
-            js = await resp.json()
+            js = {}
+            try:
+                js = await resp.json()
+            except:
+                js = {'status':500, 'message':f'JSON conversion failed for {data} to {url}'}
+
             return js
 
     async def quoteRequest(self, params):
