@@ -68,9 +68,8 @@ class Client:
 
                 if result is None:
                     logger.error(f'No result received from {url}. Retry {retry_count} of {max_retry}')
-                    retry_count += 1
                 else:
-                    break
+                    return result, status
             except ConnectionResetError:
                 logger.error(f'Connection reset on post request - {url}. Retry {retry_count} of {max_retry}')
             except Exception:

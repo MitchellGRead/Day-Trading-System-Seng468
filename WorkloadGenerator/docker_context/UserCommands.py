@@ -1,14 +1,4 @@
-import logging
-import config
-
-if config.RUN_DEBUG:
-    logging.getLogger().setLevel(logging.DEBUG)
-    logging.basicConfig(
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        datefmt='%d-%b-%y %H:%M:%S'
-    )
-else:
-    logging.disable(logging.DEBUG)
+from eventLogger import logger
 
 
 class UserCommands:
@@ -226,51 +216,51 @@ class UserCommands:
         command = params[1]
         if command == 'ADD':
             resp = await self.addFundsRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'QUOTE':
             resp = await self.quoteRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'BUY':
             resp = await self.buyRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'COMMIT_BUY':
             resp = await self.commitBuyRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'CANCEL_BUY':
             resp = await self.cancelBuyRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'SET_BUY_AMOUNT':
             resp = await self.setBuyAmountRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'CANCEL_SET_BUY':
             resp = await self.cancelSetBuyRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'SET_BUY_TRIGGER':
             resp = await self.setBuyTriggerRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'SELL':
             resp = await self.sellRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'COMMIT_SELL':
             resp = await self.commitSellRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'CANCEL_SELL':
             resp = await self.cancelSellRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'SET_SELL_AMOUNT':
             resp = await self.setSellAmountRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'CANCEL_SET_SELL':
             resp = await self.cancelSetSellRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'SET_SELL_TRIGGER':
             resp = await self.setSellTriggerRequest(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'DISPLAY_SUMMARY':
             resp = await self.displaySummary(params)
-            logging.debug(resp)
+            logger.debug(resp)
         elif command == 'DUMPLOG':
             resp = await self.dumplog(params)
-            logging.debug(resp)
+            logger.debug(resp)
         else:
-            logging.debug(f'INVALID COMMAND: {command}')
+            logger.warning(f'INVALID COMMAND: {command}')
