@@ -1,16 +1,6 @@
-import logging
-import config
+from eventLogger import logger
 from UserCommands import UserCommands
 from Client import Client
-
-if config.RUN_DEBUG:
-    logging.getLogger().setLevel(logging.DEBUG)
-    logging.basicConfig(
-        format='%(asctime)s - %(levelname)s - (%filename)s:%(lineno)d) - %(message)s',
-        datefmt='%d-%b-%y %H:%M:%S'
-    )
-else:
-    logging.disable(logging.DEBUG)
 
 
 class User:
@@ -24,7 +14,7 @@ class User:
     async def processCommands(self):
         resps = []
         for command in self.commands:
-            logging.debug(f'{self.user_id} processing {command}')
+            logger.debug(f'{self.user_id} processing {command}')
             # TODO Update so that this saves the amount of time taken to run each command and which command was run for analysis
             resp = await self.command_handler.handleCommand(command)
             resps.append(resp)
@@ -33,5 +23,5 @@ class User:
         return resps
 
     async def stop(self):
-        print(f'{self.user_id} finished processing.')
+        logger.info(f'{self.user_id} finished processing.')
         await self.client.stop()

@@ -1,9 +1,9 @@
-import logging
+import asyncio
 
 import aiohttp
 from aiohttp import ClientResponseError
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+from eventLogger import logger
 
 
 class Client:
@@ -19,12 +19,13 @@ class Client:
         try:
             result = await response.json()
         except ClientResponseError:
-            logging.error(f'Invalid content type received, expected json but got {response.headers["Content-Type"]}')
+            logger.error(f'Invalid content type received, expected json but got {response.headers["Content-Type"]}')
         except Exception:
-            logging.exception('Unknown exception occurred while retrieving response data.')
+            logger.exception('Unknown exception occurred while retrieving response data.')
         return result, response.status
 
-    def resetConnection(self):
+    async def resetConnection(self):
+        await self.stop()
         self.client = aiohttp.ClientSession(loop=self.loop)
 
     async def getRequest(self, url, params=None, max_retry=5):
@@ -40,19 +41,20 @@ class Client:
                     result, status = await self.getJson(resp)
 
                 if result is None:
-                    logging.error(f'No result received from {url}. Retry {retry_count} of {max_retry}')
-                    retry_count += 1
+                    logger.error(f'No result received from {url}. Retry {retry_count} of {max_retry}')
                 else:
-                    break
+                    return result, status
             except ConnectionResetError:
-                logging.error(f'Connection reset on get request - {url}. Retry {retry_count} of {max_retry}')
-                retry_count += 1
-                self.resetConnection()
+                logger.error(f'Connection reset on get request - {url}. Retry {retry_count} of {max_retry}')
             except Exception:
-                logging.exception(f'Unknown exception occurred on get request {url}. Retry {retry_count} of {max_retry}')
-                retry_count += 1
-                self.resetConnection()
+                logger.exception(f'Unknown exception occurred on get request {url}. Retry {retry_count} of {max_retry}')
 
+            # Only gets here on failure
+            retry_count += 1
+            await self.resetConnection()
+            await asyncio.sleep(0.3)
+
+        # (None, some status)
         return result, status
 
     async def postRequest(self, url, json, max_retry=5):
@@ -65,19 +67,21 @@ class Client:
                     result, status = await self.getJson(resp)
 
                 if result is None:
-                    logging.error(f'No result received from {url}. Retry {retry_count} of {max_retry}')
+                    logger.error(f'No result received from {url}. Retry {retry_count} of {max_retry}')
                     retry_count += 1
                 else:
                     break
             except ConnectionResetError:
-                logging.error(f'Connection reset on post request - {url}. Retry {retry_count} of {max_retry}')
-                retry_count += 1
-                self.resetConnection()
+                logger.error(f'Connection reset on post request - {url}. Retry {retry_count} of {max_retry}')
             except Exception:
-                logging.exception(f'Unknown exception occurred on get request {url}. Retry {retry_count} of {max_retry}')
-                retry_count += 1
-                self.resetConnection()
+                logger.exception(f'Unknown exception occurred on get request {url}. Retry {retry_count} of {max_retry}')
 
+            # Only gets here on failure
+            retry_count += 1
+            await self.resetConnection()
+            await asyncio.sleep(0.3)
+
+        # (None, some status)
         return result, status
 
     async def stop(self):

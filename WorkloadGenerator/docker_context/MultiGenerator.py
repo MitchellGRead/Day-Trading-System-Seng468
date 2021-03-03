@@ -4,6 +4,7 @@ import config
 from User import User
 from UserCommands import UserCommands
 from Client import Client
+from eventLogger import logger
 
 CURRENT_FILE_NAME = "./45_user_workload.txt"
 NUM_USERS = 45
@@ -74,8 +75,8 @@ async def main():
     workload_actions = readWorkloadFile()
     user_workloads, dumplog = parseUserCommands(workload_actions)
 
-    print(user_workloads.keys())
-    print(dumplog)
+    logger.info(user_workloads.keys())
+    logger.info(dumplog)
     assert len(user_workloads.keys()) == NUM_USERS
 
     loop = asyncio.get_event_loop()
@@ -86,7 +87,7 @@ async def main():
     await generateDumplog(dumplog)
     end = time.time()
 
-    print(f'Total elapsed time {end - start}')
+    logger.info(f'Total elapsed time {end - start}')
     return
 
 
