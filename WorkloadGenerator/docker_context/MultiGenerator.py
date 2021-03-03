@@ -1,12 +1,12 @@
 import time
 import asyncio
-import aiohttp
 import config
 from User import User
 from UserCommands import UserCommands
+from Client import Client
 
-CURRENT_FILE_NAME = "./100_user_workload.txt"
-NUM_USERS = 100
+CURRENT_FILE_NAME = "./45_user_workload.txt"
+NUM_USERS = 45
 
 
 def readWorkloadFile():
@@ -60,14 +60,14 @@ async def runUsers(users):
 
 async def generateDumplog(command):
     loop = asyncio.get_event_loop()
-    client = aiohttp.ClientSession(loop=loop)
+    client = Client(loop)
     command_handler = UserCommands(
         config.WEB_SERVER_IP,
         config.WEB_SERVER_PORT,
         client
     )
     await command_handler.handleCommand(command)
-    await client.close()
+    await client.stop()
 
 
 async def main():
