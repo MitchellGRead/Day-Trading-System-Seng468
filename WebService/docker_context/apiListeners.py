@@ -1,36 +1,38 @@
-import aiohttp
-import asyncio
 from sanic.log import logger
 
 import config
 from ServiceLogic import ServiceLogic
-from audit.AuditHandler import AuditHandler
-
-
-async def initClient(app, loop):
-    logger.debug('Starting http client')
-    app.config['sem'] = asyncio.Semaphore(200, loop=loop)
-    app.config['client'] = aiohttp.ClientSession(loop=loop)
-
-
-async def closeClient(app, loop):
-    await app.config['client'].close()
-
+from AuditHandler import AuditHandler
+from TransactionHandler import TransactionHandler
 
 def initAudit(app, loop):
-    logger.debug('Creating audit handler')
+    logger.debug('Creating handlers handler')
     app.config['audit'] = AuditHandler(
-        app.config['client'],
         config.WEB_SERVER_NAME,
         config.AUDIT_SERVER_IP,
-        config.AUDIT_SERVER_PORT
+        config.AUDIT_SERVER_PORT,
+        loop
+    )
+
+
+def initTransaction(app, loop):
+    logger.debug('Creating transaction handler')
+    app.config['transaction'] = TransactionHandler(
+        config.TRANSACTION_SERVER_IP,
+        config.TRANSACTION_SERVER_PORT,
+        loop
     )
 
 
 def initServiceLogic(app, loop):
     logger.debug('Creating api logic handler')
     app.config['logic'] = ServiceLogic(
-        app.config['client'],
         app.config['audit'],
-        app.config['sem']
+        app.config['transaction']
     )
+
+
+async def closeHandlerClients(app, loop):
+    logger.debug('Closing handler clients')
+    await app.config['audit'].closeClient()
+    await app.config['transaction'].closeClient()

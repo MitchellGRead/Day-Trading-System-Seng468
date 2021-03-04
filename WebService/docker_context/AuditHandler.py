@@ -2,7 +2,7 @@ from time import time
 
 import aiohttp
 from sanic.log import logger
-from WebService.docker_context.Client import Client
+from Client import Client
 
 def currentTimeMs():
     return round(time() * 1000)
@@ -29,7 +29,6 @@ class AuditHandler:
         self.url = f'http://{ip}:{port}'
 
     async def closeClient(self):
-        pass
         await self.client.stop()
 
     def baseEvent(self, trans_num, command):
@@ -46,7 +45,7 @@ class AuditHandler:
             **addKeyValuePairs(user_id, stock_symbol, amount, filename)
         }
 
-        resp = await self.postRequest('/event/user_command', event)
+        resp = await self.client.postRequest(f'{self.url}/event/user_command', event)
         logger.debug(resp)
         return
 
@@ -57,7 +56,7 @@ class AuditHandler:
             **addKeyValuePairs(user_id, stock_symbol, amount, filename)
         }
 
-        resp = await self.postRequest('/event/error', event)
+        resp = await self.client.postRequest(f'{self.url}/event/error', event)
         logger.debug(resp)
         return
 
@@ -67,13 +66,6 @@ class AuditHandler:
             **addKeyValuePairs(user_id, stock_symbol, amount, filename)
         }
 
-        resp = await self.postRequest('/event/system', event)
+        resp = await self.client.postRequest(f'{self.url}/event/system', event)
         logger.debug(resp)
         return
-
-    async def postRequest(self, endpoint, data):
-        url = f'{self.url}{endpoint}'
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=data) as resp:
-                js = await resp.json()
-                return js
