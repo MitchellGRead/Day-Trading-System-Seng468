@@ -1,14 +1,18 @@
 from jsonschema import validate, ValidationError
+from sanic.log import logger
 
 
 def validateRequest(data, schema):
     if not data:
-        return False, 'Data is not Content-Type: application/json'
+        err_msg = 'Data is not Content-Type: application/json'
+        logger.error(f'{err_msg} - {data}')
+        return False, err_msg
 
     try:
         validate(instance=data, schema=schema)
         return True, ''
     except ValidationError as err:
+        logger.error(f'{err.message} - {data}')
         return False, err.message
 
 
