@@ -1,18 +1,8 @@
-import asyncio
-
-from aiohttp import ClientResponseError
-from sanic.log import logger
-
-import config
-
-
 class ServiceLogic:
 
-    def __init__(self, client, audit, limit):
-        self.client = client
+    def __init__(self, audit, transaction):
         self.audit = audit
-        self.trans_url = f'http://{config.TRANSACTION_SERVER_IP}:{config.TRANSACTION_SERVER_PORT}'
-        self.limit = limit
+        self.transaction = transaction
 
     # HELPER FUNCTIONS -----------------------------------------
     async def __auditTransactionCommand(self, data):
@@ -31,27 +21,6 @@ class ServiceLogic:
             user_id=data['user_id']
         )
 
-    async def __getResult(self, resp):
-        try:
-            result = await resp.json()
-        except ClientResponseError as err:
-            logger.debug(f'{config.WEB_SERVER_NAME} - {err.message}')
-            result = {'status': 500, 'err_msg': err.message}
-        except asyncio.TimeoutError as err:
-            logger.debug(f'{config.WEB_SERVER_NAME} - {err}')
-            result = {'status': 500, 'err_msg': err}
-        except Exception as err:
-            logger.debug(f'{config.WEB_SERVER_NAME} - {err}')
-            result = {'status': 500, 'err_msg': err}
-        return result
-
-    async def __getRequest(self, url, params=None):
-        async with self.limit, self.client.get(url, params=params) as resp:
-            return await self.__getResult(resp)
-
-    async def __postRequest(self, url, data):
-        async with self.limit, self.client.post(url, json=data) as resp:
-            return await self.__getResult(resp)
     # ----------------------------------------------------------
 
     async def handleQuote(self, data):
@@ -62,8 +31,7 @@ class ServiceLogic:
             stock_symbol=data['stock_symbol']
         )
 
-        endpoint = f'/quote/trans/{data["transaction_num"]}/user/{data["user_id"]}/stock/{data["stock_symbol"]}'
-        resp = await self.__getRequest(f'{self.trans_url}{endpoint}', data)
+        resp = await self.transaction.handleQuote(data)
         return resp
 
     async def handleDisplaySummary(self, data):
@@ -89,40 +57,40 @@ class ServiceLogic:
             amount=data['amount'],
         )
 
-        resp = await self.__postRequest(f'{self.trans_url}/add', data)
+        resp = await self.transaction.handleAdd(data)
         return resp
 
     # BUY COMMAND HANDLING -------------------------------------
     async def handleBuy(self, data):
         await self.__auditTransactionCommand(data)
-        resp = await self.__postRequest(f'{self.trans_url}/buy', data)
+        resp = await self.transaction.handleBuy(data)
         return resp
 
     async def handleCommitBuy(self, data):
         await self.__auditUserCommand(data)
-        resp = await self.__postRequest(f'{self.trans_url}/buy/commit', data)
+        resp = await self.transaction.handleCommitBuy(data)
         return resp
 
     async def handleCancelBuy(self, data):
         await self.__auditUserCommand(data)
-        resp = await self.__postRequest(f'{self.trans_url}/buy/cancel', data)
+        resp = await self.transaction.handleCancelBuy(data)
         return resp
     # ----------------------------------------------------------
 
     # SELL COMMAND HANDLING -------------------------------------
     async def handleSell(self, data):
         await self.__auditTransactionCommand(data)
-        resp = await self.__postRequest(f'{self.trans_url}/sell', data)
+        resp = await self.transaction.handleSell(data)
         return resp
 
     async def handleCommitSell(self, data):
         await self.__auditUserCommand(data)
-        resp = await self.__postRequest(f'{self.trans_url}/sell/commit', data)
+        resp = await self.transaction.handleCommitSell(data)
         return resp
 
     async def handleCancelSell(self, data):
         await self.__auditUserCommand(data)
-        resp = await self.__postRequest(f'{self.trans_url}/sell/commit', data)
+        resp = await self.transaction.handleCancelSell(data)
         return resp
     # ----------------------------------------------------------
 

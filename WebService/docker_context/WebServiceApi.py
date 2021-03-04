@@ -7,6 +7,7 @@ import apiListeners
 from clientInputSchema import *
 
 app = Sanic(config.WEB_SERVER_NAME)
+app.config['KEEP_ALIVE_TIMEOUT'] = 10
 
 
 @app.route(endpoints.quote_endpoint, methods=['GET'])
@@ -213,11 +214,11 @@ async def cancelSellTrigger(request):
 
 
 if __name__ == '__main__':
-    app.register_listener(apiListeners.initClient, 'before_server_start')
     app.register_listener(apiListeners.initAudit, 'before_server_start')
+    app.register_listener(apiListeners.initTransaction, 'before_server_start')
     app.register_listener(apiListeners.initServiceLogic, 'before_server_start')
 
-    app.register_listener(apiListeners.closeClient, 'before_server_stop')
+    app.register_listener(apiListeners.closeHandlerClients, 'before_server_stop')
 
     app.run(
         host=config.WEB_SERVER_IP,

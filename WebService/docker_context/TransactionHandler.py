@@ -11,7 +11,7 @@ class TransactionHandler:
         await self.client.stop()
 
     async def handleQuote(self, data):
-        endpoint = f'/quote/trans/{data["transaction_num"]}/user/{data["user_id"]}/stock/{data["stock_symbol"]}'
+        endpoint = f'/get/{data["command"]}/trans/{data["transaction_num"]}/user/{data["user_id"]}/stock/{data["stock_symbol"]}'
         resp = await self.client.getRequest(f'{self.url}{endpoint}')
         return resp
 
@@ -40,5 +40,5 @@ class TransactionHandler:
         return resp
 
     async def handleCancelSell(self, data):
-        resp = await self.client.postRequest(f'{self.url}/cancel', data)
+        resp = await self.client.postRequest(f'{self.url}/sell/cancel', data)
         return resp
