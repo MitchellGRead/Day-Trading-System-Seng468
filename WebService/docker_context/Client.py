@@ -46,7 +46,7 @@ class Client:
             except ConnectionResetError:
                 logger.error(f'Connection reset on get request - {url}. Retry {retry_count} of {max_retry}')
             except Exception:
-                logger.error(f'Unknown exception occurred on get request {url}. Retry {retry_count} of {max_retry}')
+                logger.exception(f'Unknown exception occurred on get request {url}. Retry {retry_count} of {max_retry}')
 
             # Only gets here on failure
             retry_count += 1

@@ -45,8 +45,9 @@ class AuditHandler:
             **addKeyValuePairs(user_id, stock_symbol, amount, filename)
         }
 
+        logger.debug(f'Auditing user command - {trans_num} - {user_id}')
         resp = await self.client.postRequest(f'{self.url}/event/user_command', event)
-        logger.debug(resp)
+        logger.debug(f'Audit response - {resp}')
         return
 
     async def handleError(self, trans_num, command, error_msg, user_id='', stock_symbol='', amount=0, filename=''):
@@ -56,8 +57,9 @@ class AuditHandler:
             **addKeyValuePairs(user_id, stock_symbol, amount, filename)
         }
 
+        logger.debug(f'Auditing error event - {trans_num} - {user_id}')
         resp = await self.client.postRequest(f'{self.url}/event/error', event)
-        logger.debug(resp)
+        logger.debug(f'Audit response - {resp}')
         return
 
     async def handleSystem(self, trans_num, command, user_id='', stock_symbol='', amount=0, filename=''):
@@ -66,6 +68,7 @@ class AuditHandler:
             **addKeyValuePairs(user_id, stock_symbol, amount, filename)
         }
 
+        logger.debug(f'Auditing system event - {trans_num} - {user_id}')
         resp = await self.client.postRequest(f'{self.url}/event/system', event)
-        logger.debug(resp)
+        logger.debug(f'Audit response - {resp}')
         return
