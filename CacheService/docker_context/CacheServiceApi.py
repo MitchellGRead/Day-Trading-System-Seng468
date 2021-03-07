@@ -68,7 +68,7 @@ async def addFunds(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['serviceLogic'].addFunds(data['user_id'], data['amount'])
+    result, status = await app.config['serviceLogic'].addFunds(data)
     return response.json(result, status=status)
 
 
@@ -91,8 +91,7 @@ async def buyStocks(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['serviceLogic'].buyStocks(data['user_id'], data['stock_symbol'],
-                                                                data['stock_amount'], data['funds'])
+    result, status = await app.config['serviceLogic'].buyStocks(data)
     return response.json(result, status=status)
 
 
@@ -104,8 +103,7 @@ async def sellStocks(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['serviceLogic'].sellStocks(data['user_id'], data['stock_symbol'],
-                                                                 data['stock_amount'], data['funds'])
+    result, status = await app.config['serviceLogic'].sellStocks(data)
     return response.json(result, status=status)
 
 
@@ -117,7 +115,7 @@ async def commitBuyStocks(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['serviceLogic'].commitBuyStocks(data['user_id'])
+    result, status = await app.config['serviceLogic'].commitBuyStocks(data)
     return response.json(result, status=status)
 
 
@@ -129,7 +127,7 @@ async def commitSellStocks(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['serviceLogic'].commitSellStocks(data['user_id'])
+    result, status = await app.config['serviceLogic'].commitSellStocks(data)
     return response.json(result, status=status)
 
 
@@ -141,7 +139,7 @@ async def cancelBuy(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['serviceLogic'].cancelBuy(data['user_id'])
+    result, status = await app.config['serviceLogic'].cancelBuy(data)
     return response.json(result, status=status)
 
 
@@ -153,7 +151,7 @@ async def cancelSell(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['serviceLogic'].cancelSell(data['user_id'])
+    result, status = await app.config['serviceLogic'].cancelSell(data)
     return response.json(result, status=status)
 
 

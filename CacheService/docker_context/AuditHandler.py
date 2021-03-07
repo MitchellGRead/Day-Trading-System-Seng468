@@ -46,7 +46,7 @@ class AuditHandler:
             **addKeyValuePairs(user_id, stock_symbol, amount, filename)
         }
 
-        resp = await self.client.postRequest('/event/error', event)
+        resp = await self.client.postRequest(f'{self.url}/event/error', event)
         logger.debug(resp)
         return
 
@@ -57,7 +57,7 @@ class AuditHandler:
         }
 
         logger.debug(f'Auditing system event - {trans_num} - {command} - {user_id}')
-        resp = await self.client.postRequest('/event/system', event)
+        resp = await self.client.postRequest(f'{self.url}/event/system', event)
         logger.debug(f'Audit response - {resp}')
         return
 
@@ -70,6 +70,6 @@ class AuditHandler:
             'cryptokey': crptokey
         }
         logger.debug(f'Auditing quote event - {trans_num} - {user_id}')
-        resp = await self.client.postRequest('/event/quote', event)
+        resp = await self.client.postRequest(f'{self.url}/event/quote', event)
         logger.debug(f'Audit response - {resp}')
         return
