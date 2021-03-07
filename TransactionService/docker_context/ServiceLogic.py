@@ -4,13 +4,19 @@ class ServiceLogic:
         self.transaction_handler = transaction_handler
 
     async def addFunds(self, data):
-        return await self.transaction_handler.addFunds(data)
+        return await self.transaction_handler.addFunds(
+            trans_num=data['transaction_num'],
+            user_id=data['user_id'],
+            amount=data['amount'],
+            command=data['command']
+        )
 
     async def getQuote(self, data):
-        trans_num = data['transaction_num']
-        user_id = data['user_id']
-        stock_symbol = data['stock_symbol']
-        return await self.transaction_handler.getQuote(trans_num, user_id, stock_symbol)
+        return await self.transaction_handler.getQuote(
+            trans_num=data['transaction_num'],
+            user_id=data['user_id'],
+            stock_symbol=data['stock_symbol']
+        )
 
     async def buyStock(self, data):
         return await self.transaction_handler.buyStock(
@@ -29,7 +35,11 @@ class ServiceLogic:
         )
 
     async def cancelBuy(self, data):
-        return await self.transaction_handler.cancelBuy(data)
+        return await self.transaction_handler.cancelBuy(
+            command=data['command'],
+            trans_num=data['transaction_num'],
+            user_id=data['user_id'],
+        )
 
     async def sellStock(self, data):
         return await self.transaction_handler.sellStock(
@@ -48,4 +58,8 @@ class ServiceLogic:
         )
 
     async def cancelSell(self, data):
-        return await self.transaction_handler.cancelSell(data)
+        return await self.transaction_handler.cancelSell(
+            command=data['command'],
+            trans_num=data['transaction_num'],
+            user_id=data['user_id'],
+        )

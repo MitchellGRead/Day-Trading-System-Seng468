@@ -35,7 +35,13 @@ class TransactionHandler:
         self.client = Client(loop)
         self.cacheURL = f'http://{ip}:{port}'
 
-    async def addFunds(self, data):
+    async def addFunds(self, trans_num, user_id, amount, command):
+        data = {
+            'transaction_num': trans_num,
+            'user_id': user_id,
+            'amount': amount,
+            'command': command
+        }
         result, status = await self.client.postRequest(f"{self.cacheURL}/funds/add_funds", data)
         return result, status
 
@@ -113,7 +119,12 @@ class TransactionHandler:
         result, status = await self.client.postRequest(f"{self.cacheURL}/stocks/commit_buy", data)
         return result, status
 
-    async def cancelBuy(self, data):
+    async def cancelBuy(self, trans_num, user_id, command):
+        data = {
+            'command': command,
+            'transaction_num': trans_num,
+            'user_id': user_id
+        }
         result, status = await self.client.postRequest(f"{self.cacheURL}/stocks/cancel_buy", data)
         return result, status
 
@@ -176,7 +187,12 @@ class TransactionHandler:
         result, status = await self.client.postRequest(f"{self.cacheURL}/stocks/commit_sell", data)
         return result, status
 
-    async def cancelSell(self, data):
+    async def cancelSell(self, trans_num, user_id, command):
+        data = {
+            'command': command,
+            'transaction_num': trans_num,
+            'user_id': user_id
+        }
         result, status = await self.client.postRequest(f"{self.cacheURL}/stocks/cancel_sell", data)
         return result, status
 

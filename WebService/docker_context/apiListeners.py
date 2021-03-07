@@ -7,7 +7,7 @@ from TransactionHandler import TransactionHandler
 
 
 async def initAudit(app, loop):
-    logger.debug('Creating handlers handler')
+    logger.debug('Creating audit handler')
     app.config['audit'] = AuditHandler(
         config.WEB_SERVER_NAME,
         config.AUDIT_SERVER_IP,
