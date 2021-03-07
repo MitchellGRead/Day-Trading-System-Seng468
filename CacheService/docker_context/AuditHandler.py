@@ -55,8 +55,9 @@ class AuditHandler:
             **addKeyValuePairs(user_id, stock_symbol, amount, filename)
         }
 
+        logger.debug(f'Auditing system event - {trans_num} - {command} - {user_id}')
         resp = await self.postRequest('/event/system', event)
-        logger.debug(resp)
+        logger.debug(f'Audit response - {resp}')
         return
 
     async def handleQuote(self, trans_num, user_id, stock_symbol, price, quote_server_time, crptokey):
@@ -67,9 +68,9 @@ class AuditHandler:
             'quote_server_timestamp': quote_server_time,
             'cryptokey': crptokey
         }
-
+        logger.debug(f'Auditing quote event - {trans_num} - {user_id}')
         resp = await self.postRequest('/event/quote', event)
-        logger.debug(resp)
+        logger.debug(f'Audit response - {resp}')
         return
 
     async def postRequest(self, endpoint, data):

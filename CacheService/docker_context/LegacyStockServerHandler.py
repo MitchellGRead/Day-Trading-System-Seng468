@@ -1,5 +1,7 @@
 import socket
 from time import sleep
+from sanic.log import logger
+import asyncio
 
 
 class LegacyStockServerHandler:
@@ -11,18 +13,17 @@ class LegacyStockServerHandler:
 
     async def quoteSocket(self):
         stockSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print("Attempting Connection to Quote Server")
+        logger.debug("Attempting Connection to Quote Server")
         while stockSocket.connect_ex((self.ip, self.port)) != 0:
-            sleep(1)
-        print("Quote Connection Started")
+            await asyncio.sleep(1)
+        logger.debug("Quote Connection Started")
         return stockSocket
 
     async def getQuote(self, trans_num, user_id, stock_symbol):
         stockSocket = await self.quoteSocket()
         message = "{},{}\n".format(stock_symbol, user_id)
         stockSocket.send(message.encode())
-        dataReceived = stockSocket.recv(1024).decode()
-        dataReceived = dataReceived.split(",")
+        dataReceived = stockSocket.recv(1024).decode().split(",")
         stockSocket.close()
 
         price, _, _, quote_time, cryptokey = dataReceived
