@@ -5,8 +5,9 @@ from ServiceLogic import ServiceLogic
 from AuditHandler import AuditHandler
 from TransactionHandler import TransactionHandler
 
-def initAudit(app, loop):
-    logger.debug('Creating handlers handler')
+
+async def initAudit(app, loop):
+    logger.debug('Creating audit handler')
     app.config['audit'] = AuditHandler(
         config.WEB_SERVER_NAME,
         config.AUDIT_SERVER_IP,
@@ -15,7 +16,7 @@ def initAudit(app, loop):
     )
 
 
-def initTransaction(app, loop):
+async def initTransaction(app, loop):
     logger.debug('Creating transaction handler')
     app.config['transaction'] = TransactionHandler(
         config.TRANSACTION_SERVER_IP,

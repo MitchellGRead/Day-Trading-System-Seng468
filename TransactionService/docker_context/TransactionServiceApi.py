@@ -7,24 +7,22 @@ import endpoints
 import apiListeners
 
 app = Sanic(config.TRANSACTION_SERVER_NAME)
+app.config['KEEP_ALIVE_TIMEOUT'] = 10
 
 
 @app.route(endpoints.quote_endpoint, methods=['GET'])
-async def getQuote(request, trans_num, user_id, stock_symbol):
+async def getQuote(request, command, trans_num, user_id, stock_symbol):
     data = {
         'transaction_num': trans_num,
         'user_id': user_id,
         'stock_symbol': stock_symbol,
-        'command': "QUOTE"
+        'command': command
     }
     res, err = validateRequest(data, quote_schema)
     if not res:
-        logger.debug("FAILED VALIDATION")
         return response.json(errorResult(err, data), status=400)
 
-    result, status = await app.config['serviceLogic'].getQuote(data['transaction_num'], data['user_id'],
-                                                               data['stock_symbol'])
-
+    result, status = await app.config['logic'].getQuote(data)
     return response.json(result, status=status)
 
 
@@ -35,7 +33,7 @@ async def addFunds(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    result, status = await app.config['serviceLogic'].addFunds(data['transaction_num'], data['user_id'], data['amount'])
+    result, status = await app.config['logic'].addFunds(data)
     return response.json(result, status=status)
 
 
@@ -47,8 +45,7 @@ async def buyStock(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    result, status = await app.config['serviceLogic'].buyStock(data['transaction_num'], data['user_id'],
-                                                               data['stock_symbol'], data['amount'])
+    result, status = await app.config['logic'].buyStock(data)
     return response.json(result, status=status)
 
 
@@ -59,7 +56,7 @@ async def commitBuy(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    result, status = await app.config['serviceLogic'].commitBuy(data['transaction_num'], data['user_id'])
+    result, status = await app.config['logic'].commitBuy(data)
     return response.json(result, status=status)
 
 
@@ -70,10 +67,8 @@ async def cancelBuy(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    result, status = await app.config['serviceLogic'].cancelBuy(data['transaction_num'], data['user_id'])
+    result, status = await app.config['logic'].cancelBuy(data)
     return response.json(result, status=status)
-
-
 # --------------------------------------------------------------
 
 
@@ -85,8 +80,7 @@ async def sellStock(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    result, status = await app.config['serviceLogic'].sellStock(data['transaction_num'], data['user_id'],
-                                                                data['stock_symbol'], data['amount'])
+    result, status = await app.config['logic'].sellStock(data)
     return response.json(result, status=status)
 
 
@@ -97,8 +91,7 @@ async def commitSell(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    result, status = await app.config['serviceLogic'].commitSell(data['transaction_num'], data['user_id'])
-
+    result, status = await app.config['logic'].commitSell(data)
     return response.json(result, status=status)
 
 
@@ -109,33 +102,17 @@ async def cancelSell(request):
         return response.json(errorResult(err, request.json), status=400)
     data = request.json
 
-    result, status = await app.config['serviceLogic'].cancelSell(data['transaction_num'], data['user_id'])
+    result, status = await app.config['logic'].cancelSell(data)
     return response.json(result, status=status)
-
-
 # --------------------------------------------------------------
 
 
-async def postRequest(url, data):
-    client = app.config['client']
-    async with client.post(url, json=data) as resp:
-        js = await resp.json()
-        return js
-
-
-async def getRequest(self, url, params=None):
-    async with self.client.get(url, params=params) as resp:
-        js = await resp.json()
-        return js
-
-
 if __name__ == '__main__':
-    app.register_listener(apiListeners.initClient, 'before_server_start')
     app.register_listener(apiListeners.initAudit, 'before_server_start')
     app.register_listener(apiListeners.initTransactionLogic, 'before_server_start')
     app.register_listener(apiListeners.initServiceLogic, 'before_server_start')
 
-    app.register_listener(apiListeners.closeClient, 'before_server_stop')
+    app.register_listener(apiListeners.closeHandlerClients, 'before_server_stop')
 
     app.run(
         host=config.TRANSACTION_SERVER_IP,

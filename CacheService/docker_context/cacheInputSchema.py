@@ -1,14 +1,18 @@
 from jsonschema import validate, ValidationError
+from sanic.log import logger
 
 
 def validateRequest(data, schema):
     if not data:
-        return False, 'Data is not Content-Type: application/json'
+        err_msg = 'Data is not Content-Type: application/json'
+        logger.error(f'{err_msg} - {data}')
+        return False, err_msg
 
     try:
         validate(instance=data, schema=schema)
         return True, ''
     except ValidationError as err:
+        logger.error(f'{err.message} - {data}')
         return False, err.message
 
 
@@ -35,10 +39,10 @@ funds_schema = {
     'properties': {
         'transaction_num': {'type': 'integer'},
         'user_id': {'type': 'string'},
-        'funds': non_negative_number,
+        'amount': non_negative_number,
         'command': {'type': 'string'}
     },
-    'required': ['transaction_num', 'user_id', 'funds']
+    'required': ['transaction_num', 'user_id', 'amount']
 }
 
 stocks_query_schema = {
