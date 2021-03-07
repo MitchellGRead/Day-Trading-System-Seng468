@@ -23,7 +23,7 @@ class ServiceLogic:
             command=data['command'],
             user_id=data['user_id'],
             stock_symbol=data['stock_symbol'],
-            stock_amount=data['stock_amound'],
+            stock_amount=data['stock_amount'],
             total_value=data['funds']
         )
 
@@ -33,7 +33,7 @@ class ServiceLogic:
             command=data['command'],
             user_id=data['user_id'],
             stock_symbol=data['stock_symbol'],
-            stock_amount=data['stock_amound'],
+            stock_amount=data['stock_amount'],
             total_value=data['funds']
         )
 

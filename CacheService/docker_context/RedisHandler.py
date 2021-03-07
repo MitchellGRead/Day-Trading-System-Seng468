@@ -25,60 +25,76 @@ class RedisHandler:
     def __init__(self, redis, ip, port, loop):
         self.redis = redis
         self.client = Client(loop)
-        self.url = f"http://{ip}:{port}"
+        self.dbm_url = f"http://{ip}:{port}"
 
     async def fillUserCache(self):
-        data, status = await self.getRequest(self.url + '/funds/get/all')
+        data, status = await self.client.getRequest(f'{self.dbm_url}/funds/get/all')
         if status == 200:
             for key in data:
                 user_id = key
-                userData = data[key]
-                user = {"user_id": user_id, "account_balance": userData['available_funds'],
-                        "reserved_balance": userData['reserved_funds']}
+                user_data = data[key]
+                user = {
+                    "user_id": user_id,
+                    "account_balance": user_data['available_funds'],
+                    "reserved_balance": user_data['reserved_funds']
+                }
                 await self.redis.set(user_id, pickle.dumps(user))
             return goodResult(msg="Pulled Data", data=''), 200
         else:
             return data, status
 
     async def fillStockCache(self):
-        data, status = await self.getRequest(self.url + '/stocks/get/all')
+        data, status = await self.client.getRequest(f'{self.dbm_url}/stocks/get/all')
         if status == 200:
             for user_id in data:
-                usersData = data[user_id]
-                for dictionary in usersData:
+                users_data = data[user_id]
+                for dictionary in users_data:
                     for stock in dictionary:
-                        stockInfo = dictionary[stock]
-                        stockBalance = {"user_id": user_id, "stock_id": stock,
-                                        "stock_amount": stockInfo[0], "stock_reserved": stockInfo[1]}
-                        await self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stockBalance))
+                        stock_info = dictionary[stock]
+                        stock_balance = {
+                            "user_id": user_id,
+                            "stock_id": stock,
+                            "stock_amount": stock_info[0],
+                            "stock_reserved": stock_info[1]
+                        }
+                        await self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stock_balance))
             return goodResult(msg="Pulled Data", data=''), 200
         else:
             return data, status
 
     async def updateAccountCache(self, user_id):
-        data, status = await self.getRequest(self.url + '/funds/get/user/' + user_id)
+        data, status = await self.client.getRequest(f'{self.dbm_url}/funds/get/user/{user_id}')
         if status == 200:
-            user = {"user_id": user_id, "account_balance": data['available_funds'],
-                    "reserved_balance": data['reserved_funds']}
+            user = {
+                "user_id": user_id,
+                "account_balance": data['available_funds'],
+                "reserved_balance": data['reserved_funds']
+            }
             await self.redis.set(user_id, pickle.dumps(user))
             return goodResult(msg="Pulled Data", data=''), 200
         else:
-            # logger.debug(data, status)
+            logger.info(f'{__name__} - Error from DBM to get user when updating account cache - {data} ({status})')
             return data, status
 
     async def updateStockCache(self, user_id, stock_symbol):
-        data, status = await self.getRequest(self.url + '/stocks/get/user/' + user_id + "?stock_id=" + stock_symbol)
+        data, status = await self.client.getRequest(f'{self.dbm_url}/stocks/get/user/{user_id}?stock_id={stock_symbol}')
         if not data:
-            return errorResult("The user doesn't hold that stock", ''), 404
+            err_msg = "The user doesn't hold that stock"
+            logger.info(f'{__name__} - {err_msg}')
+            return errorResult(err_msg, ''), 404
         if status == 200:
             for stock in data:
-                stockInfo = data[stock]
-                stockBalance = {"user_id": user_id, "stock_id": stock, "stock_amount":
-                                stockInfo[0], "stock_reserved": stockInfo[1]}
-                await self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stockBalance))
+                stock_info = data[stock]
+                stock_balance = {
+                    "user_id": user_id,
+                    "stock_id": stock,
+                    "stock_amount": stock_info[0],
+                    "stock_reserved": stock_info[1]
+                }
+                await self.redis.set("{}_{}".format(user_id, stock), pickle.dumps(stock_balance))
             return goodResult(msg="Pulled Data", data=''), 200
         else:
-            # logger.debug(data, status)
+            logger.info(f'{__name__} - Error from DBM to getting user stock data - {data} ({status})')
             return data, status
 
     async def rSet(self, key, values):
@@ -97,17 +113,3 @@ class RedisHandler:
     async def rDelete(self, key):
         await self.redis.delete(key)
         return
-
-    async def getRequest(self, url, params=None):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as resp:
-                js = await resp.json()
-                status = resp.status
-                return js, status
-
-    async def postRequest(self, url, data):
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=data) as resp:
-                js = await resp.json()
-                status = resp.status
-                return js, status
