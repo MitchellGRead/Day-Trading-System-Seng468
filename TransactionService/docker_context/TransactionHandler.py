@@ -98,7 +98,8 @@ class TransactionHandler:
     async def commitBuy(self, command, trans_num, user_id):
         result, status = await self.getBuy(user_id)
         if status != 200:
-            logger.info(f'{command} - {trans_num} - {user_id} --> failed to get BUY command --> {result} - {status}')
+            err_msg = 'No BUY exists to commit'
+            await self.auditNoCommand(command, trans_num, user_id, result, status, err_msg)
             return result, status
 
         then = float(result['content']['time'])
@@ -126,6 +127,9 @@ class TransactionHandler:
             'user_id': user_id
         }
         result, status = await self.client.postRequest(f"{self.cacheURL}/stocks/cancel_buy", data)
+        if status != 200:
+            err_msg = 'Could not cancel sell as no SELL command exists'
+            await self.auditNoCommand(command, trans_num, user_id, result, status, err_msg)
         return result, status
 
     async def sellStock(self, command, trans_num, user_id, stock_symbol, amount):
@@ -167,7 +171,8 @@ class TransactionHandler:
     async def commitSell(self, command, trans_num, user_id):
         result, status = await self.getSell(user_id)
         if status != 200:
-            logger.info(f'{command} - {trans_num} - {user_id} --> failed to get sell command --> {result} - {status}')
+            err_msg = 'No BUY exists to commit'
+            await self.auditNoCommand(command, trans_num, user_id, result, status, err_msg)
             return result, status
 
         then = float(result['content']['time'])
@@ -194,6 +199,13 @@ class TransactionHandler:
             'user_id': user_id
         }
         result, status = await self.client.postRequest(f"{self.cacheURL}/stocks/cancel_sell", data)
+        if status != 200:
+            err_msg = 'Could not cancel sell as no SELL command exists'
+            await self.auditNoCommand(command, trans_num, user_id, result, status, err_msg)
         return result, status
+
+    async def auditNoCommand(self, command, trans_num, user_id, result, status, err_msg):
+        logger.info(f'{command} - {trans_num} - {user_id} --> {err_msg} --> {result} - {status}')
+        self.audit.handleError(trans_num, command, err_msg, user_id)
 
     # __________________________________________________________________________________________________________________

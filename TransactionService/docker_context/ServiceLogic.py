@@ -38,7 +38,7 @@ class ServiceLogic:
         return await self.transaction_handler.cancelBuy(
             command=data['command'],
             trans_num=data['transaction_num'],
-            user_id=data['user_id'],
+            user_id=data['user_id']
         )
 
     async def sellStock(self, data):
@@ -61,5 +61,5 @@ class ServiceLogic:
         return await self.transaction_handler.cancelSell(
             command=data['command'],
             trans_num=data['transaction_num'],
-            user_id=data['user_id'],
+            user_id=data['user_id']
         )
