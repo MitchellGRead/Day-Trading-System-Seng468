@@ -7,11 +7,13 @@ import apiListeners
 from clientInputSchema import *
 
 app = Sanic(config.WEB_SERVER_NAME)
+app.config['KEEP_ALIVE_TIMEOUT'] = 10
 
 
 @app.route(endpoints.quote_endpoint, methods=['GET'])
-async def getQuote(request, trans_num, user_id, stock_symbol):
+async def getQuote(request, command, trans_num, user_id, stock_symbol):
     data = {
+        'command': command,
         'transaction_num': trans_num,
         'user_id': user_id,
         'stock_symbol': stock_symbol
@@ -20,14 +22,14 @@ async def getQuote(request, trans_num, user_id, stock_symbol):
     if not res:
         return response.json(errorResult(err, data), status=400)
 
-    data['command'] = 'QUOTE'
     await app.config['logic'].handleQuote(data)
     return response.json(data)
 
 
 @app.route(endpoints.display_summary_endpoint, methods=['GET'])
-async def getAccountSummary(request, trans_num, user_id):
+async def getAccountSummary(request, command, trans_num, user_id):
     data = {
+        'command': command,
         'transaction_num': trans_num,
         'user_id': user_id
     }
@@ -35,15 +37,15 @@ async def getAccountSummary(request, trans_num, user_id):
     if not res:
         return response.json(errorResult(err, data), status=400)
 
-    data['command'] = 'DISPLAY_SUMMARY'
     await app.config['logic'].handleDisplaySummary(data)
     return response.json(data)
 
 
 @app.route(endpoints.dumplog_endpoint, methods=['GET'])
-async def createDumplog(request, trans_num, filename):
+async def createDumplog(request, command, trans_num, filename):
     user_id = request.args.get('user_id', '')
     data = {
+        'command': command,
         'transaction_num': trans_num,
         'filename': filename,
     }
@@ -54,7 +56,6 @@ async def createDumplog(request, trans_num, filename):
     if not res:
         return response.json(errorResult(err, data), status=400)
 
-    data['command'] = 'DUMPLOG'
     await app.config['logic'].handleDumplog(data)
     return response.json(data)
 
@@ -66,7 +67,6 @@ async def addFunds(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'ADD'
     await app.config['logic'].handleAdd(data)
     return response.json(data)
 
@@ -79,7 +79,6 @@ async def buyStock(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'BUY'
     await app.config['logic'].handleBuy(data)
     return response.json(data)
 
@@ -91,7 +90,6 @@ async def commitBuy(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'COMMIT_BUY'
     await app.config['logic'].handleCommitBuy(data)
     return response.json(data)
 
@@ -103,7 +101,6 @@ async def cancelBuy(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'CANCEL_BUY'
     await app.config['logic'].handleCancelBuy(data)
     return response.json(data)
 
@@ -118,7 +115,6 @@ async def setBuyAmount(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'SET_BUY_AMOUNT'
     await app.config['logic'].handleBuyAmount(data)
     return response.json(data)
 
@@ -130,7 +126,6 @@ async def setBuyTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'SET_BUY_TRIGGER'
     await app.config['logic'].handleBuyTrigger(data)
     return response.json(data)
 
@@ -142,7 +137,6 @@ async def cancelBuyTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'CANCEL_SET_BUY'
     await app.config['logic'].handleCancelBuyTrigger(data)
     return response.json(data)
 # --------------------------------------------------------------
@@ -156,7 +150,6 @@ async def sellStock(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'SELL'
     await app.config['logic'].handleSell(data)
     return response.json(data)
 
@@ -168,7 +161,6 @@ async def commitSell(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'COMMIT_SELL'
     await app.config['logic'].handleCommitSell(data)
     return response.json(data)
 
@@ -180,7 +172,6 @@ async def cancelSell(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'CANCEL_SELL'
     await app.config['logic'].handleCancelSell(data)
     return response.json(data)
 
@@ -195,7 +186,6 @@ async def setSellAmount(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'SET_SELL_AMOUNT'
     await app.config['logic'].handleSellAmount(data)
     return response.json(data)
 
@@ -207,7 +197,6 @@ async def setSellTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'SET_SELL_TRIGGER'
     await app.config['logic'].handleSellTrigger(data)
     return response.json(data)
 
@@ -219,18 +208,17 @@ async def cancelSellTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    data['command'] = 'CANCEL_SET_SELL'
     await app.config['logic'].handleCancelSellTrigger(data)
     return response.json(data)
 # --------------------------------------------------------------
 
 
 if __name__ == '__main__':
-    app.register_listener(apiListeners.initClient, 'before_server_start')
     app.register_listener(apiListeners.initAudit, 'before_server_start')
+    app.register_listener(apiListeners.initTransaction, 'before_server_start')
     app.register_listener(apiListeners.initServiceLogic, 'before_server_start')
 
-    app.register_listener(apiListeners.closeClient, 'before_server_stop')
+    app.register_listener(apiListeners.closeHandlerClients, 'before_server_stop')
 
     app.run(
         host=config.WEB_SERVER_IP,

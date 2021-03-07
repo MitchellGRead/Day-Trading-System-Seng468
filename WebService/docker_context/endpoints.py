@@ -1,8 +1,8 @@
 
 """ Get Endpoints """
-quote_endpoint = '/quote/trans/<trans_num:int>/user/<user_id:string>/stock/<stock_symbol:string>'
-display_summary_endpoint = '/display_summary/trans/<trans_num:int>/user/<user_id:string>'
-dumplog_endpoint = '/dumplog/trans/<trans_num:int>/file/<filename:string>'  # ?user_id=string
+quote_endpoint = '/get/<command:string>/trans/<trans_num:int>/user/<user_id:string>/stock/<stock_symbol:string>'
+display_summary_endpoint = '/get/<command:string>/trans/<trans_num:int>/user/<user_id:string>'
+dumplog_endpoint = '/get/<command:string>/trans/<trans_num:int>/file/<filename:string>'  # ?user_id=string
 
 """ Post Endpoints """
 add_funds_endpoint = '/add'
