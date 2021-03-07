@@ -1,7 +1,6 @@
-import socket
-from time import sleep
-from sanic.log import logger
 import asyncio
+
+from sanic.log import logger
 
 
 class LegacyStockServerHandler:
@@ -12,31 +11,27 @@ class LegacyStockServerHandler:
         self.audit = audit
 
     async def quoteSocket(self):
-        stockSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        logger.debug("Attempting Connection to Quote Server")
-        while stockSocket.connect_ex((self.ip, self.port)) != 0:
-            await asyncio.sleep(1)
-        logger.debug("Quote Connection Started")
-        return stockSocket
+        logger.info(f"{__name__} - Attempting Connection to Quote Server")
+        reader, writer = await asyncio.open_connection(self.ip, self.port)
+        logger.info(f"{__name__} - Quote Connection Started")
+        return reader, writer
 
     async def getQuote(self, trans_num, user_id, stock_symbol):
-        stockSocket = await self.quoteSocket()
-        message = "{},{}\n".format(stock_symbol, user_id)
-        stockSocket.send(message.encode())
-        dataReceived = stockSocket.recv(1024).decode().split(",")
-        stockSocket.close()
+        reader, writer = await self.quoteSocket()
 
-        price, _, _, quote_time, cryptokey = dataReceived
+        message = f'{stock_symbol},{user_id}\n'
+        writer.write(message.encode())
+        await writer.drain()
+
+        data_received = await reader.read(1024)
+
+        logger.info(f"{__name__} - Closing connection")
+        writer.close()
+        await writer.wait_closed()
+
+        price, _, _, quote_time, cryptokey = data_received.decode().split(',')
         price = float(price)
         quote_time = int(quote_time)
-        result = {
-            "transaction_num": trans_num,
-            "user_id": user_id,
-            "stock_symbol": stock_symbol,
-            "price": price,
-            "cryptokey": cryptokey,
-            "quoteTime": quote_time
-        }
 
         await self.audit.handleQuote(trans_num, user_id, stock_symbol, price, quote_time, cryptokey)
         # DO FAILURE
