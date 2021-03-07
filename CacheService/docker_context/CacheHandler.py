@@ -2,6 +2,8 @@ import aiohttp
 from sanic.log import logger
 from time import time
 
+from Client import Client
+
 
 def errorResult(err, data):
     return {
@@ -23,12 +25,12 @@ def currentTime():
 
 class CacheHandler:
 
-    def __init__(self, redis, RedisHandler, audit, client, ip, port, LegacyStock):
+    def __init__(self, redis, RedisHandler, audit, loop, ip, port, LegacyStock):
         self.LegacyStock = LegacyStock
         self.redis = redis
         self.RedisHandler = RedisHandler
         self.audit = audit
-        self.client = client
+        self.client = Client(loop)
         self.dbmURL = f'http://{ip}:{port}'
 
     async def getUserFunds(self, user_id):

@@ -1,8 +1,9 @@
 import pickle
 
 import aiohttp
-from sanic import response
 from sanic.log import logger
+
+from Client import Client
 
 
 def errorResult(err, data):
@@ -21,9 +22,9 @@ def goodResult(msg, data):
 
 class RedisHandler:
 
-    def __init__(self, redis, client, ip, port):
+    def __init__(self, redis, ip, port, loop):
         self.redis = redis
-        self.client = client
+        self.client = Client(loop)
         self.url = f"http://{ip}:{port}"
 
     async def fillUserCache(self):

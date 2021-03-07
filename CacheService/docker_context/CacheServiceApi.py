@@ -7,6 +7,7 @@ import apiListeners
 from cacheInputSchema import *
 
 app = Sanic(config.CACHE_SERVER_NAME)
+app.config['KEEP_ALIVE_TIMEOUT'] = 10
 
 
 # GET ENDPOINTS -----------------------------------------------
@@ -161,16 +162,16 @@ async def cancelSell(request):
 
 if __name__ == "__main__":
     # Before app start
-    app.register_listener(apiListeners.initClient, 'before_server_start')
     app.register_listener(apiListeners.connectRedis, 'before_server_start')
     app.register_listener(apiListeners.initRedisHandler, 'before_server_start')
-    app.register_listener(apiListeners.initAudit, 'before_server_start')
-    app.register_listener(apiListeners.initLegacyStock, 'before_server_start')
-    app.register_listener(apiListeners.initCacheLogic, 'before_server_start')
+    app.register_listener(apiListeners.initAuditHandler, 'before_server_start')
+    app.register_listener(apiListeners.initLegacyStockHandler, 'before_server_start')
+    app.register_listener(apiListeners.initCacheHandler, 'before_server_start')
     app.register_listener(apiListeners.initServiceLogic, 'before_server_start')
+
     # Before app stop
-    app.register_listener(apiListeners.closeClient, 'before_server_stop')
     app.register_listener(apiListeners.closeRedis, 'before_server_stop')
+    app.register_listener(apiListeners.closeHandlerClients, 'before_server_stop')
 
     app.run(
         host=config.CACHE_SERVER_IP,

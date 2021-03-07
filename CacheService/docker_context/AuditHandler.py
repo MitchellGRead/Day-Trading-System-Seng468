@@ -1,7 +1,8 @@
 from time import time
 
-import aiohttp
 from sanic.log import logger
+
+from Client import Client
 
 
 def currentTimeMs():
@@ -23,8 +24,8 @@ def addKeyValuePairs(user_id='', stock_symbol='', amount=0, filename=''):
 
 class AuditHandler:
 
-    def __init__(self, client, service_name, ip, port):
-        self.client = client
+    def __init__(self, service_name, ip, port, loop):
+        self.client = Client(loop)
         self.service_name = service_name
         self.url = f'http://{ip}:{port}'
 
@@ -45,7 +46,7 @@ class AuditHandler:
             **addKeyValuePairs(user_id, stock_symbol, amount, filename)
         }
 
-        resp = await self.postRequest('/event/error', event)
+        resp = await self.client.postRequest('/event/error', event)
         logger.debug(resp)
         return
 
@@ -56,7 +57,7 @@ class AuditHandler:
         }
 
         logger.debug(f'Auditing system event - {trans_num} - {command} - {user_id}')
-        resp = await self.postRequest('/event/system', event)
+        resp = await self.client.postRequest('/event/system', event)
         logger.debug(f'Audit response - {resp}')
         return
 
@@ -69,13 +70,6 @@ class AuditHandler:
             'cryptokey': crptokey
         }
         logger.debug(f'Auditing quote event - {trans_num} - {user_id}')
-        resp = await self.postRequest('/event/quote', event)
+        resp = await self.client.postRequest('/event/quote', event)
         logger.debug(f'Audit response - {resp}')
         return
-
-    async def postRequest(self, endpoint, data):
-        url = f'{self.url}{endpoint}'
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=data) as resp:
-                js = await resp.json()
-                return js

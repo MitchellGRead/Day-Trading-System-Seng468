@@ -1,6 +1,3 @@
-from datetime import datetime
-
-
 class ServiceLogic:
 
     def __init__(self, CacheLogic):
@@ -15,11 +12,11 @@ class ServiceLogic:
     async def addFunds(self, user_id, funds):
         return await self.CacheLogic.addFunds(user_id, funds)
 
-    async def buyStocks(self, user_id, stock_symbol, stock_amount, totalValue):
-        return await self.CacheLogic.buyStocks(user_id, stock_symbol, stock_amount, totalValue)
+    async def buyStocks(self, user_id, stock_symbol, stock_amount, total_value):
+        return await self.CacheLogic.buyStocks(user_id, stock_symbol, stock_amount, total_value)
 
-    async def sellStocks(self, user_id, stock_symbol, amountOfStock, totalValue):
-        return await self.CacheLogic.sellStocks(user_id, stock_symbol, amountOfStock, totalValue)
+    async def sellStocks(self, user_id, stock_symbol, amount_of_stock, total_value):
+        return await self.CacheLogic.sellStocks(user_id, stock_symbol, amount_of_stock, total_value)
 
     async def getBuyStocks(self, user_id):
         return await self.CacheLogic.getBuyStocks(user_id)
