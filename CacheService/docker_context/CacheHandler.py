@@ -24,6 +24,7 @@ def currentTime():
 
 
 class CacheHandler:
+    _QUOTE_CACHE_TIME_LIMIT_SEC = 10
 
     def __init__(self, redis, RedisHandler, audit, loop, ip, port, LegacyStock):
         self.LegacyStock = LegacyStock
@@ -117,41 +118,62 @@ class CacheHandler:
         # TODO Update DBM to take trans_num and commands
         buy_request = await self.RedisHandler.rGet(user_id + "_BUY")
 
-        data = {
-            "user_id": user_id,
-            "funds": buy_request['amount'],
-            "stock_symbol": buy_request['stock_id'],
-            "stock_amount": buy_request['amount_of_stock']
-        }
-        result, status = await self.client.postRequest(f'{self.dbmURL}/stocks/buy_stocks', data)
-        if status == 200:
-            await self.cacheStockTransaction(user_id, buy_request['stock_id'])
+        try:
+            data = {
+                "user_id": user_id,
+                "funds": buy_request['amount'],
+                "stock_symbol": buy_request['stock_id'],
+                "stock_amount": buy_request['amount_of_stock']
+            }
+            result, status = await self.client.postRequest(f'{self.dbmURL}/stocks/buy_stocks', data)
+            if status == 200:
+                await self.cacheStockTransaction(user_id, buy_request['stock_id'])
+            await self.RedisHandler.rDelete(user_id + "_BUY")
+        except:
+            err_msg = f'Failed processing data for commit'
+            logger.error(f'{err_msg}: Request {buy_request}')
+            result, status = await self._failedCommit(trans_num, command, user_id, err_msg)
 
-        await self.RedisHandler.rDelete(user_id + "_BUY")
         return result, status
 
     async def commitSellStocks(self, trans_num, command, user_id):
         # TODO Update DBM to take trans_num and commands
         sell_request = await self.RedisHandler.rGet(user_id + "_SELL")
-        data = {
-            "user_id": user_id,
-            "funds": sell_request["amount"],
-            "stock_symbol": sell_request["stock_id"],
-            "stock_amount": sell_request["amount_of_stock"]
-        }
-        result, status = await self.client.postRequest(f'{self.dbmURL}/stocks/sell_stocks', data)
-        if status == 200:
-            await self.cacheStockTransaction(user_id, sell_request['stock_id'])
 
-        await self.RedisHandler.rDelete(user_id + "_SELL")
+        try:
+            data = {
+                "user_id": user_id,
+                "funds": sell_request["amount"],
+                "stock_symbol": sell_request["stock_id"],
+                "stock_amount": sell_request["amount_of_stock"]
+            }
+            result, status = await self.client.postRequest(f'{self.dbmURL}/stocks/sell_stocks', data)
+            if status == 200:
+                await self.cacheStockTransaction(user_id, sell_request['stock_id'])
+
+            await self.RedisHandler.rDelete(user_id + "_SELL")
+        except:
+            err_msg = f'Failed processing data for commit'
+            logger.error(f'{err_msg}: Request {sell_request}')
+            result, status = await self._failedCommit(trans_num, command, user_id, err_msg)
+
         return result, status
 
-    async def cacheStockTransaction(self, user_id, data, max_retry=5):
+    async def _failedCommit(self, trans_num, command, user_id, err_msg):
+        await self.audit.handleError(
+            trans_num=trans_num,
+            command=command,
+            error_msg=err_msg,
+            user_id=user_id,
+        )
+        return errorResult(err=err_msg, data=''), 404
+
+    async def cacheStockTransaction(self, user_id, stock_symbol, max_retry=5):
         retry = 1
         while retry <= max_retry:
-            logger.debug(f'{__name__} - Attempt {retry}/{max_retry} to cache transaction for {user_id} --> {data}')
+            logger.debug(f'{__name__} - Attempt {retry}/{max_retry} to cache transaction for {user_id} --> {stock_symbol}')
             account_result, account_status = await self.RedisHandler.updateAccountCache(user_id)
-            stock_result, stock_status = await self.RedisHandler.updateStockCache(user_id, data)
+            stock_result, stock_status = await self.RedisHandler.updateStockCache(user_id, stock_symbol)
             if account_status == 200 and stock_status == 200:
                 return
             retry += 1
@@ -183,7 +205,7 @@ class CacheHandler:
             then = float(quote['time'])
             now = currentTime()
             difference = (now - then)
-            if difference < 10:
+            if difference <= self._QUOTE_CACHE_TIME_LIMIT_SEC:
                 logger.debug(f'{__name__} - Cache hit while getting stock {stock_id}')
                 return goodResult(msg="Quote price", data={'price': quote['price']}), 200
 
