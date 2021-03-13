@@ -42,7 +42,7 @@ funds_schema = {
         'amount': non_negative_number,
         'command': {'type': 'string'}
     },
-    'required': ['transaction_num', 'user_id', 'amount']
+    'required': ['transaction_num', 'user_id', 'amount', 'command']
 }
 
 stocks_query_schema = {
@@ -55,7 +55,7 @@ stocks_query_schema = {
         'funds': non_negative_number,
         'command': {'type': 'string'}
     },
-    'required': ['transaction_num', 'user_id', 'stock_symbol', 'stock_amount', 'funds']
+    'required': ['transaction_num', 'user_id', 'stock_symbol', 'stock_amount', 'funds', 'command']
 }
 
 user_schema = {
@@ -65,7 +65,7 @@ user_schema = {
         'user_id': {'type': 'string'},
         'command': {'type': 'string'}
     },
-    'required': ['transaction_num', 'user_id']
+    'required': ['transaction_num', 'user_id', 'command']
 }
 
 add_funds_schema = funds_schema

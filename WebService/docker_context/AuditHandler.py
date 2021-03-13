@@ -28,9 +28,6 @@ class AuditHandler:
         self.service_name = service_name
         self.url = f'http://{ip}:{port}'
 
-    async def closeClient(self):
-        await self.client.stop()
-
     def baseEvent(self, trans_num, command):
         return {
             'server': self.service_name,

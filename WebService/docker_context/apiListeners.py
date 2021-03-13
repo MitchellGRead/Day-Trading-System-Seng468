@@ -35,5 +35,5 @@ def initServiceLogic(app, loop):
 
 async def closeHandlerClients(app, loop):
     logger.debug('Closing handler clients')
-    await app.config['audit'].closeClient()
-    await app.config['transaction'].closeClient()
+    await app.config['audit'].client.stop()
+    await app.config['transaction'].client.stop()

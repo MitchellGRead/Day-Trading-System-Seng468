@@ -7,9 +7,6 @@ class TransactionHandler:
         self.url = f'http://{ip}:{port}'
         self.client = Client(loop)
 
-    async def closeClient(self):
-        await self.client.stop()
-
     async def handleQuote(self, data):
         endpoint = f'/get/{data["command"]}/trans/{data["transaction_num"]}/user/{data["user_id"]}/stock/{data["stock_symbol"]}'
         resp = await self.client.getRequest(f'{self.url}{endpoint}')
