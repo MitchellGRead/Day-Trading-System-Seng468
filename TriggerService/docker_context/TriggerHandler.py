@@ -43,7 +43,7 @@ class TriggerHandler:
         else:
             return trigger
 
-    async def fetchActiveTriggers(self):
+    async def fetchExistingTriggers(self):
         endpoint = '/triggers/get/active'
         results, status = await self.client.getRequest(f'{self.cache_url}{endpoint}')
         if status != 200 or results is None:
