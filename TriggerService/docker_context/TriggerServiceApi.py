@@ -74,8 +74,16 @@ async def cancelSellTrigger(request):
 
 
 if __name__ == '__main__':
-    app.register_listener(apiListeners.initClient, 'before_server_start')
-    app.register_listener(apiListeners.closeClient, 'before_server_stop')
+    app.register_listener(apiListeners.initAudit, 'before_server_start')
+    app.register_listener(apiListeners.initTriggerExecutionManager, 'before_server_start')
+    app.register_listener(apiListeners.initTriggerHandler, 'before_server_start')
+    app.register_listener(apiListeners.initServiceLogic, 'before_server_start')
+
+    # Do after for initialising the active triggers in DB on start up
+    app.register_listener(apiListeners.initActiveTriggers, 'before_server_start')
+
+    app.register_listener(apiListeners.stopTriggerScheduler, 'before_server_stop')
+    app.register_listener(apiListeners.closeHandlerClients, 'before_server_stop')
 
     app.run(
         host=config.TRIGGER_SERVER_IP,
