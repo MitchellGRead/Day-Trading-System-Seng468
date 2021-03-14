@@ -1,5 +1,6 @@
 from time import time
 from sanic.log import logger
+from decimal import *
 import asyncpg
 
 connection_string = "postgres://{user}:{password}@{host}:{port}/{database}".format(
@@ -13,9 +14,8 @@ from_table_where_user_query = "select {columns} from {table} where user_id = '{u
 from_table_where_query = "select {columns} from {table} {where};"
 to_table_where_user_query = "update {table} set {fields} where user_id = '{user}';"
 
+getcontext().prec = 20
 
-# TODO: Implement the handler's methods
-# TODO: Return response code along with data
 class PostgresHandler:
 
     def __init__(self, loop):
@@ -42,7 +42,7 @@ class PostgresHandler:
 
         result = await self.fetchQuery(get_funds_query)
 
-        if result is None or result == [] or result == {}:
+        if result is None:
             return {
                 'errorMessage': 'Unexpected error. Could not get funds.'
             }, 404
@@ -90,7 +90,7 @@ class PostgresHandler:
 
         result = await self.fetchQuery(get_stocks_query)
         logger.debug(str(result))
-        if result is None or result == [] or result == {}:
+        if result is None:
             return {
                 'errorMessage': 'Unexpected error. Could not get stocks.'
             }, 404
@@ -123,7 +123,9 @@ class PostgresHandler:
 
         result = await self.fetchQuery(get_stocks_query)
 
-        if result is None or result == [] or result == {}:
+        if result == []:
+            return {'errorMessage':'Stock not found.'}, 404
+        elif result is None:
             return {
                 'errorMessage': 'Unexpected error. Could not get stocks.'
             }, 404
@@ -142,9 +144,14 @@ class PostgresHandler:
 
         error_resp = {'status': 'failure', 'message': 'Unexpected error. Could not add funds.'}
         success_resp = {'status': 'success', 'message': 'Funds successfully added.'}
-
+        
         balances, status = await self.handleGetUserFundsCommand(user_id)
+
+        if status != 200:
+            return error_resp, status
+
         curr_funds = balances['available_funds']
+        funds = Decimal(funds)
 
         add_funds_query = to_table_where_user_query.format(
             table=funds_table,
@@ -172,7 +179,12 @@ class PostgresHandler:
             }, 404
 
         balances, status = await self.handleGetUserFundsCommand(user_id)
+
+        if status != 200:
+            return {'status':'failure', 'message':'Could not get user funds. Unexpected error.'}, status
+
         curr_funds = balances['available_funds']
+        funds = Decimal(funds)
 
         stocks, status = await self.handleGetUserStocksCommand(user_id, stock_id)
         available_stock = 0
@@ -230,7 +242,12 @@ class PostgresHandler:
             }, 404
 
         balances, status = await self.handleGetUserFundsCommand(user_id)
+        
+        if status != 200:
+            return {'status':'failure', 'message':'Could not sell stocks. Unexpected error.'}, status
+        
         curr_funds = balances['available_funds']
+        funds = Decimal(funds)
 
         stocks, status = await self.handleGetUserStocksCommand(user_id, stock_id)
         available_stock = 0
@@ -331,8 +348,8 @@ class PostgresHandler:
         add_user_query = "insert into {table} values ('{user}', {balance}, {reserve});".format(
             table=funds_table,
             user=user_id,
-            balance=0,
-            reserve=0)
+            balance=Decimal(0),
+            reserve=Decimal(0))
         result = await self.executeQuery(add_user_query)
 
         if type(result) != str:
