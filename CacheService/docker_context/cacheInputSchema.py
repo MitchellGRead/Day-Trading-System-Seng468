@@ -68,6 +68,34 @@ user_schema = {
     'required': ['transaction_num', 'user_id', 'command']
 }
 
+trigger_execute_schema = {
+    'type': 'array',
+    'items': {
+        'type': 'object',
+        'properties': {
+            'transaction_num': {'type': 'integer'},
+            'trigger': {'type': 'string'},
+            'user_id': {'type': 'string'},
+            'stock_symbol': one_to_three_letter_string,
+            'trigger_price': non_negative_number,
+            'command': {'type': 'string'}
+        },
+        'required': ['transaction_num', 'trigger', 'user_id', 'stock_symbol', 'trigger_price', 'command']
+    }
+}
+
+trigger_schema = {
+    'type': 'object',
+    'properties': {
+        'transaction_num': {'type': 'integer'},
+        'user_id': {'type': 'string'},
+        'stock_symbol': one_to_three_letter_string,
+        'funds': non_negative_number,
+        'command': {'type': 'string'}
+    },
+    'required': ['transaction_num', 'user_id', 'stock_symbol', 'funds', 'command']
+}
+
 add_funds_schema = funds_schema
 remove_funds_schema = funds_schema
 buy_stock_schema = stocks_query_schema

@@ -73,3 +73,15 @@ class ServiceLogic:
 
     async def getQuote(self, trans_num, user_id, stock_id):
         return await self.CacheLogic.getQuote(trans_num, user_id, stock_id)
+
+    async def getBulkQuote(self, user_ids, stock_ids, transaction_nums):
+        return await self.CacheLogic.getBulkQuote(user_ids, stock_ids, transaction_nums)
+
+    async def setBuyAmount(self, data):
+        return await self.CacheLogic.setBuyAmount(data)
+
+    async def setSellAmount(self, data):
+        return await self.CacheLogic.setSellAmount(data)
+
+    async def executeTriggers(self, data):
+        return await self.CacheLogic.executeTriggers(data)

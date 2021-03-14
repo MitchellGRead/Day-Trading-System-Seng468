@@ -43,6 +43,22 @@ async def getQuote(request, user_id, stock_id, trans_num):
     return response.json(result, status=status)
 
 
+@app.route(endpoints.get_bulk_quotes_endpoint, methods=['GET'])
+async def getBulkQuote(request):
+    user_ids = request.args.getlist('user_id', '')
+    stock_ids = request.args.getlist('stock_id', '')
+    transaction_nums = request.args.getlist('transaction_num', '')
+
+    if isinstance(user_ids, list) & isinstance(stock_ids, list) & isinstance(transaction_nums, list):
+        if len(user_ids) == len(stock_ids) == len(transaction_nums):
+            result, status = await app.config['serviceLogic'].getBulkQuote(user_ids, stock_ids, transaction_nums)
+            return response.json(result, status=status)
+        else:
+            return response.json(errorResult("error: mismatched list lengths", data=''), status=400)
+    else:
+        return response.json(errorResult("error: not all lists", data=''), status=400)
+
+
 # Get active buy command
 @app.route(endpoints.get_buy_endpoint, methods=['GET'])
 async def getBuyStocks(request, user_id):
@@ -152,6 +168,39 @@ async def cancelSell(request):
 
     data = request.json
     result, status = await app.config['serviceLogic'].cancelSell(data)
+    return response.json(result, status=status)
+
+
+@app.route(endpoints.set_buy_trigger_amount_endpoint, methods=['POST'])
+async def setBuyAmount(request):
+    res, err = validateRequest(request.json, trigger_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    result, status = await app.config['serviceLogic'].setBuyAmount(data)
+    return response.json(result, status=status)
+
+
+@app.route(endpoints.set_sell_trigger_amount_endpoint, methods=['POST'])
+async def setSellAmount(request):
+    res, err = validateRequest(request.json, trigger_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    result, status = await app.config['serviceLogic'].setSellAmount(data)
+    return response.json(result, status=status)
+
+
+@app.route(endpoints.execute_triggers_endpoint, methods=['POST'])
+async def executeTriggers(request):
+    res, err = validateRequest(request.json, trigger_execute_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    result, status = await app.config['serviceLogic'].executeTriggers(data)
     return response.json(result, status=status)
 
 
