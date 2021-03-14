@@ -46,6 +46,30 @@ async def getUserStocks(request, user_id):
     return response.json(result, status=status)
 
 
+# Get all buy triggers
+@app.route(endpoints.get_all_buy_triggers_endpoint, methods=['GET'])
+async def getAllBuyTriggers(request):
+    return response.json({})
+
+
+# Get the user's buy triggers
+@app.route(endpoints.get_user_buy_triggers_endpoint, methods=['GET'])
+async def getUserBuyTriggers(request, user_id):
+    return response.json({})
+
+
+# Get all sell triggers
+@app.route(endpoints.get_all_sell_triggers_endpoint, methods=['GET'])
+async def getAllSellTriggers(request):
+    return response.json({})
+
+
+# Get the user's sell triggers
+@app.route(endpoints.get_user_sell_triggers_endpoint, methods=['GET'])
+async def getUserSellTriggers(request, user_id):
+    return response.json({})
+
+
 # Get the system's summary
 @app.route(endpoints.get_summary_endpoint, methods=['GET'])
 async def getSummary(request, user_id):
@@ -101,6 +125,46 @@ async def sellStocks(request):
     data = request.json
     result = await app.config['logic'].handleSellStocksCommand(data['user_id'], data['stock_symbol'], data['stock_amount'], data['funds'])
     return response.json(result)
+
+
+# Set buy trigger amount endpoint -- set the amount of stock to buy
+@app.route(endpoints.set_buy_trigger_amount_endpoint, methods=['POST'])
+async def setBuyTriggerAmount(request):
+    res, err = validateRequest(request.json, buy_trigger_amount_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+    
+    return response.json({})
+
+
+# Set buy trigger price endpoint -- set the price at which to buy
+@app.route(endpoints.set_buy_trigger_price_endpoint, methods=['POST'])
+async def setBuyTriggerPrice(request):
+    res, err = validateRequest(request.json, buy_trigger_price_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    return response.json({})
+
+
+# Set sell trigger amount endpoint -- set the amount of stock to sell
+@app.route(endpoints.set_sell_trigger_amount_endpoint, methods=['POST'])
+async def setSellTriggerAmount(request):
+    res, err = validateRequest(request.json, sell_trigger_amount_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    return response.json({})
+
+
+# Set sell trigger price endpoint -- set the price at which to sell
+@app.route(endpoints.set_sell_trigger_price_endpoint, methods=['POST'])
+async def setSellTriggerPrice(request):
+    res, err = validateRequest(request.json, sell_trigger_price_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    return response.json({})
 
 
 # DB SERVICE INITIALIZATION -----------------------------------------------
