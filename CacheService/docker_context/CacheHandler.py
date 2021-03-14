@@ -35,20 +35,7 @@ class CacheHandler:
         self.client = Client(loop)
         self.dbmURL = f'http://{ip}:{port}'
 
-    async def getUserFunds(self, user_id):
-        check = await self.RedisHandler.rExists(user_id)
-        if check:
-            data = await self.RedisHandler.rGet(user_id)
-            return goodResult(msg="User Data", data=data['account_balance']), 200
-        else:
-            result, status = await self.RedisHandler.updateAccountCache(user_id)
-            if status == 200:
-                data = await self.RedisHandler.rGet(user_id)
-                return goodResult(msg="User Data", data=data['account_balance']), 200
-            else:
-                return result, status
-
-    async def getUser(self, user_id):
+    async def _getUser(self, user_id):
         check = await self.RedisHandler.rExists(user_id)
         if check:
             data = await self.RedisHandler.rGet(user_id)
@@ -57,35 +44,36 @@ class CacheHandler:
             result, status = await self.RedisHandler.updateAccountCache(user_id)
             if status == 200:
                 data = await self.RedisHandler.rGet(user_id)
-                return data
+                return data, 200
             else:
-                return 404
+                return "", 404
+
+    async def getUserFunds(self, user_id):
+        result, status = await self._getUser(user_id)
+        if status == 200:
+            return goodResult(msg="User Data", data=result['account_balance']), 200
+        else:
+            return result, status
+
+    async def _getStocks(self, user_id, stock_id):
+        check = await self.RedisHandler.rExists(f'{user_id}_{stock_id}')
+        if check:
+            data = await self.RedisHandler.rGet(f'{user_id}_{stock_id}')
+            return data
+        else:
+            result, status = await self.RedisHandler.updateStockCache(user_id, stock_id)
+            if status == 200:
+                data = await self.RedisHandler.rGet(f'{user_id}_{stock_id}')
+                return data, 200
+            else:
+                return errorResult(f"Couldn't fetch stocks for {user_id}", ""), 404
 
     async def getUserStocks(self, user_id, stock_id):
-        check = await self.RedisHandler.rExists(f'{user_id}_{stock_id}')
-        if check:
-            data = await self.RedisHandler.rGet(f'{user_id}_{stock_id}')
-            return goodResult(msg="Stock Data", data=data['stock_amount']), 200
+        result, status = await self._getStocks(user_id, stock_id)
+        if status == 200:
+            return goodResult(msg="Stock Data", data=result['stock_amount']), 200
         else:
-            result, status = await self.RedisHandler.updateStockCache(user_id, stock_id)
-            if status == 200:
-                data = await self.RedisHandler.rGet(f'{user_id}_{stock_id}')
-                return goodResult(msg="Stock Data", data=data['stock_amount']), 200
-            else:
-                return result, status
-
-    async def getStocks(self, user_id, stock_id):
-        check = await self.RedisHandler.rExists(f'{user_id}_{stock_id}')
-        if check:
-            data = await self.RedisHandler.rGet(f'{user_id}_{stock_id}')
-            return data
-        else:
-            result, status = await self.RedisHandler.updateStockCache(user_id, stock_id)
-            if status == 200:
-                data = await self.RedisHandler.rGet(f'{user_id}_{stock_id}')
-                return data
-            else:
-                return 404
+            return result, status
 
     async def addFunds(self, trans_num, command, user_id, funds):
         # TODO Update DBM to take trans_num and commands
@@ -274,36 +262,14 @@ class CacheHandler:
             stock_id = stock_ids.pop(0)
             transaction_num = transaction_nums.pop(0)
 
-            check = await self.RedisHandler.rExists(stock_id)
-            if check:
-                quote = await self.RedisHandler.rGet(stock_id)
-                then = float(quote['time'])
-                now = currentTime()
-                difference = (now - then)
-                if difference <= self._QUOTE_CACHE_TIME_LIMIT_SEC:
-                    logger.debug(f'{__name__} - Cache hit while getting stock {stock_id}')
-                    results.append({'stock_id': stock_id, 'price': quote['price']})
-                    continue
+            result, status = await self.getQuote(transaction_num, user_id, stock_id)
 
-            result, status = await self.LegacyStock.getQuote(transaction_num, user_id, stock_id)
-            if status == 200:
-                await self.RedisHandler.rSet(stock_id,
-                                             {'stock_id': stock_id, 'price': result['price'], 'time': currentTime()})
-                result['stock_id'] = stock_id
-                results.append(result)
-            else:
-                # not sure how we want to handle this, so I'm just using this from quote.
-                logger.error(
-                    f'{__name__} - Cannot get quote for {transaction_num}, {user_id}, {stock_id} due to an error.'
-                    f' {status} --> {result}')
-                self.audit.handleError(
-                    trans_num=transaction_num,
-                    command='QUOTE',
-                    error_msg=f'Error getting quote - {result} ({status})',
-                    user_id=user_id,
-                    stock_symbol=stock_id
-                )
-        # not sure what we want to do if the error above happens.
+            if status != 200:
+                continue
+
+            result['stock_id'] = stock_id
+            results.append(result)
+
         return results, 200
 
     async def setBuyAmount(self, data):
@@ -323,9 +289,12 @@ class CacheHandler:
             command = operation['trigger']
 
             if command == "BUY_TRIGGER":
-                user = await self.getUser(operation['user_id'])
+                user, status = await self._getUser(operation['user_id'])
+                if status != 200:
+                    continue
+
                 reservedFunds = float(user['reserved_balance'])
-                executionPrice = float(operation['trigger_price'])
+                executionPrice = float(operation['executed_at'])
                 stockAmount = floor(reservedFunds/executionPrice)
                 funds = round(stockAmount*executionPrice, 2)
 
@@ -340,6 +309,7 @@ class CacheHandler:
                 result, status = await self.client.postRequest(f'{self.dbmURL}/triggers/execute/buy', data)
                 if status == 200:
                     await self.cacheStockTransaction(data['user_id'], data['stock_symbol'])
+
                 else:
                     logger.error(f'{__name__} - error during execution for trigger buy {operation["transaction_num"]}')
                     self.audit.handleError(
@@ -351,9 +321,12 @@ class CacheHandler:
                     )
 
             elif command == "SELL_TRIGGER":
-                stockBal = await self.getStocks(operation['user_id'], operation['stock_symbol'])
+                stockBal, status = await self._getStocks(operation['user_id'], operation['stock_symbol'])
+                if status != 200:
+                    continue
+
                 reservedStock = float(stockBal['stock_reserved'])
-                executionPrice = float(operation['trigger_price'])
+                executionPrice = float(operation['executed_at'])
                 funds = round(reservedStock*executionPrice, 2)
 
                 data = {
@@ -367,6 +340,7 @@ class CacheHandler:
                 result, status = await self.client.postRequest(f'{self.dbmURL}/triggers/execute/sell', data)
                 if status == 200:
                     await self.cacheStockTransaction(data['user_id'], data['stock_symbol'])
+
                 else:
                     logger.error(f'{__name__} - error during execution for trigger sell {operation["transaction_num"]}')
                     self.audit.handleError(

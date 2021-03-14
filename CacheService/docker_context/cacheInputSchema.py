@@ -78,9 +78,10 @@ trigger_execute_schema = {
             'user_id': {'type': 'string'},
             'stock_symbol': one_to_three_letter_string,
             'trigger_price': non_negative_number,
+            'executed_at': non_negative_number,
             'command': {'type': 'string'}
         },
-        'required': ['transaction_num', 'trigger', 'user_id', 'stock_symbol', 'trigger_price', 'command']
+        'required': ['transaction_num', 'trigger', 'user_id', 'stock_symbol', 'trigger_price', 'executed_at', 'command']
     }
 }
 
