@@ -40,7 +40,8 @@ async def initLegacyStockHandler(app, loop):
     app.config['legacyStock'] = LegacyStockServerHandler(
         config.LEGACY_STOCK_SERVER_IP,
         config.LEGACY_STOCK_SERVER_PORT,
-        app.config['audit']
+        app.config['audit'],
+        app.config['redisHandler']
     )
 
 
