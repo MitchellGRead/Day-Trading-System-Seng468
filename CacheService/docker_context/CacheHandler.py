@@ -239,8 +239,6 @@ class CacheHandler:
 
         result, status = await self.LegacyStock.getQuote(trans_num, user_id, stock_id)
         if status == 200:
-            await self.RedisHandler.rSet(stock_id,
-                                         {'stock_id': stock_id, 'price': result['price'], 'time': currentTime()})
             return goodResult(msg="Quote price", data=result), 200
         else:
             logger.error(
