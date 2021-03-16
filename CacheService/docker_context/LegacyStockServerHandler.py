@@ -1,5 +1,5 @@
 import asyncio
-from time import time
+from time import time, sleep
 
 from sanic.log import logger
 
@@ -26,7 +26,9 @@ class LegacyStockServerHandler:
 
     async def getQuote(self, trans_num, user_id, stock_symbol):
         if stock_symbol in self.tracker.keys():
-            await self.tracker[stock_symbol]
+            runningTask = self.tracker[stock_symbol]
+            while not runningTask.done():
+                sleep(1)
             check = await self.RedisHandler.rExists(stock_symbol)
             if check:
                 quote = await self.RedisHandler.rGet(stock_symbol)
