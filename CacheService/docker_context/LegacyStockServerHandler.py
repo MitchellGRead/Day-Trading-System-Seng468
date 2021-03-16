@@ -1,5 +1,5 @@
 import asyncio
-from time import time, sleep
+from time import time
 
 from sanic.log import logger
 
@@ -16,7 +16,7 @@ class LegacyStockServerHandler:
         self.port = port
         self.audit = audit
         self.RedisHandler = redisHandler
-        self.tracker = {}
+        self.__tracker = {}
 
     async def quoteSocket(self):
         logger.info(f"{__name__} - Attempting Connection to Quote Server")
@@ -25,28 +25,28 @@ class LegacyStockServerHandler:
         return reader, writer
 
     async def getQuote(self, trans_num, user_id, stock_symbol):
-        if stock_symbol in self.tracker.keys():
-            runningTask = self.tracker[stock_symbol]
+        if stock_symbol in self.__tracker.keys():
+            runningTask = self.__tracker[stock_symbol]
             while not runningTask.done():
-                sleep(1)
+                await asyncio.sleep(1)
             check = await self.RedisHandler.rExists(stock_symbol)
             if check:
                 quote = await self.RedisHandler.rGet(stock_symbol)
                 return quote['price'], 200
             else:
-                return await self.newQuoteTask(trans_num, user_id, stock_symbol)
+                return await self.__newQuoteTask(trans_num, user_id, stock_symbol)
         else:
-            return await self.newQuoteTask(trans_num, user_id, stock_symbol)
+            return await self.__newQuoteTask(trans_num, user_id, stock_symbol)
 
-    async def newQuoteTask(self, trans_num, user_id, stock_symbol):
-        newTask = asyncio.create_task(self._getQuoteFunc(trans_num, user_id, stock_symbol))
-        self.tracker[stock_symbol] = newTask
+    async def __newQuoteTask(self, trans_num, user_id, stock_symbol):
+        newTask = asyncio.create_task(self.__getQuoteFunc(trans_num, user_id, stock_symbol))
+        self.__tracker[stock_symbol] = newTask
         await newTask
 
         quote = await self.RedisHandler.rGet(stock_symbol)
         return quote['price'], 200
 
-    async def _getQuoteFunc(self, trans_num, user_id, stock_symbol):
+    async def __getQuoteFunc(self, trans_num, user_id, stock_symbol):
         reader, writer = await self.quoteSocket()
 
         message = f'{stock_symbol},{user_id}\n'
@@ -67,7 +67,7 @@ class LegacyStockServerHandler:
         # TODO: Failure.
 
         await self.RedisHandler.rSet(stock_symbol, {'stock_id': stock_symbol, 'price': price, 'time': currentTime()})
-        del self.tracker[stock_symbol]
+        del self.__tracker[stock_symbol]
 
         return
 
