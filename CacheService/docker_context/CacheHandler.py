@@ -1,6 +1,5 @@
 from time import time
 from math import floor
-from concurrent.futures import ProcessPoolExecutor
 import asyncio
 
 from sanic.log import logger
@@ -28,7 +27,6 @@ def currentTime():
 
 class CacheHandler:
     _QUOTE_CACHE_TIME_LIMIT_SEC = 10
-    _MAX_TRIGGER_WORKERS = 3
 
     def __init__(self, redis, RedisHandler, audit, loop, ip, port, LegacyStock):
         self.LegacyStock = LegacyStock
@@ -289,8 +287,8 @@ class CacheHandler:
 
     async def executeTriggers(self, data):
 
-        with ProcessPoolExecutor(max_workers=self._MAX_TRIGGER_WORKERS) as executor:
-            results = executor.map(self.__executeTriggers, data)
+        tasks = [asyncio.create_task(self.__executeTriggers(operation)) for operation in data]
+        results = await asyncio.gather(*tasks)
 
         failedOperations = []
         for operationResult in results:
@@ -299,77 +297,90 @@ class CacheHandler:
                     continue
                 else:
                     failedOperations.append(result['content'])
-        # no idea how we want to handle failures.
 
+        # no idea how we want to handle failures.
         return goodResult("finished", ''), 200
 
-    def __executeTriggers(self, operation):
+    async def __executeTriggers(self, operation):
         command = operation['trigger']
 
         if command == "BUY_TRIGGER":
-            user, status = await self._getUser(operation['user_id'])
-            if status != 200:
-                return errorResult("User seemingly doesn't exist", operation), 404
-
-            reservedFunds = float(user['reserved_balance'])
-            executionPrice = float(operation['executed_at'])
-            stockAmount = floor(reservedFunds / executionPrice)
-            funds = round(stockAmount * executionPrice, 2)
-
-            data = {
-                "user_id": operation['user_id'],
-                "funds": funds,
-                "stock_symbol": operation['stock_symbol'],
-                "stock_amount": stockAmount,
-                "transaction_num": operation['transaction_num']
-            }
-
-            result, status = await self.client.postRequest(f'{self.dbmURL}/triggers/execute/buy', data)
-            if status == 200:
-                await self.cacheStockTransaction(data['user_id'], data['stock_symbol'])
-
-            else:
-                logger.error(f'{__name__} - error during execution for trigger buy {operation["transaction_num"]}')
-                self.audit.handleError(
-                    trans_num=operation['transaction_num'],
-                    command=command,
-                    error_msg=f'error posting buy trigger execute',
-                    user_id=operation['user_id'],
-                    stock_symbol=operation['stock_symbol']
-                )
-                return errorResult("post request to DBM failed", operation), 500
+            result, status = await self.__executeBuyTrigger(command, operation)
 
         elif command == "SELL_TRIGGER":
-            stockBal, status = await self._getStocks(operation['user_id'], operation['stock_symbol'])
-            if status != 200:
-                return errorResult("User doesn't hold any stock", stockBal), 404
+            result, status = await self.__executeSellTrigger(command, operation)
 
-            reservedStock = float(stockBal['stock_reserved'])
-            executionPrice = float(operation['executed_at'])
-            funds = round(reservedStock * executionPrice, 2)
+        else:
+            result, status = errorResult("not a valid trigger command", operation), 500
 
-            data = {
-                "user_id": operation['user_id'],
-                "funds": funds,
-                "stock_symbol": operation['stock_symbol'],
-                "stock_amount": reservedStock,
-                "transaction_num": operation['transaction_num']
-            }
+        return result, status
 
-            result, status = await self.client.postRequest(f'{self.dbmURL}/triggers/execute/sell', data)
-            if status == 200:
-                await self.cacheStockTransaction(data['user_id'], data['stock_symbol'])
+    async def __executeBuyTrigger(self, command, operation):
+        user, status = await self._getUser(operation['user_id'])
+        if status != 200:
+            return errorResult("User seemingly doesn't exist", operation), 404
 
-            else:
-                logger.error(f'{__name__} - error during execution for trigger sell {operation["transaction_num"]}')
-                self.audit.handleError(
-                    trans_num=operation['transaction_num'],
-                    command=command,
-                    error_msg=f'error posting buy trigger execute',
-                    user_id=operation['user_id'],
-                    stock_symbol=operation['stock_symbol']
-                )
-                return errorResult("post request to DBM failed", result), 500
+        reservedFunds = float(user['reserved_balance'])
+        executionPrice = float(operation['executed_at'])
+        stockAmount = floor(reservedFunds / executionPrice)
+        funds = round(stockAmount * executionPrice, 2)
+
+        data = {
+            "user_id": operation['user_id'],
+            "funds": funds,
+            "stock_symbol": operation['stock_symbol'],
+            "stock_amount": stockAmount,
+            "transaction_num": operation['transaction_num']
+        }
+
+        result, status = await self.client.postRequest(f'{self.dbmURL}/triggers/execute/buy', data)
+        if status == 200:
+            await self.cacheStockTransaction(data['user_id'], data['stock_symbol'])
+
+        else:
+            logger.error(f'{__name__} - error during execution for trigger buy {operation["transaction_num"]}')
+            self.audit.handleError(
+                trans_num=operation['transaction_num'],
+                command=command,
+                error_msg=f'error posting buy trigger execute',
+                user_id=operation['user_id'],
+                stock_symbol=operation['stock_symbol']
+            )
+            return errorResult("post request to DBM failed", operation), 500
+
+        return goodResult("finished", operation), 200
+
+    async def __executeSellTrigger(self, command, operation):
+        stockBal, status = await self._getStocks(operation['user_id'], operation['stock_symbol'])
+        if status != 200:
+            return errorResult("User doesn't hold any stock", stockBal), 404
+
+        reservedStock = float(stockBal['stock_reserved'])
+        executionPrice = float(operation['executed_at'])
+        funds = round(reservedStock * executionPrice, 2)
+
+        data = {
+            "user_id": operation['user_id'],
+            "funds": funds,
+            "stock_symbol": operation['stock_symbol'],
+            "stock_amount": reservedStock,
+            "transaction_num": operation['transaction_num']
+        }
+
+        result, status = await self.client.postRequest(f'{self.dbmURL}/triggers/execute/sell', data)
+        if status == 200:
+            await self.cacheStockTransaction(data['user_id'], data['stock_symbol'])
+
+        else:
+            logger.error(f'{__name__} - error during execution for trigger sell {operation["transaction_num"]}')
+            self.audit.handleError(
+                trans_num=operation['transaction_num'],
+                command=command,
+                error_msg=f'error posting buy trigger execute',
+                user_id=operation['user_id'],
+                stock_symbol=operation['stock_symbol']
+            )
+            return errorResult("post request to DBM failed", result), 500
 
         return goodResult("finished", operation), 200
 
