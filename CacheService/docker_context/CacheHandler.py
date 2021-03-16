@@ -231,6 +231,7 @@ class CacheHandler:
         check = await self.RedisHandler.rExists(stock_id)
         if check:
             quote = await self.RedisHandler.rGet(stock_id)
+
             then = float(quote['time'])
             now = currentTime()
             difference = (now - then)
@@ -241,6 +242,7 @@ class CacheHandler:
         result, status = await self.LegacyStock.getQuote(trans_num, user_id, stock_id)
         if status == 200:
             return goodResult(msg="Quote price", data=result), 200
+
         else:
             logger.error(
                 f'{__name__} - Cannot get quote for {trans_num}, {user_id}, {stock_id} due to an error. '
