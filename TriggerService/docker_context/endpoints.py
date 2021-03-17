@@ -1,9 +1,10 @@
 
 """ Post Endpoints """
-buy_amount_endpoint = '/set_buy/amount'
-buy_trigger_endpoint = '/set_buy/trigger'
-cancel_buy_trigger_endpoint = '/set_buy/cancel'
+buy_amount_endpoint = '/trigger/buy/amount'
+buy_trigger_endpoint = '/trigger/buy/set'
+cancel_buy_trigger_endpoint = '/trigger/buy/cancel'
 
-sell_amount_endpoint = '/set_sell/amount'
-sell_trigger_endpoint = '/set_sell/trigger'
-cancel_sell_trigger_endpoint = '/set_sell/cancel'
+sell_amount_endpoint = '/trigger/sell/amount'
+sell_trigger_endpoint = '/trigger/sell/set'
+cancel_sell_trigger_endpoint = '/trigger/sell/cancel'
+
