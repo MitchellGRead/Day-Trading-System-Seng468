@@ -268,8 +268,8 @@ class CacheHandler:
             if status != 200:
                 continue
 
-            result['stock_id'] = stock_id
-            results.append(result)
+            formattedResult = {'stock_id': stock_id, 'price': result['content']}
+            results.append(formattedResult)
 
         return results, 200
 
