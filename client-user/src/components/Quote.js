@@ -4,15 +4,15 @@ import { getQuote } from '../api';
 
 const Quote = (props) => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [quote, setQuote] = useState(0.0);
   const { register, handleSubmit } = useForm();
-  const userId = props.userId
+  const userId = props.userId;
+  const onError = props.onError;
 
   const onSubmit = async (data) => {
-    setError('');
+    onError('');
     if (!userId) {
-      setError('User id field must be specified');
+      onError('User id field must be specified');
       return
     }
 
@@ -23,7 +23,7 @@ const Quote = (props) => {
       setQuote(quotePrice);
     } catch (error) {
       console.error(error);
-      setError(error);
+      onError(`${error.message} - Failed to get quote.`);
     } finally {
       setLoading(false);
     }
@@ -47,7 +47,6 @@ const Quote = (props) => {
           value={loading ? 'Fetching...' : 'Quote'}
         />
       </form>
-      {error && <h3 className='error'>{error}</h3>}
       {
         quote !== 0 &&
         <p>Quote Price: {quote}</p>
