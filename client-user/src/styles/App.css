@@ -18,6 +18,10 @@
   align-items: center;
 }
 
+.error {
+  color: crimson;
+}
+
 /* User credentials div */
 
 .user-credentials {
@@ -37,6 +41,12 @@
   align-items: center;
 }
 
+/* ----------- */
+
+/* Quote div */
+.quote {
+  margin-top: 1.5rem;
+}
 /* ----------- */
 
 @media (prefers-reduced-motion: no-preference) {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import Quote from './components/Quote';
 import UserCredentials from './components/UserCredentials';
 import './styles/App.css';
 
@@ -19,8 +20,9 @@ const App = (props) => {
           isAdmin={isAdmin}
           onChangeIsAdmin={setIsAdmin}
         />
-
       </div>
+
+      <Quote userId={userId} />
 
     </div>
   );
