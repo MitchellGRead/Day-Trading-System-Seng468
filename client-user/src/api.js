@@ -5,7 +5,7 @@ const API_URL = 'https://localhost:5000';
 // TODO get this actually hooked up
 export async function getQuote(userId, stockSymbol, transNum) {
   let endpoint = `/get/QUOTE/trans/${transNum}/user_id/${userId}/stock_symbol/${stockSymbol}`;
-  return await axios.get(`${API_URL}${endpoint}`)
+  return await axios.get(`${API_URL}${endpoint}`);
 }
 
 export async function postFunds(userId, funds) {
@@ -29,7 +29,7 @@ export async function postTransact(transactType, userId, stockSymbol, funds) {
     'amount': funds,
     'transaction_num': 3
   };
-  return await axios.post(`${API_URL}${endpoint}`, data)
+  return await axios.post(`${API_URL}${endpoint}`, data);
 }
 
 export async function postCommit(commitType, userId) {
@@ -40,5 +40,16 @@ export async function postCommit(commitType, userId) {
     'user_id': userId,
     'transaction_num': 3
   };
-  return await axios.post(`${API_URL}${endpoint}`, data)
+  return await axios.post(`${API_URL}${endpoint}`, data);
+}
+
+export async function postCancel(cancelType, userId) {
+  let endpoint = cancelType === 'CANCEL_BUY' ? '/cancel_buy' : '/cancel_sell';
+
+  let data = {
+    'command': cancelType,
+    'user_id': userId,
+    'transaction_num': 3
+  };
+  return await axios.post(`${API_URL}${endpoint}`, data);
 }

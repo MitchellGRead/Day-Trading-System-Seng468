@@ -84,10 +84,18 @@
 }
 
 .commit-form {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
 .commit-form * {
+  margin-right: 0.25rem
+}
+
+.cancel-form {
+  margin-bottom: 0.75rem;
+}
+
+.cancel-form * {
   margin-right: 0.25rem
 }
 /* ----------- */
