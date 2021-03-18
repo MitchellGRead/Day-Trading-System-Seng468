@@ -18,3 +18,16 @@ export async function postFunds(userId, funds) {
   };
   return await axios.post(`${API_URL}${endpoint}`, data);
 }
+
+export async function postTransact(transactType, userId, stockSymbol, funds) {
+  let endpoint = transactType === 'BUY' ? '/buy' : '/sell';
+
+  let data = {
+    'command': transactType,
+    'user_id': userId,
+    'stock_symbol': stockSymbol,
+    'amount': funds,
+    'transaction_num': 3
+  };
+  return await axios.post(`${API_URL}${endpoint}`, data)
+}

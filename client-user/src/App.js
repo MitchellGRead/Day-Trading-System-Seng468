@@ -30,6 +30,7 @@ const App = (props) => {
 
       <div className='main-content'>
         <Add userId={userId} onError={setError} />
+        <Transaction userId={userId} onError={setError} />
       </div>
 
     </div>

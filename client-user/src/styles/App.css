@@ -25,7 +25,6 @@
 /* ----------- */
 
 .main-content {
-  height: 100px;
   margin-top: 1.5rem;
   background-color: cyan;
   margin-left: 10rem;
@@ -58,10 +57,32 @@
   flex-direction: column;
   align-items: center;
 }
+
+.quote * {
+  margin-right: 0.25rem;
+}
+/* ----------- */
+
+/* Add div */
+.add * {
+  margin-right: 0.25rem;
+}
 /* ----------- */
 
 /* Transaction div */
+.transaction {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+}
 
+.transact-form {
+  margin-bottom: 0.75rem;
+}
+
+.transact-form * {
+  margin-right: 0.25rem;
+}
 /* ----------- */
 
 /* Trigger div */
