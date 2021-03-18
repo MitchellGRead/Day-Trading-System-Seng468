@@ -28,50 +28,50 @@ create table if not exists stock_balances (
     constraint non_neg_reserve check(stock_reserve >= 0)
 );
 
--- create table if not exists pending_buy_triggers {
---     user_id varchar(50),
---     stock_id varchar(3),
---     stock_amount integer,
---     foreign key (user_id) references users(user_id)
---         on delete cascade
---         on update cascade,
---     primary key (user_id, stock_id),
---     constraint non_neg_amount check(stock_amount >= 0)
--- };
+ create table if not exists pending_buy_triggers (
+     user_id varchar(12),
+     stock_id varchar(3),
+     stock_amount integer,
+     foreign key (user_id) references users(user_id)
+         on delete cascade
+         on update cascade,
+     primary key (user_id, stock_id),
+     constraint non_neg_amount check(stock_amount >= 0)
+ );
 
--- create table if not exists complete_buy_triggers {
---     user_id varchar(50),
---     stock_id varchar(3),
---     stock_amount integer,
---     stock_price numeric(15, 2),
---     foreign key (user_id) references users(user_id)
---         on delete cascade
---         on update cascade,
---     primary key (user_id, stock_id),
---     constraint non_neg_amount check(stock_amount >= 0),
---     constraint non_neg_price check(stock_price >= 0)
--- };
+ create table if not exists complete_buy_triggers (
+     user_id varchar(12),
+     stock_id varchar(3),
+     stock_amount integer,
+     stock_price numeric(12, 2),
+     foreign key (user_id) references users(user_id)
+         on delete cascade
+         on update cascade,
+     primary key (user_id, stock_id),
+     constraint non_neg_amount check(stock_amount >= 0),
+     constraint non_neg_price check(stock_price >= 0)
+ );
 
--- create table if not exists pending_sell_triggers {
---     user_id varchar(50),
---     stock_id varchar(3),
---     stock_amount integer,
---     foreign key (user_id) references users(user_id)
---         on delete cascade
---         on update cascade,
---     primary key (user_id, stock_id),
---     constraint non_neg_amount check(stock_amount >= 0)
--- };
+ create table if not exists pending_sell_triggers (
+     user_id varchar(12),
+     stock_id varchar(3),
+     stock_amount integer,
+     foreign key (user_id) references users(user_id)
+         on delete cascade
+         on update cascade,
+     primary key (user_id, stock_id),
+     constraint non_neg_amount check(stock_amount >= 0)
+ );
 
--- create table if not exists complete_sell_triggers {
---     user_id varchar(50),
---     stock_id varchar(3),
---     stock_amount integer,
---     stock_price numeric(15, 2),
---     foreign key (user_id) references users(user_id)
---         on delete cascade
---         on update cascade,
---     primary key (user_id, stock_id),
---     constraint non_neg_amount check(stock_amount >= 0),
---     constraint non_neg_price check(stock_price >= 0)
--- };
+ create table if not exists complete_sell_triggers (
+     user_id varchar(12),
+     stock_id varchar(3),
+     stock_amount integer,
+     stock_price numeric(15, 2),
+     foreign key (user_id) references users(user_id)
+         on delete cascade
+         on update cascade,
+     primary key (user_id, stock_id),
+     constraint non_neg_amount check(stock_amount >= 0),
+     constraint non_neg_price check(stock_price >= 0)
+ );

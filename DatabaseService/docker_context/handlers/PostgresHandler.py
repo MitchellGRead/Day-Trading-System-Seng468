@@ -10,6 +10,10 @@ connection_string = "postgres://{user}:{password}@{host}:{port}/{database}".form
 users_table = 'users'
 funds_table = 'account_balances'
 stocks_table = 'stock_balances'
+pending_buy_triggers_table = 'pending_buy_triggers'
+pending_sell_triggers_table = 'pending_sell_triggers'
+buy_triggers_table = 'complete_buy_triggers'
+sell_triggers_table = 'complete_sell_triggers'
 from_table_where_user_query = "select {columns} from {table} where user_id = '{user}';"
 from_table_where_query = "select {columns} from {table} {where};"
 to_table_where_user_query = "update {table} set {fields} where user_id = '{user}';"
@@ -89,7 +93,7 @@ class PostgresHandler:
         )
 
         result = await self.fetchQuery(get_stocks_query)
-        logger.debug(str(result))
+        
         if result is None:
             return {
                 'errorMessage': 'Unexpected error. Could not get stocks.'
@@ -128,6 +132,114 @@ class PostgresHandler:
         elif result is None:
             return {
                 'errorMessage': 'Unexpected error. Could not get stocks.'
+            }, 404
+
+        resp_list = {}
+        for record in result:
+            resp_list[record[1]] = [record[2], record[3]]
+
+        return resp_list, 200
+
+    async def handleGetAllBuyTriggers(self):
+        get_triggers_query = from_table_where_query.format(
+            columns='*',
+            table=buy_triggers_table,
+            where=''
+        )
+
+        result = await self.fetchQuery(get_triggers_query)
+
+        if result is None:
+            return {
+                'errorMessage': 'Unexpected error. Could not get buy triggers.'
+            }, 404
+
+        resp_list = {}
+        for record in result:
+            stocks_list = {}
+            if record[0] in resp_list:
+                stocks_list = resp_list[record[0]]
+
+            stocks_list[record[1]] = [record[2], record[3]]
+            resp_list[record[0]] = stocks_list
+
+        return resp_list, 200
+        
+    async def handleGetUserBuyTriggers(self, user_id):
+        user_exists = await self._checkUserExists(user_id)
+
+        if not user_exists:
+            return {
+                'status': 'failure', 'message': 'Specified user does not exist.'
+            }, 404
+        
+        get_triggers_query = from_table_where_user_query.format(
+            columns='*',
+            table=buy_triggers_table,
+            user=user_id
+        )
+
+        result = await self.fetchQuery(get_triggers_query)
+
+        if result == []:
+            return {'errorMessage':'Triggers not found.'}, 404
+        elif result is None:
+            return {
+                'errorMessage': 'Unexpected error. Could not get triggers.'
+            }, 404
+
+        resp_list = {}
+        for record in result:
+            resp_list[record[1]] = [record[2], record[3]]
+
+        return resp_list, 200
+
+    async def handleGetAllSellTriggers(self):
+        get_triggers_query = from_table_where_query.format(
+            columns='*',
+            table=sell_triggers_table,
+            where=''
+        )
+
+        result = await self.fetchQuery(get_triggers_query)
+
+        if result is None:
+            return {
+                'errorMessage': 'Unexpected error. Could not get sell triggers.'
+            }, 404
+
+        resp_list = {}
+        for record in result:
+            stocks_list = {}
+            if record[0] in resp_list:
+                stocks_list = resp_list[record[0]]
+
+            stocks_list[record[1]] = [record[2], record[3]]
+            resp_list[record[0]] = stocks_list
+
+        return resp_list, 200
+
+    async def handleGetUserSellTriggers(self, user_id):
+        user_exists = await self._checkUserExists(user_id)
+
+        if not user_exists:
+            return {
+                'status': 'failure', 'message': 'Specified user does not exist.'
+            }, 404
+
+        get_triggers_query = from_table_where_user_query.format(
+            columns='*',
+            table=sell_triggers_table,
+            user=user_id
+        )
+
+        result = await self.fetchQuery(get_triggers_query)
+
+        if result == []:
+            return {'errorMessage':'Triggers not found.'}, 404
+        elif result is None:
+            return {
+                'errorMessage': 'Unexpected error. Could not get triggers.'
             }, 404
 
         resp_list = {}
@@ -190,7 +302,7 @@ class PostgresHandler:
         available_stock = 0
         reserved_stock = 0
 
-        if len(stocks) >= 2:
+        if stock_id in stocks: 
             available_stock = stocks[stock_id][0]
             reserved_stock = stocks[stock_id][1]
 
@@ -253,14 +365,14 @@ class PostgresHandler:
         available_stock = 0
         reserved_stock = 0
 
-        if len(stocks) >= 1:
+        if stock_id in stocks:
             available_stock = stocks[stock_id][0]
             reserved_stock = stocks[stock_id][1]
 
-            if available_stock < stock_num:
-                return {
-                    'status': 'failure', 'message': 'Not enough stocks in account.'
-                }, 404
+        if available_stock < stock_num:
+            return {
+                'status': 'failure', 'message': 'Not enough stocks in account.'
+            }, 404
 
         sell_stock_query = to_table_where_user_query.format(
             table=funds_table,
@@ -294,6 +406,18 @@ class PostgresHandler:
         return {
             'status': 'failure', 'message': 'Failed to update user account.'
         }, 500
+
+    async def handleBuyTriggerAmount(self, user_id, stock_id, amount):
+        return None, 500
+
+    async def handleBuyTriggerPrice(self, user_id, stock_id, price):
+        return None, 500
+
+    async def handleSellTriggerAmount(self, user_id, stock_id, amount):
+        return None, 500
+        
+    async def handleSellTriggerPrice(self, user_id, stock_id, price):
+        return None, 500
 
     async def executeQuery(self, query):
         result = None

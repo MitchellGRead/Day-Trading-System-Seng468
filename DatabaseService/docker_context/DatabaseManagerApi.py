@@ -49,25 +49,29 @@ async def getUserStocks(request, user_id):
 # Get all buy triggers
 @app.route(endpoints.get_all_buy_triggers_endpoint, methods=['GET'])
 async def getAllBuyTriggers(request):
-    return response.json({})
+    result, status = await app.config['logic'].handleGetAllBuyTriggers()
+    return response.json(result, status=status)
 
 
 # Get the user's buy triggers
 @app.route(endpoints.get_user_buy_triggers_endpoint, methods=['GET'])
 async def getUserBuyTriggers(request, user_id):
-    return response.json({})
+    result, status = await app.config['logic'].handleGetUserBuyTriggers(user_id)
+    return response.json(result, status=status)
 
 
 # Get all sell triggers
 @app.route(endpoints.get_all_sell_triggers_endpoint, methods=['GET'])
 async def getAllSellTriggers(request):
-    return response.json({})
+    result, status = await app.config['logic'].handleGetAllSellTriggers()
+    return response.json(result, status=status)
 
 
 # Get the user's sell triggers
 @app.route(endpoints.get_user_sell_triggers_endpoint, methods=['GET'])
 async def getUserSellTriggers(request, user_id):
-    return response.json({})
+    result, status = await app.config['logic'].handleGetUserSellTriggers(user_id)
+    return response.json(result, status=status)
 
 
 # Get the system's summary
@@ -111,8 +115,8 @@ async def buyStocks(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result = await app.config['logic'].handleBuyStocksCommand(data['user_id'], data['stock_symbol'], data['stock_amount'], data['funds'])
-    return response.json(result)
+    result, status = await app.config['logic'].handleBuyStocksCommand(data['user_id'], data['stock_symbol'], data['stock_amount'], data['funds'])
+    return response.json(result, status=status)
 
 
 # Sell stocks endpoint -- add funds and removes stocks
@@ -123,8 +127,8 @@ async def sellStocks(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result = await app.config['logic'].handleSellStocksCommand(data['user_id'], data['stock_symbol'], data['stock_amount'], data['funds'])
-    return response.json(result)
+    result, status = await app.config['logic'].handleSellStocksCommand(data['user_id'], data['stock_symbol'], data['stock_amount'], data['funds'])
+    return response.json(result, status=status)
 
 
 # Set buy trigger amount endpoint -- set the amount of stock to buy
@@ -134,7 +138,9 @@ async def setBuyTriggerAmount(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
     
-    return response.json({})
+    data = request.json
+    result, status = await app.config['logic'].handleBuyTriggerAmount(data['user_id'], data['stock_symbol'], data['amount'])
+    return response.json(result, status=status)
 
 
 # Set buy trigger price endpoint -- set the price at which to buy
@@ -144,7 +150,9 @@ async def setBuyTriggerPrice(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
-    return response.json({})
+    data = request.json
+    result, status = await app.config['logic'].handleBuyTriggerPrice(data['user_id'], data['stock_symbol'], data['price'])
+    return response.json(result, status=status)
 
 
 # Set sell trigger amount endpoint -- set the amount of stock to sell
@@ -154,7 +162,9 @@ async def setSellTriggerAmount(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
-    return response.json({})
+    data = request.json
+    result, status = await app.config['logic'].handleSellTriggerAmount(data['user_id'], data['stock_symbol'], data['amount'])
+    return response.json(result, status=status)
 
 
 # Set sell trigger price endpoint -- set the price at which to sell
@@ -164,7 +174,9 @@ async def setSellTriggerPrice(request):
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
-    return response.json({})
+    data = request.json
+    result, status = await app.config['logic'].handleSellTriggerPrice(data['user_id'], data['stock_symbol'], data['price'])
+    return response.json(result, status=status)
 
 
 # DB SERVICE INITIALIZATION -----------------------------------------------
