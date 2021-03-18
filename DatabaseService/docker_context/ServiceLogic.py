@@ -20,10 +20,26 @@ class ServiceLogic:
     async def handleGetStocksCommand(self, user_id, stock_id):
         result, status = await self.psqlHandler.handleGetUserStocksCommand(user_id, stock_id)
         return result, status
-    
+
+    async def handleGetAllBuyTriggers(self):
+        result = await self.psqlHandler.handleGetAllBuyTriggers()
+        return result
+
+    async def handleGetUserBuyTriggers(self, user_id):
+        result = await self.psqlHandler.handleGetUserBuyTriggers(user_id)
+        return result
+
+    async def handleGetAllSellTriggers(self):
+        result = await self.psqlHandler.handleGetAllSellTriggers()
+        return result
+
+    async def handleGetUserSellTriggers(self, user_id):
+        result = await self.psqlHandler.handleGetUserSellTriggers(user_id)
+        return result
+
     async def handleGetSummaryCommand(self, user_id):
         # TODO: Talk to both Postgres and Mongo to get the required data
-        return None
+        return None, 500
 
     async def handleAddFundsCommand(self, user_id, funds):
         result, status = await self.psqlHandler.handleAddFundsCommand(user_id, funds)
@@ -36,3 +52,19 @@ class ServiceLogic:
     async def handleSellStocksCommand(self, user_id, stock_id, stock_num, funds):
         result, status = await self.psqlHandler.handleSellStocksCommand(user_id, stock_id, stock_num, funds)
         return result, status
+
+    async def handleBuyTriggerAmount(self, user_id, stock_id, amount):
+        result = await self.psqlHandler.handleBuyTriggerAmount(user_id, stock_id, amount)
+        return result
+    
+    async def handleBuyTriggerPrice(self, user_id, stock_id, price):
+        result = await self.psqlHandler.handleBuyTriggerPrice(user_id, stock_id, price)
+        return result
+    
+    async def handleSellTriggerAmount(self, user_id, stock_id, amount):
+        result = await self.psqlHandler.handleSellTriggerAmount(user_id, stock_id, amount)
+        return result
+    
+    async def handleSellTriggerPrice(self, user_id, stock_id, price):
+        result = await self.psqlHandler.handleSellTriggerPrice(user_id, stock_id, price)
+        return result
