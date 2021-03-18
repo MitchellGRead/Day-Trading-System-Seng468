@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import Quote from './components/Quote';
 import UserCredentials from './components/UserCredentials';
 import Transaction from './components/Transaction';
+import Trigger from './components/Trigger';
 import Add from './components/Add';
 import Error from './components/Error';
 import './styles/App.css';
@@ -31,6 +31,7 @@ const App = (props) => {
       <div className='main-content'>
         <Add userId={userId} onError={setError} />
         <Transaction userId={userId} onError={setError} />
+        <Trigger userId={userId} onError={setError} />
       </div>
 
     </div>
