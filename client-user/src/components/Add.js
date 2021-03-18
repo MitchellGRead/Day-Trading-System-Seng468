@@ -32,6 +32,7 @@ const Add = (props) => {
       <h3>Add Funds</h3>
       <form onSubmit={handleSubmit(onSubmit)}>
         <input
+          required
           name='funds'
           type='number'
           step='0.01'

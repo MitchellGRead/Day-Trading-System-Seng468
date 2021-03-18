@@ -101,7 +101,13 @@
 /* ----------- */
 
 /* Trigger div */
+.trigger-amount-form {
+  margin-bottom: 0.25rem;
+}
 
+.trigger-amount-form * {
+  margin-right: 0.25rem
+}
 /* ----------- */
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {

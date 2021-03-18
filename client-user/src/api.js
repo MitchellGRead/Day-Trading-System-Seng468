@@ -53,3 +53,16 @@ export async function postCancel(cancelType, userId) {
   };
   return await axios.post(`${API_URL}${endpoint}`, data);
 }
+
+export async function postTriggerAmount(triggerType, userId, stockSymbol, funds) {
+  let endpoint = triggerType === 'SET_BUY_AMOUNT' ? '/set_buy_amount' : '/set_sell_amount';
+
+  let data = {
+    'command': triggerType,
+    'user_id': userId,
+    'amount': funds,
+    'stock_symbol': stockSymbol,
+    'transaction_num': 3
+  };
+  return await axios.post(`${API_URL}${endpoint}`, data);
+}
