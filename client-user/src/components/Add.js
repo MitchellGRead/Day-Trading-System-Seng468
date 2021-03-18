@@ -20,12 +20,11 @@ const Add = (props) => {
       let res = await postFunds(userId, data.postFunds)
       // TODO set and handle error
     } catch (error) {
-      setLoading(false);
+      console.error(error);
       onError(`${error.message} - Failed to add funds.`)
     } finally {
       setLoading(false);
     }
-
   }
 
   return (

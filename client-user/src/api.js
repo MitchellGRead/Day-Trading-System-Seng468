@@ -31,3 +31,14 @@ export async function postTransact(transactType, userId, stockSymbol, funds) {
   };
   return await axios.post(`${API_URL}${endpoint}`, data)
 }
+
+export async function postCommit(commitType, userId) {
+  let endpoint = commitType === 'COMMIT_BUY' ? '/commit_buy' : '/commit_sell';
+
+  let data = {
+    'command': commitType,
+    'user_id': userId,
+    'transaction_num': 3
+  };
+  return await axios.post(`${API_URL}${endpoint}`, data)
+}

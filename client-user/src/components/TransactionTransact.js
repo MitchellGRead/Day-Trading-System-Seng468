@@ -21,7 +21,6 @@ const TransactionTransact = (props) => {
       let res = await postTransact(data.transact, userId, data.ticker, data.funds);
       // TODO set and handle error
     } catch (error) {
-      setLoading(false);
       onError(`${error.message} - Failed to initialize ${transactType.toLowerCase()}.`)
     } finally {
       setLoading(false);
@@ -30,40 +29,38 @@ const TransactionTransact = (props) => {
 
   return (
     <form className='transact-form' onSubmit={handleSubmit(onSubmit)}>
-      <label>
-        <select
-          name='transact'
-          onChange={val => setTransactType(val.target.value)}
-          disabled={loading}
-          ref={register}
-        >
-          <option value='BUY'>Buy</option>
-          <option value='SELL'>Sell</option>
-        </select>
-        <input
-          required
-          placeholder={`Symbol to ${transactType.toLowerCase()}`}
-          name='ticker'
-          type='text'
-          disabled={loading}
-          ref={register}
-        />
-        <input
-          required
-          placeholder='Funds to use'
-          name='funds'
-          type='number'
-          step='0.01'
-          min='0'
-          disabled={loading}
-          ref={register}
-        />
-        <input
-          type='submit'
-          disabled={loading}
-          value={loading ? 'Initializing...' : transactType}
-        />
-      </label>
+      <select
+        name='transact'
+        onChange={val => setTransactType(val.target.value)}
+        disabled={loading}
+        ref={register}
+      >
+        <option value='BUY'>Buy</option>
+        <option value='SELL'>Sell</option>
+      </select>
+      <input
+        required
+        placeholder={`Symbol to ${transactType.toLowerCase()}`}
+        name='ticker'
+        type='text'
+        disabled={loading}
+        ref={register}
+      />
+      <input
+        required
+        placeholder='Funds to use'
+        name='funds'
+        type='number'
+        step='0.01'
+        min='0'
+        disabled={loading}
+        ref={register}
+      />
+      <input
+        type='submit'
+        disabled={loading}
+        value={loading ? 'Initializing...' : transactType}
+      />
     </form>
   );
 }

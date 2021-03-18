@@ -26,7 +26,6 @@
 
 .main-content {
   margin-top: 1.5rem;
-  background-color: cyan;
   margin-left: 10rem;
   margin-right: 10rem;
 }
@@ -82,6 +81,14 @@
 
 .transact-form * {
   margin-right: 0.25rem;
+}
+
+.commit-form {
+  margin-bottom: 0.75rem;
+}
+
+.commit-form * {
+  margin-right: 0.25rem
 }
 /* ----------- */
 
