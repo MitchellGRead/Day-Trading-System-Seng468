@@ -66,3 +66,16 @@ export async function postTriggerAmount(triggerType, userId, stockSymbol, funds)
   };
   return await axios.post(`${API_URL}${endpoint}`, data);
 }
+
+export async function postTrigger(triggerType, userId, stockSymbol, price) {
+  let endpoint = triggerType === 'SET_BUY_TRIGGER' ? '/set_buy_trigger' : '/set_sell_trigger';
+
+  let data = {
+    'command': triggerType,
+    'user_id': userId,
+    'amount': price,
+    'stock_symbol': stockSymbol,
+    'transaction_num': 3
+  };
+  return await axios.post(`${API_URL}${endpoint}`, data);
+}
