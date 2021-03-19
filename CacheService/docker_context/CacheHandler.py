@@ -322,31 +322,32 @@ class CacheHandler:
 
         reservedFunds = float(user['reserved_balance'])
         executionPrice = float(operation['executed_at'])
-        stockAmount = floor(reservedFunds / executionPrice)
-        funds = round(stockAmount * executionPrice, 2)
+        funds = round(operation['stock_amount'] * executionPrice, 2)
+        if funds < reservedFunds:
+            data = {
+                "user_id": operation['user_id'],
+                "funds": funds,
+                "stock_symbol": operation['stock_symbol'],
+                "stock_amount": operation['stock_amount'],
+                "transaction_num": operation['transaction_num']
+            }
 
-        data = {
-            "user_id": operation['user_id'],
-            "funds": funds,
-            "stock_symbol": operation['stock_symbol'],
-            "stock_amount": stockAmount,
-            "transaction_num": operation['transaction_num']
-        }
+            result, status = await self.client.postRequest(f'{self.dbmURL}/triggers/execute/buy', data)
+            if status == 200:
+                await self.cacheStockTransaction(data['user_id'], data['stock_symbol'])
 
-        result, status = await self.client.postRequest(f'{self.dbmURL}/triggers/execute/buy', data)
-        if status == 200:
-            await self.cacheStockTransaction(data['user_id'], data['stock_symbol'])
-
+            else:
+                logger.error(f'{__name__} - error during execution for trigger buy {operation["transaction_num"]}')
+                self.audit.handleError(
+                    trans_num=operation['transaction_num'],
+                    command=command,
+                    error_msg=f'error posting buy trigger execute',
+                    user_id=operation['user_id'],
+                    stock_symbol=operation['stock_symbol']
+                )
+                return errorResult("post request to DBM failed", operation), 500
         else:
-            logger.error(f'{__name__} - error during execution for trigger buy {operation["transaction_num"]}')
-            self.audit.handleError(
-                trans_num=operation['transaction_num'],
-                command=command,
-                error_msg=f'error posting buy trigger execute',
-                user_id=operation['user_id'],
-                stock_symbol=operation['stock_symbol']
-            )
-            return errorResult("post request to DBM failed", operation), 500
+            return errorResult("Funds required, exceeds funds reserved", operation), 500
 
         return goodResult("finished", operation), 200
 
