@@ -183,7 +183,7 @@ async def updateUserCache(request):
 
 
 @app.route(endpoints.update_stock_cache, methods=['POST'])
-async def updateUserCache(request):
+async def updateStockCache(request):
     res, err = validateRequest(request.json, update_stock_schema)
     if not res:
         return response.json(errorResult(err, request.json), status=400)
