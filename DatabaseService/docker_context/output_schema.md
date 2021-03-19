@@ -15,7 +15,7 @@ in the respone HTTP messages sent after a request. All formats are in JSON.
 Each entry contains as its key the user id to which the data belongs.
 
 #### Failure
-    {'error_message': '<some_string>'}
+    {'errorMessage': '<some_string>'}
 
 ### Get a user's funds - /funds/get/user/user_id
 
@@ -23,7 +23,7 @@ Each entry contains as its key the user id to which the data belongs.
     {'available_funds': number, 'reserved_funds':number}
 
 #### Failure
-    {'error_message': '<some_string>'}
+    {'errorMessage': '<some_string>'}
 
 ### Get all users' stocks - /stocks/get/all
 
@@ -32,7 +32,7 @@ Each entry contains as its key the user id to which the data belongs.
 stock_available and stock_reserved are some numbers
 
 #### Failure
-    {'error_message': '<some_string>'}
+    {'errorMessage': '<some_string>'}
 
 ### Get a user's stocks - /stock/get/user/user_id
 
@@ -41,7 +41,43 @@ stock_available and stock_reserved are some numbers
 stock_available and stock_reserved are some numbers
 
 #### Failure
-    {'error_message': '<some_string>'}
+    {'errorMessage': '<some_string>'}
+
+### Get all users' buy triggers - /triggers/buy/get/all
+
+#### Success
+    {'some_user_id': [{'some_stock_id':[stock_amount, stock_price], ...}], ...}
+stock_amount and stock_price are some numbers
+
+#### Failure
+    {'errorMessage': '<some_string>'}
+
+### Get a user's buy triggers - /triggers/buy/get/user/user_id
+
+#### Success
+    {'some_stock_id':[stock_amount, stock_price], ...}
+stock_amount and stock_price are some numbers
+
+#### Failure
+    {'errorMessage': '<some_string>'}
+
+### Get a user's sell triggers - /triggers/sell/get/user/user_id
+
+#### Success
+    {'some_stock_id':[stock_amount, stock_price], ...}
+stock_amount and stock_price are some numbers
+
+#### Failure
+    {'errorMessage': '<some_string>'}
+
+### Get all users' sell triggers - /triggers/sell/get/all
+
+#### Success
+    {'some_user_id': [{'some_stock_id':[stock_amount, stock_price], ...}], ...}
+stock_amount and stock_price are some numbers
+
+#### Failure
+    {'errorMessage': '<some_string>'}
 
 ## POST Endpoints
 
@@ -62,6 +98,70 @@ stock_available and stock_reserved are some numbers
     {'status': 'failure', 'message':'<some_message>'}
 
 ### Sell stocks - /stocks/sell_stocks
+
+#### Success
+    {'status': 'success', 'message':'<some_message>'}
+
+#### Failure
+    {'status': 'failure', 'message':'<some_message>'}
+
+### Set buy trigger amount - /triggers/buy/set/amount
+
+#### Success
+    {'status': 'success', 'message':'<some_message>'}
+
+#### Failure
+    {'status': 'failure', 'message':'<some_message>'}
+
+### Set buy trigger price - /triggers/buy/set/price
+
+#### Success
+    {'status': 'success', 'message':'<some_message>'}
+
+#### Failure
+    {'status': 'failure', 'message':'<some_message>'}
+
+### Execute buy trigger - /triggers/execute/buy
+
+#### Success
+    {'status': 'success', 'message':'<some_message>'}
+
+#### Failure
+    {'status': 'failure', 'message':'<some_message>'}
+
+### Cancel buy trigger - /triggers/buy/cancel
+
+#### Success
+    {'status': 'success', 'message':'<some_message>'}
+
+#### Failure
+    {'status': 'failure', 'message':'<some_message>'}
+
+### Set sell trigger amount - /triggers/sell/set/amount
+
+#### Success
+    {'status': 'success', 'message':'<some_message>'}
+
+#### Failure
+    {'status': 'failure', 'message':'<some_message>'}
+
+### Set sell trigger price - /triggers/sell/set/price
+
+#### Success
+    {'status': 'success', 'message':'<some_message>'}
+
+#### Failure
+    {'status': 'failure', 'message':'<some_message>'}
+
+### Execute sell trigger - /triggers/execute/sell
+
+#### Success
+    {'status': 'success', 'message':'<some_message>'}
+
+#### Failure
+    {'status': 'failure', 'message':'<some_message>'}
+
+### Cancel sell trigger - /trigger/sell/cancel
 
 #### Success
     {'status': 'success', 'message':'<some_message>'}
