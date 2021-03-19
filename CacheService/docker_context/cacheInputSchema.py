@@ -79,10 +79,10 @@ trigger_execute_schema = {
             'stock_symbol': one_to_three_letter_string,
             'stock_amount': non_negative_number,
             'trigger_price': non_negative_number,
-            'executed_at': non_negative_number,
+            'quoted_price': non_negative_number,
             'command': {'type': 'string'}
         },
-        'required': ['transaction_num', 'trigger', 'user_id', 'stock_symbol', 'stock_amount', 'trigger_price', 'executed_at', 'command']
+        'required': ['transaction_num', 'trigger', 'user_id', 'stock_symbol', 'stock_amount', 'trigger_price', 'quoted_price', 'command']
     }
 }
 

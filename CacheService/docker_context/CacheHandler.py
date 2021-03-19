@@ -321,7 +321,7 @@ class CacheHandler:
             return errorResult("User seemingly doesn't exist", operation), 404
 
         reservedFunds = float(user['reserved_balance'])
-        executionPrice = float(operation['executed_at'])
+        executionPrice = float(operation['quoted_price'])
         funds = round(operation['stock_amount'] * executionPrice, 2)
         if funds < reservedFunds:
             data = {
@@ -357,7 +357,7 @@ class CacheHandler:
             return errorResult("User doesn't hold any stock", stockBal), 404
 
         reservedStock = float(stockBal['stock_reserved'])
-        executionPrice = float(operation['executed_at'])
+        executionPrice = float(operation['quoted_price'])
         funds = round(reservedStock * executionPrice, 2)
 
         data = {
