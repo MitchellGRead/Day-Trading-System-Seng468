@@ -1,58 +1,53 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { getQuote } from '../api';
+import { generateDumplog } from '../api';
 
-const Quote = (props) => {
+const Dumplog = (props) => {
   const [loading, setLoading] = useState(false);
-  const [quote, setQuote] = useState(0.0);
   const { register, handleSubmit } = useForm();
   const userId = props.userId;
+  const isAdmin = props.isAdmin;
   const onError = props.onError;
 
   const onSubmit = async (data) => {
     onError('');
-    if (!userId) {
-      onError('User id field must be specified');
-      return
+    if (!userId && !isAdmin) {
+      onError('Admin access required to generate all user dumplogs')
+      return;
     }
 
     try {
       setLoading(true);
-
-      let quotePrice = await getQuote(userId, data.ticker, 3);
-      setQuote(quotePrice);
+      let file = await generateDumplog(userId, data.filename.replaceAll(' ', '_'));
+      // TODO set and handle error
     } catch (error) {
       console.error(error);
-      onError(`${error.message} - Failed to get quote.`);
+      onError(`${error.message} - Failed to generate dumplog file`)
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className='quote right-space-content'>
+    <div className='dumplog right-space-content'>
+      <h3>Generate Dumplog</h3>
       <form onSubmit={handleSubmit(onSubmit)}>
-
         <input
           required
-          name='ticker'
           type='text'
-          placeholder='Ticker symbol'
+          name='filename'
+          placeholder='File name for dumplog'
           disabled={loading}
           ref={register}
         />
         <input
           type='submit'
           disabled={loading}
-          value={loading ? 'Fetching...' : 'Quote'}
+          value={loading ? 'Generating...' : 'Generate'}
         />
       </form>
-      {
-        quote !== 0 &&
-        <p>Quote Price: {quote}</p>
-      }
     </div>
-  )
-}
+  );
+};
 
-export default Quote;
+export default Dumplog;

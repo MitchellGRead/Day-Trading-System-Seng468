@@ -45,7 +45,7 @@ const TransactionCommit = (props) => {
   };
 
   return (
-    <form className='commit-form'>
+    <form className='commit-form right-space-content'>
       <input
         name='commitBuy'
         type='button'

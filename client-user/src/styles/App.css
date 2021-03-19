@@ -17,6 +17,14 @@
   align-items: center;
 }
 
+.right-space-content * {
+  margin-right: 0.25rem;
+}
+
+form {
+  margin-bottom: 0.25rem;
+}
+
 /* Error div */
 .error {
   text-align: center;
@@ -24,11 +32,26 @@
 }
 /* ----------- */
 
+/* Main page */
 .main-content {
   margin-top: 1.5rem;
-  margin-left: 10rem;
-  margin-right: 10rem;
+  margin-left: 8rem;
+  margin-right: 8rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
+
+.summary-actions {
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.account-actions {
+  width: 100%;
+  padding: 0.5rem;
+}
+/* ----------- */
 
 /* User credentials div */
 .user-credentials {
@@ -56,16 +79,6 @@
   flex-direction: column;
   align-items: center;
 }
-
-.quote * {
-  margin-right: 0.25rem;
-}
-/* ----------- */
-
-/* Add div */
-.add * {
-  margin-right: 0.25rem;
-}
 /* ----------- */
 
 /* Transaction div */
@@ -74,50 +87,46 @@
   display: flex;
   flex-direction: column;
 }
-
-.transact-form {
-  margin-bottom: 0.75rem;
-}
-
-.transact-form * {
-  margin-right: 0.25rem;
-}
-
-.commit-form {
-  margin-bottom: 0.25rem;
-}
-
-.commit-form * {
-  margin-right: 0.25rem
-}
-
-.cancel-form {
-  margin-bottom: 0.75rem;
-}
-
-.cancel-form * {
-  margin-right: 0.25rem
-}
 /* ----------- */
 
 /* Trigger div */
-
-/* ----------- */
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
+.trigger {
+  margin-top: 1rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+}
+/* ----------- */
+
+/* Dumplog div */
+.dumplog {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+/* ----------- */
+
+/* Display summary */
+.display-summary {
+  display: flex;
+  flex-direction: column;
 }
 
-.App-link {
-  color: #61dafb;
+.userFunds {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
+
+.triggers-and-history {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.active-triggers {
+  width: 100%;
+}
+
+.transaction-history {
+  width: 100%;
+}
+/* ----------- */

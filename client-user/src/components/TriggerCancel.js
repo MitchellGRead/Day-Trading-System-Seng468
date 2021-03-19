@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { postCancel } from '../api';
+import { postTriggerCancel } from '../api';
 
-const TransactionCancel = (props) => {
+const TriggerCancel = (props) => {
   const [loading, setLoading] = useState(false);
+  const [stockSymbol, setStockSymbol] = useState('');
   const { _, handleSubmit } = useForm();
   const userId = props.userId;
   const onError = props.onError;
@@ -17,10 +18,10 @@ const TransactionCancel = (props) => {
 
     try {
       setLoading(true);
-      let res = await postCancel('CANCEL_BUY', userId)
+      let res = await postTriggerCancel('CANCEL_SET_BUY', userId, stockSymbol);
     } catch (error) {
       console.error(error);
-      onError(`${error.message} - Failed to cancel buy.`);
+      onError(`${error.message} - Failed to cancel buy trigger.`);
     } finally {
       setLoading(false);
     }
@@ -35,10 +36,10 @@ const TransactionCancel = (props) => {
 
     try {
       setLoading(true);
-      let res = await postCancel('CANCEL_SELL', userId)
+      let res = await postTriggerCancel('CANCEL_SET_SELL', userId, stockSymbol);
     } catch (error) {
       console.error(error);
-      onError(`${error.message} - Failed to cancel sell.`);
+      onError(`${error.message} - Failed to cancel sell trigger.`);
     } finally {
       setLoading(false);
     }
@@ -47,21 +48,30 @@ const TransactionCancel = (props) => {
   return (
     <form className='cancel-form right-space-content'>
       <input
-        name='cancelBuy'
+        required
+        name='stockSymbol'
+        type='text'
+        placeholder='Symbol to cancel trigger for'
+        value={stockSymbol}
+        onChange={val => setStockSymbol(val.target.value)}
+        disabled={loading}
+      />
+      <input
+        name='cancelBuyTrigger'
         type='button'
         disabled={loading}
-        value={loading ? 'Cancelling...' : 'Cancel Buy'}
+        value={loading ? 'Cancelling...' : 'Cancel Buy Trigger'}
         onClick={handleSubmit(cancelBuy)}
       />
       <input
-        name='cancelSell'
+        name='cancelSellTrigger'
         type='button'
         disabled={loading}
-        value={loading ? 'Cancelling...' : 'Cancel Sell'}
+        value={loading ? 'Cancelling...' : 'Cancel Sell Trigger'}
         onClick={handleSubmit(cancelSell)}
       />
     </form>
   );
 }
 
-export default TransactionCancel;
+export default TriggerCancel;

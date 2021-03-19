@@ -53,3 +53,54 @@ export async function postCancel(cancelType, userId) {
   };
   return await axios.post(`${API_URL}${endpoint}`, data);
 }
+
+export async function postTriggerAmount(triggerType, userId, stockSymbol, funds) {
+  let endpoint = triggerType === 'SET_BUY_AMOUNT' ? '/set_buy_amount' : '/set_sell_amount';
+
+  let data = {
+    'command': triggerType,
+    'user_id': userId,
+    'amount': funds,
+    'stock_symbol': stockSymbol,
+    'transaction_num': 3
+  };
+  return await axios.post(`${API_URL}${endpoint}`, data);
+}
+
+export async function postTrigger(triggerType, userId, stockSymbol, price) {
+  let endpoint = triggerType === 'SET_BUY_TRIGGER' ? '/set_buy_trigger' : '/set_sell_trigger';
+
+  let data = {
+    'command': triggerType,
+    'user_id': userId,
+    'amount': price,
+    'stock_symbol': stockSymbol,
+    'transaction_num': 3
+  };
+  return await axios.post(`${API_URL}${endpoint}`, data);
+}
+
+export async function postTriggerCancel(cancelType, userId, stockSymbol) {
+  let endpoint = cancelType === 'CANCEL_SET_BUY' ? '/cancel_set_buy' : '/cancel_set_sell';
+
+  let data = {
+    'command': cancelType,
+    'user_id': userId,
+    'stock_symbol': stockSymbol,
+    'transaction_num': 3
+  };
+  return await axios.post(`${API_URL}${endpoint}`, data);
+}
+
+export async function generateDumplog(userId, filename) {
+  let endpoint = `/get/QUOTE/trans/${3}/file/${filename}`;
+
+  let params = userId ? { userId: userId } : {};
+  return await axios.get(`${API_URL}${endpoint}`, { params });
+}
+
+export async function getDisplaySummary(userId) {
+  let endpoint = `/get/DISPLAY_SUMMARY/trans/${3}/user/${userId}`;
+
+  return await axios.get(`${API_URL}${endpoint}`);
+}
