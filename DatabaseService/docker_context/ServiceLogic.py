@@ -1,4 +1,3 @@
-#TODO: Return response code along with data
 
 class ServiceLogic:
 
@@ -61,6 +60,10 @@ class ServiceLogic:
         result = await self.psqlHandler.handleBuyTriggerPrice(user_id, stock_id, price)
         return result
     
+    async def handleExecuteBuyTrigger(self, user_id, stock_id, funds):
+        result = await self.psqlHandler.handleExecuteBuyTrigger(user_id, stock_id, funds)
+        return result
+
     async def handleCancelBuyTrigger(self, user_id, stock_id):
         result = await self.psqlHandler.handleCancelBuyTrigger(user_id, stock_id)
         return result
@@ -71,6 +74,10 @@ class ServiceLogic:
     
     async def handleSellTriggerPrice(self, user_id, stock_id, price):
         result = await self.psqlHandler.handleSellTriggerPrice(user_id, stock_id, price)
+        return result
+
+    async def handleExecuteSellTrigger(self, user_id, stock_id, funds):
+        result = await self.psqlHandler.handleExecuteSellTrigger(user_id, stock_id, funds)
         return result
 
     async def handleCancelSellTrigger(self, user_id, stock_id):
