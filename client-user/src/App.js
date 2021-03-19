@@ -6,14 +6,14 @@ import Trigger from './components/Trigger';
 import Add from './components/Add';
 import Error from './components/Error';
 import DisplaySummary from './components/DisplaySummary'
+import Dumplog from './components/Dumplog'
 import './styles/App.css';
 
-const App = (props) => {
+const App = () => {
   const [userId, setUserId] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState('');
 
-  console.log(userId, isAdmin)
 
   return (
     <div className="App">
@@ -34,8 +34,9 @@ const App = (props) => {
           <Add userId={userId} onError={setError} />
           <Transaction userId={userId} onError={setError} />
           <Trigger userId={userId} onError={setError} />
+          <Dumplog userId={userId} isAdmin={isAdmin} onError={setError} />
         </div>
-        <div className='auditing-actions'>
+        <div className='summary-actions'>
           <DisplaySummary userId={userId} onError={setError} />
         </div>
       </div>

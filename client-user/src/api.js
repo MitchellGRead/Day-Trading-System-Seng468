@@ -91,3 +91,10 @@ export async function postTriggerCancel(cancelType, userId, stockSymbol) {
   };
   return await axios.post(`${API_URL}${endpoint}`, data);
 }
+
+export async function generateDumplog(userId, filename) {
+  let endpoint = `/get/QUOTE/trans/${3}/file/${filename}`;
+
+  let params = userId ? { userId: userId } : {};
+  return await axios.get(`${API_URL}${endpoint}`, { params });
+}
