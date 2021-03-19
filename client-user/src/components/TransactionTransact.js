@@ -27,6 +27,10 @@ const TransactionTransact = (props) => {
     }
   }
 
+  const capitalize = (val) => {
+    return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+  };
+
   return (
     <form className='transact-form right-space-content' onSubmit={handleSubmit(onSubmit)}>
       <select
@@ -59,7 +63,7 @@ const TransactionTransact = (props) => {
       <input
         type='submit'
         disabled={loading}
-        value={loading ? 'Initializing...' : transactType}
+        value={loading ? 'Initializing...' : capitalize(transactType)}
       />
     </form>
   );

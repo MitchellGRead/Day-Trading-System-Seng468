@@ -32,6 +32,11 @@ const TriggerAmount = (props) => {
     }
   };
 
+  const capitalizeWords = (val) => {
+    let strs = val.split(' ');
+    return strs.map(str => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()).join(' ');
+  };
+
   return (
     <form className='trigger-amount-form right-space-content' onSubmit={handleSubmit(onSubmit)}>
       <select
@@ -64,7 +69,7 @@ const TriggerAmount = (props) => {
       <input
         type='submit'
         disabled={loading}
-        value={loading ? 'Initializing...' : getActionName().toUpperCase()}
+        value={loading ? 'Initializing...' : capitalizeWords(getActionName())}
       />
     </form>
   );
