@@ -36,6 +36,21 @@ form {
   margin-top: 1.5rem;
   margin-left: 10rem;
   margin-right: 10rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.auditing-actions {
+  background-color: blue;
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.account-actions {
+  background-color: blueviolet;
+  width: 100%;
+  padding: 0.5rem;
 }
 
 /* User credentials div */
@@ -79,5 +94,35 @@ form {
   margin-top: 1rem;
   display: flex;
   flex-direction: column;
+}
+/* ----------- */
+
+/* Display summary */
+.display-summary {
+  display: flex;
+  flex-direction: column;
+}
+
+.userFunds {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.triggers-and-history {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.active-triggers {
+  width: 100%;
+  height: 100px;
+  background-color: burlywood;
+}
+
+.transaction-history {
+  width: 100%;
+  height: 100px;
+  background-color: chartreuse;
 }
 /* ----------- */
