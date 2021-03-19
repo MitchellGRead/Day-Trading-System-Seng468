@@ -77,11 +77,10 @@ class ServiceLogic:
     async def getBulkQuote(self, user_ids, stock_ids, transaction_nums):
         return await self.CacheLogic.getBulkQuote(user_ids, stock_ids, transaction_nums)
 
-    async def setBuyAmount(self, data):
-        return await self.CacheLogic.setBuyAmount(data)
+    async def updateUserCache(self, user_id):
+        await self.CacheLogic.cacheAccountTransaction(user_id)
+        return {'message': "update processed", 'content': ''}, 200
 
-    async def setSellAmount(self, data):
-        return await self.CacheLogic.setSellAmount(data)
-
-    async def executeTriggers(self, data):
-        return await self.CacheLogic.executeTriggers(data)
+    async def updateStockCache(self, user_id, stock_id):
+        await self.CacheLogic.cacheStockTransaction(user_id, stock_id)
+        return {'message': "update processed", 'content': ''}, 200

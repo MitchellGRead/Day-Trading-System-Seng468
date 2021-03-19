@@ -16,6 +16,5 @@ commit_sell_endpoint = '/stocks/commit_sell'
 cancel_buy_endpoint = '/stocks/cancel_buy'
 cancel_sell_endpoint = '/stocks/cancel_sell'
 
-set_sell_trigger_amount_endpoint = '/triggers/sell/set_amount'
-set_buy_trigger_amount_endpoint = '/triggers/buy/set_amount'
-execute_triggers_endpoint = '/triggers/execute'
+update_user_cache = '/update/user'
+update_stock_cache = '/update/stock'

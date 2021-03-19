@@ -68,34 +68,21 @@ user_schema = {
     'required': ['transaction_num', 'user_id', 'command']
 }
 
-trigger_execute_schema = {
-    'type': 'array',
-    'items': {
-        'type': 'object',
-        'properties': {
-            'transaction_num': {'type': 'integer'},
-            'trigger': {'type': 'string'},
-            'user_id': {'type': 'string'},
-            'stock_symbol': one_to_three_letter_string,
-            'stock_amount': non_negative_number,
-            'trigger_price': non_negative_number,
-            'quoted_price': non_negative_number,
-            'command': {'type': 'string'}
-        },
-        'required': ['transaction_num', 'trigger', 'user_id', 'stock_symbol', 'stock_amount', 'trigger_price', 'quoted_price', 'command']
-    }
-}
-
-trigger_schema = {
+update_user_schema = {
     'type': 'object',
     'properties': {
-        'transaction_num': {'type': 'integer'},
-        'user_id': {'type': 'string'},
-        'stock_symbol': one_to_three_letter_string,
-        'funds': non_negative_number,
-        'command': {'type': 'string'}
+        'user_id': {'type': 'string'}
     },
-    'required': ['transaction_num', 'user_id', 'stock_symbol', 'funds', 'command']
+    'required': ['user_id']
+}
+
+update_stock_schema = {
+    'type': 'object',
+    'properties': {
+        'user_id': {'type': 'string'},
+        'stock_symbol': one_to_three_letter_string
+    },
+    'required': ['user_id', 'stock_symbol'],
 }
 
 add_funds_schema = funds_schema

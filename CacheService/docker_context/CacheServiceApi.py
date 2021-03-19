@@ -171,38 +171,26 @@ async def cancelSell(request):
     return response.json(result, status=status)
 
 
-@app.route(endpoints.set_buy_trigger_amount_endpoint, methods=['POST'])
-async def setBuyAmount(request):
-    res, err = validateRequest(request.json, trigger_schema)
+@app.route(endpoints.update_user_cache, methods=['POST'])
+async def updateUserCache(request):
+    res, err = validateRequest(request.json, update_user_schema)
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['serviceLogic'].setBuyAmount(data)
+    result, status = await app.config['serviceLogic'].updateUserCache(data['user_id'])
     return response.json(result, status=status)
 
 
-@app.route(endpoints.set_sell_trigger_amount_endpoint, methods=['POST'])
-async def setSellAmount(request):
-    res, err = validateRequest(request.json, trigger_schema)
+@app.route(endpoints.update_stock_cache, methods=['POST'])
+async def updateUserCache(request):
+    res, err = validateRequest(request.json, update_stock_schema)
     if not res:
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['serviceLogic'].setSellAmount(data)
+    result, status = await app.config['serviceLogic'].updateStockCache(data['user_id'], data['stock_id'])
     return response.json(result, status=status)
-
-
-@app.route(endpoints.execute_triggers_endpoint, methods=['POST'])
-async def executeTriggers(request):
-    res, err = validateRequest(request.json, trigger_execute_schema)
-    if not res:
-        return response.json(errorResult(err, request.json), status=400)
-
-    data = request.json
-    result, status = await app.config['serviceLogic'].executeTriggers(data)
-    return response.json(result, status=status)
-
 
 # DB SERVICE INITIALIZATION -----------------------------------------------
 
