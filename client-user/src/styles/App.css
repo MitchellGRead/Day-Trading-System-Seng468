@@ -5,7 +5,6 @@
 }
 
 .App {
-  text-align: center;
   background-color: #282c34;
   min-height: 100vh;
   color: white;
@@ -18,8 +17,20 @@
   align-items: center;
 }
 
-/* User credentials div */
+/* Error div */
+.error {
+  text-align: center;
+  color: crimson;
+}
+/* ----------- */
 
+.main-content {
+  margin-top: 1.5rem;
+  margin-left: 10rem;
+  margin-right: 10rem;
+}
+
+/* User credentials div */
 .user-credentials {
   display: flex;
   flex-direction: row;
@@ -36,9 +47,62 @@
   display: flex;
   align-items: center;
 }
-
 /* ----------- */
 
+/* Quote div */
+.quote {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.quote * {
+  margin-right: 0.25rem;
+}
+/* ----------- */
+
+/* Add div */
+.add * {
+  margin-right: 0.25rem;
+}
+/* ----------- */
+
+/* Transaction div */
+.transaction {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.transact-form {
+  margin-bottom: 0.75rem;
+}
+
+.transact-form * {
+  margin-right: 0.25rem;
+}
+
+.commit-form {
+  margin-bottom: 0.25rem;
+}
+
+.commit-form * {
+  margin-right: 0.25rem
+}
+
+.cancel-form {
+  margin-bottom: 0.75rem;
+}
+
+.cancel-form * {
+  margin-right: 0.25rem
+}
+/* ----------- */
+
+/* Trigger div */
+
+/* ----------- */
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
