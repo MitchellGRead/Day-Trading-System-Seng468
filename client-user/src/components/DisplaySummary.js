@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { getDisplaySummary } from '../api';
 
 const DisplaySummary = (props) => {
   const [loading, setLoading] = useState(false);
@@ -19,11 +20,12 @@ const DisplaySummary = (props) => {
 
     try {
       setLoading(true);
-      // TODO get account summary
+      let summaryData = await getDisplaySummary(userId);
+      // TODO set the states for the summary
       // TODO set and handle error
     } catch (error) {
       console.error(error);
-      onError(`${error.message} - Failed to fetch account summary.`)
+      onError(`${error.message} - Failed to fetch account summary`)
     } finally {
       setLoading(false);
     }
