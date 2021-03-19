@@ -523,12 +523,55 @@ class PostgresHandler:
             'status': 'failure', 'message': 'Failed to set trigger price.'
         }, 500
 
-    async def handleCancelBuyTrigger(self, user_id, stock_id, release_amount=0):
+    async def handleExecuteBuyTrigger(self, user_id, stock_id, funds):
         user_exists = await self._checkUserExists(user_id)
 
         if not user_exists:
             return {
                 'status': 'failure', 'message': 'Specified user does not exist.'
+            }, 404
+
+        where_clause = "where user_id='{user}' AND stock_id='{stock}'".format(user=user_id, stock=stock_id)
+
+        get_trigger_query = from_table_where_query.format(
+            columns='*',
+            table=buy_triggers_table,
+            where=where_clause
+        )
+
+        result = await self.fetchQuery(get_trigger_query)
+
+        if result == []:
+            return {'status':'failure', 'message':'There is no trigger to execute.'}, 404
+        elif result is None:
+            return {
+                'status':'failure', 'message': 'Unexpected error. Could not execute trigger.'
+            }, 500
+
+        stock_amount = result[0][2]
+        
+        _, status = await self.handleCancelBuyTrigger(user_id, stock_id)
+        
+        if status != 200:
+            return {
+                'status':'failure', 'message':'Unexpected error. Could not release reserved funds.'
+            }, 500
+
+        buyResult, status = await self.handleBuyStocksCommand(user_id, stock_id, stock_amount, funds)
+        
+        if status != 200:
+            return {
+                'status':'failure', 'message': 'Could not purchase stocks.'
+            }, 500
+        
+        return buyResult, status
+
+    async def handleCancelBuyTrigger(self, user_id, stock_id, release_amount=0):
+        user_exists = await self._checkUserExists(user_id)
+
+        if not user_exists:
+            return {
+                'status':'failure', 'message': 'Specified user does not exist.'
             }, 404
 
         where_clause = "where user_id='{user}' AND stock_id='{stock}'".format(user=user_id, stock=stock_id)
@@ -700,6 +743,49 @@ class PostgresHandler:
         return {
             'status': 'failure', 'message': 'Failed to set trigger price.'
         }, 500
+
+    async def handleExecuteSellTrigger(self, user_id, stock_id, funds):
+        user_exists = await self._checkUserExists(user_id)
+
+        if not user_exists:
+            return {
+                'status': 'failure', 'message': 'Specified user does not exist.'
+            }, 404
+
+        where_clause = "where user_id='{user}' AND stock_id='{stock}'".format(user=user_id, stock=stock_id)
+
+        get_trigger_query = from_table_where_query.format(
+            columns='*',
+            table=sell_triggers_table,
+            where=where_clause
+        )
+
+        result = await self.fetchQuery(get_trigger_query)
+
+        if result == []:
+            return {'status':'failure', 'message':'There is no trigger to execute.'}, 404
+        elif result is None:
+            return {
+                'status':'failure', 'message': 'Unexpected error. Could not execute trigger.'
+            }, 500
+
+        stock_amount = result[0][2]
+        
+        _, status = await self.handleCancelSellTrigger(user_id, stock_id)
+        
+        if status != 200:
+            return {
+                'status':'failure', 'message':'Unexpected error. Could not release reserved stocks.'
+            }, 500
+
+        sellResult, status = await self.handleSellStocksCommand(user_id, stock_id, stock_amount, funds)
+        
+        if status != 200:
+            return {
+                'status':'failure', 'message': 'Could not sell stocks.'
+            }, 500
+        
+        return sellResult, status
 
     async def handleCancelSellTrigger(self, user_id, stock_id):
         user_exists = await self._checkUserExists(user_id)
