@@ -27,6 +27,72 @@ sell_stocks () {
 	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock, \"stock_amount\":$amount, \"funds\":$funds}" $base_url/stocks/sell_stocks
 }
 
+set_buy_trigger_amount () {
+	local user=\"$1\"
+	local stock=\"$2\"
+	local amount=$3
+	echo Setting buy trigger amount for $user for stock $stock at amount $amount
+	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock, \"amount\":$amount}" $base_url/triggers/buy/set/amount
+}
+
+set_buy_trigger_price () {
+	local user=\"$1\"
+	local stock=\"$2\"
+	local price=$3
+	echo Setting buy trigger price for $user for stock $stock at price $price
+	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock, \"price\":$price}" $base_url/triggers/buy/set/price
+}
+
+set_buy_trigger () {
+	local user=$1
+	local stock=$2
+	local amount=$3
+	local price=$4
+	set_buy_trigger_amount $user $stock $amount
+	echo
+	set_buy_trigger_price $user $stock $price
+}
+
+cancel_buy_trigger () {
+	local user=\"$1\"
+	local stock=\"$2\"
+	echo Cancelling buy trigger for $user for stock $stock
+	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock}" $base_url/triggers/buy/cancel
+}
+
+set_sell_trigger_amount () {
+	local user=\"$1\"
+	local stock=\"$2\"
+	local amount=$3
+	echo Setting sell trigger amount for $user for stock $stock at amount $amount
+	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock, \"amount\":$amount}" $base_url/triggers/sell/set/amount
+}
+
+set_sell_trigger_price () {
+	local user=\"$1\"
+	local stock=\"$2\"
+	local price=$3
+	echo Setting sell trigger price for $user for stock $stock at price $price
+	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock, \"price\":$price}" $base_url/triggers/sell/set/price
+}
+
+set_sell_trigger () {
+	local user=$1
+	local stock=$2
+	local amount=$3
+	local price=$4
+	set_sell_trigger_amount $user $stock $amount
+	echo
+	set_sell_trigger_price $user $stock $price
+}
+
+cancel_sell_trigger () {
+	local user=\"$1\"
+	local stock=\"$2\"
+	echo Cancelling sell trigger for $user for stock $stock
+	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock}" $base_url/triggers/sell/cancel
+}
+
 get_all_funds () {
 	echo Getting funds for all users
 	curl --request GET $base_url/funds/get/all
@@ -69,6 +135,7 @@ get_user_triggers() {
 }
 
 run_test () {
+	# No user exists on clean state
 	get_all_funds
 	echo && echo
 	get_all_stocks
@@ -77,13 +144,29 @@ run_test () {
 	echo && echo
 	get_funds_for_user larry
 	echo && echo
+	get_stocks_for_user larry
+	echo && echo
 	get_user_triggers larry
 	echo && echo
 	sell_stocks larry ANC 101 10000.7878
 	echo && echo
 	buy_stocks larry ANC 254 25000
 	echo && echo
+	set_buy_trigger larry ABC 5000 500
+	echo && echo
+	set_sell_trigger larry DEF 500 5000
+	echo && echo
+	cancel_buy_trigger larry ABC
+	echo && echo
+	cancel_sell_trigger larry DEF
+	echo && echo
+
+	# User creation
 	add_funds larry 12000.45
+	echo && echo
+	set_buy_trigger_price larry XYZ 4000
+	echo && echo
+	set_sell_trigger_price larry UVW 5500
 	echo && echo
 	get_funds_for_user larry
 	echo && echo
@@ -98,6 +181,50 @@ run_test () {
 	get_stocks_for_user larry
 	echo && echo
 	sell_stocks larry ANC 101 10000.7878
+	echo && echo
+	get_funds_for_user larry
+	echo && echo
+	get_stocks_for_user larry
+	echo && echo
+	get_user_triggers larry
+	echo && echo
+	cancel_buy_trigger larry ABC
+	echo && echo
+	cancel_sell_trigger larry DEF
+	echo && echo
+	set_buy_trigger larry ABC 5000 500
+	echo && echo
+	set_sell_trigger larry DEF 500 5000
+	echo && echo
+	get_funds_for_user larry
+	echo && echo
+	get_stocks_for_user larry
+	echo && echo
+	get_user_triggers larry
+	echo && echo
+	set_buy_trigger larry ABC 5000 1.1
+	echo && echo
+	set_sell_trigger larry ANC 50 5000
+	echo && echo
+	get_funds_for_user larry
+	echo && echo
+	get_stocks_for_user larry
+	echo && echo
+	get_user_triggers larry
+	echo && echo
+	set_buy_trigger larry ABC 2000 1.1
+	echo && echo
+	set_sell_trigger larry ANC 25 5000
+	echo && echo
+	get_funds_for_user larry
+	echo && echo
+	get_stocks_for_user larry
+	echo && echo
+	get_user_triggers larry
+	echo && echo
+	cancel_buy_trigger larry ABC
+	echo && echo
+	cancel_sell_trigger larry ANC
 	echo && echo
 	get_funds_for_user larry
 	echo && echo

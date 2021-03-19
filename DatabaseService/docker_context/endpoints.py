@@ -21,5 +21,7 @@ sell_stocks_endpoint = '/stocks/sell_stocks'
 # TODO: Add methods for these endpoints
 set_buy_trigger_amount_endpoint = '/triggers/buy/set/amount'
 set_buy_trigger_price_endpoint = '/triggers/buy/set/price'
+cancel_set_buy_endpoint = '/triggers/buy/cancel'
 set_sell_trigger_amount_endpoint = '/triggers/sell/set/amount'
 set_sell_trigger_price_endpoint = '/triggers/sell/set/price'
+cancel_set_sell_endpoint = '/triggers/sell/cancel'
