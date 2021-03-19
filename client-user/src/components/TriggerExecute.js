@@ -33,7 +33,7 @@ const TriggerExecute = (props) => {
   };
 
   return (
-    <form className='trigger-form' onSubmit={handleSubmit(onSubmit)}>
+    <form className='trigger-form right-space-content' onSubmit={handleSubmit(onSubmit)}>
       <select
         name='trigger'
         onChange={val => setTriggerType(val.target.value)}

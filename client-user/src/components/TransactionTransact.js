@@ -28,7 +28,7 @@ const TransactionTransact = (props) => {
   }
 
   return (
-    <form className='transact-form' onSubmit={handleSubmit(onSubmit)}>
+    <form className='transact-form right-space-content' onSubmit={handleSubmit(onSubmit)}>
       <select
         name='transact'
         onChange={val => setTransactType(val.target.value)}

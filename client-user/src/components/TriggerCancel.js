@@ -46,7 +46,7 @@ const TriggerCancel = (props) => {
   };
 
   return (
-    <form className='cancel-form'>
+    <form className='cancel-form right-space-content'>
       <input
         required
         name='stockSymbol'

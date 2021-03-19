@@ -33,7 +33,7 @@ const TriggerAmount = (props) => {
   };
 
   return (
-    <form className='trigger-amount-form' onSubmit={handleSubmit(onSubmit)}>
+    <form className='trigger-amount-form right-space-content' onSubmit={handleSubmit(onSubmit)}>
       <select
         name='triggerAmount'
         onChange={val => setTriggerAmountType(val.target.value)}

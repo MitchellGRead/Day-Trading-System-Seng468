@@ -17,6 +17,14 @@
   align-items: center;
 }
 
+.right-space-content * {
+  margin-right: 0.25rem;
+}
+
+form {
+  margin-bottom: 0.25rem;
+}
+
 /* Error div */
 .error {
   text-align: center;
@@ -56,16 +64,6 @@
   flex-direction: column;
   align-items: center;
 }
-
-.quote * {
-  margin-right: 0.25rem;
-}
-/* ----------- */
-
-/* Add div */
-.add * {
-  margin-right: 0.25rem;
-}
 /* ----------- */
 
 /* Transaction div */
@@ -74,64 +72,12 @@
   display: flex;
   flex-direction: column;
 }
-
-.transact-form {
-  margin-bottom: 0.75rem;
-}
-
-.transact-form * {
-  margin-right: 0.25rem;
-}
-
-.commit-form {
-  margin-bottom: 0.25rem;
-}
-
-.commit-form * {
-  margin-right: 0.25rem
-}
-
-.cancel-form {
-  margin-bottom: 0.75rem;
-}
-
-.cancel-form * {
-  margin-right: 0.25rem
-}
 /* ----------- */
 
 /* Trigger div */
-.trigger-amount-form {
-  margin-bottom: 0.25rem;
-}
-
-.trigger-amount-form * {
-  margin-right: 0.25rem
-}
-
-.trigger-form {
-  margin-bottom: 0.25rem;
-}
-
-.trigger-form * {
-  margin-right: 0.25rem
-}
-/* ----------- */
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
+.trigger {
+  margin-top: 1rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
-
-.App-link {
-  color: #61dafb;
-}
+/* ----------- */

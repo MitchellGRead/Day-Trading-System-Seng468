@@ -30,7 +30,7 @@ const Quote = (props) => {
   }
 
   return (
-    <div className='quote'>
+    <div className='quote right-space-content'>
       <form onSubmit={handleSubmit(onSubmit)}>
 
         <input
