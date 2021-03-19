@@ -17,6 +17,7 @@ sell_triggers_table = 'complete_sell_triggers'
 from_table_where_user_query = "select {columns} from {table} where user_id = '{user}';"
 from_table_where_query = "select {columns} from {table} {where};"
 to_table_where_user_query = "update {table} set {fields} where user_id = '{user}';"
+to_table_where_query = "update {table} set {fields} {where};"
 
 getcontext().prec = 20
 
@@ -408,16 +409,357 @@ class PostgresHandler:
         }, 500
 
     async def handleBuyTriggerAmount(self, user_id, stock_id, amount):
-        return None, 500
+        user_exists = await self._checkUserExists(user_id)
+
+        if not user_exists:
+            return {
+                'status': 'failure', 'message': 'Specified user does not exist.'
+            }, 404
+
+        add_pending_trigger_query = "insert into {table} values ('{user}', '{stock}', {stock_amount}) on conflict (user_id, stock_id) do update" \
+            " set stock_amount={stock_amount};".format(
+                table=pending_buy_triggers_table,
+                user=user_id,
+                stock=stock_id,
+                stock_amount=amount
+            )
+
+        result = await self.executeQuery(add_pending_trigger_query)
+
+        if type(result) != str:
+            return {
+                'status': 'failure', 'message': 'Could not set trigger amount.'
+            }, 500
+
+        result = result.lower().split(' ')
+        # Checks we get back "insert <some_num> 1" as our status string for the INSERT query
+        if len(result) == 3 and result[0] == 'insert' and result[2] == '1':
+            return {
+                'status': 'success', 'message': 'Successfully added trigger amount.'
+            }, 200
+
+        return {
+            'status': 'failure', 'message': 'Failed to set trigger amount.'
+        }, 500
 
     async def handleBuyTriggerPrice(self, user_id, stock_id, price):
-        return None, 500
+        user_exists = await self._checkUserExists(user_id)
+
+        if not user_exists:
+            return {
+                'status': 'failure', 'message': 'Specified user does not exist.'
+            }, 404
+        
+        where_clause = "where user_id='{user}' AND stock_id='{stock}'".format(user=user_id, stock=stock_id)
+
+        get_trigger_amount_query = from_table_where_query.format(
+            columns='*',
+            table=pending_buy_triggers_table,
+            where=where_clause
+        )
+        
+        result = await self.fetchQuery(get_trigger_amount_query)
+
+        if result == []:
+            return {'status':'failure', 'message':'Trigger has no corresponding amount.'}, 404
+        elif result is None:
+            return {
+                'status':'failure', 'message': 'Unexpected error. Could not set trigger price.'
+            }, 404
+
+        stock_amount = result[0][2]
+        price = Decimal(price)
+        amount_to_reserve = Decimal(stock_amount) * price
+
+        balances, status = await self.handleGetUserFundsCommand(user_id)
+
+        if status != 200:
+            return {'status':'failure', 'message':'Could not get user funds. Unexpected error.'}, status
+
+        curr_funds = balances['available_funds']
+
+        if curr_funds < amount_to_reserve:
+            return {'status':'failure', 'message':'Not enough funds in account to reserve.'}, 404
+        
+        set_buy_trigger_query = to_table_where_user_query.format(
+            table=funds_table,
+            fields='account_balance = account_balance - {res}, account_reserve = account_reserve + {res}'.format(
+                res=amount_to_reserve
+                ),
+            user=user_id
+        )
+        set_buy_trigger_query = set_buy_trigger_query + \
+            "delete from {table} where user_id = '{user}' AND stock_id = '{stock}';".format(
+                table=pending_buy_triggers_table,
+                user=user_id,
+                stock=stock_id
+            )
+        set_buy_trigger_query = set_buy_trigger_query + \
+            "insert into {table} values ('{user}', '{stock}', {stock_amount}, {stock_price}) on conflict (user_id, stock_id) do update" \
+            " set stock_amount={stock_amount}, stock_price={stock_price};".format(
+                table=buy_triggers_table,
+                user=user_id,
+                stock=stock_id,
+                stock_amount=stock_amount,
+                stock_price=price
+            )
+
+        await self.handleCancelBuyTrigger(user_id, stock_id)
+        result = await self.executeQuery(set_buy_trigger_query)
+
+        if type(result) != str:
+            return {
+                'status': 'failure', 'message': 'Could not set trigger price.'
+            }, 500
+
+        result = result.lower().split(' ')
+        # Checks we get back "insert <some_num> 1" as our status string for the INSERT query
+        if len(result) == 3 and result[0] == 'insert' and result[2] == '1':
+            return {
+                'status': 'success', 'message': 'Successfully set trigger price.'
+            }, 200
+
+        return {
+            'status': 'failure', 'message': 'Failed to set trigger price.'
+        }, 500
+
+    async def handleCancelBuyTrigger(self, user_id, stock_id, release_amount=0):
+        user_exists = await self._checkUserExists(user_id)
+
+        if not user_exists:
+            return {
+                'status': 'failure', 'message': 'Specified user does not exist.'
+            }, 404
+
+        where_clause = "where user_id='{user}' AND stock_id='{stock}'".format(user=user_id, stock=stock_id)
+
+        get_trigger_query = from_table_where_query.format(
+            columns='*',
+            table=buy_triggers_table,
+            where=where_clause
+        )
+
+        result = await self.fetchQuery(get_trigger_query)
+
+        if result == []:
+            return {'status':'failure', 'message':'Cancel has no corresponding trigger.'}, 404
+        elif result is None:
+            return {
+                'status':'failure', 'message': 'Unexpected error. Could not cancel trigger.'
+            }, 404
+
+        stock_amount = result[0][2]
+        stock_price = result[0][3]
+        reserved_amount = Decimal(stock_amount) * stock_price
+
+        cancel_trigger_query = to_table_where_user_query.format(
+            table=funds_table,
+            fields='account_balance = account_balance + {res}, account_reserve = account_reserve - {res}'.format(
+                res=reserved_amount,
+                ),
+            user=user_id
+        )
+        cancel_trigger_query = cancel_trigger_query + \
+            "delete from {table} where user_id = '{user}' AND stock_id = '{stock}';".format(
+                table=buy_triggers_table,
+                user=user_id,
+                stock=stock_id
+            )
+
+        result = await self.executeQuery(cancel_trigger_query)
+
+        if type(result) != str:
+            return {
+                'status': 'failure', 'message': 'Could not cancel trigger.'
+            }, 500
+
+        result = result.lower().split(' ')
+        # Checks we get back "delete 1" as our status string for the DELETE query
+        if len(result) == 2 and result[0] == 'delete' and result[1] == '1':
+            return {
+                'status': 'success', 'message': 'Successfully cancelled trigger.'
+            }, 200
+
+        return {
+            'status': 'failure', 'message': 'Failed to cancel trigger.'
+        }, 500
 
     async def handleSellTriggerAmount(self, user_id, stock_id, amount):
-        return None, 500
+        user_exists = await self._checkUserExists(user_id)
+
+        if not user_exists:
+            return {
+                'status': 'failure', 'message': 'Specified user does not exist.'
+            }, 404
+
+        add_pending_trigger_query = "insert into {table} values ('{user}', '{stock}', {stock_amount}) on conflict (user_id, stock_id) do update" \
+            " set stock_amount={stock_amount};".format(
+                table=pending_sell_triggers_table,
+                user=user_id,
+                stock=stock_id,
+                stock_amount=amount
+            )
+
+        result = await self.executeQuery(add_pending_trigger_query)
+
+        if type(result) != str:
+            return {
+                'status': 'failure', 'message': 'Could not add trigger amount.'
+            }, 500
+
+        result = result.lower().split(' ')
+        # Checks we get back "insert <some_num> 1" as our status string for the INSERT query
+        if len(result) == 3 and result[0] == 'insert' and result[2] == '1':
+            return {
+                'status': 'success', 'message': 'Successfully added trigger amount.'
+            }, 200
+
+        return {
+            'status': 'failure', 'message': 'Failed to add trigger amount.'
+        }, 500
         
     async def handleSellTriggerPrice(self, user_id, stock_id, price):
-        return None, 500
+        user_exists = await self._checkUserExists(user_id)
+
+        if not user_exists:
+            return {
+                'status': 'failure', 'message': 'Specified user does not exist.'
+            }, 404
+        
+        where_clause = "where user_id='{user}' AND stock_id='{stock}'".format(user=user_id, stock=stock_id)
+
+        get_trigger_amount_query = from_table_where_query.format(
+            columns='*',
+            table=pending_sell_triggers_table,
+            where=where_clause
+        )
+        
+        result = await self.fetchQuery(get_trigger_amount_query)
+
+        if result == []:
+            return {'status':'failure', 'message':'Trigger has no corresponding amount.'}, 404
+        elif result is None:
+            return {
+                'status':'failure', 'message': 'Unexpected error. Could not set trigger price.'
+            }, 404
+
+        stock_amount = result[0][2]
+        price = Decimal(price)
+        amount_to_reserve = stock_amount
+
+        balances, status = await self.handleGetUserStocksCommand(user_id, stock_id)
+
+        if stock_id not in balances:
+            return {'status':'failure', 'message':'No stocks in account of the given type.'}, 404
+        elif status != 200:
+            return {'status':'failure', 'message':'Could not get user stocks. Unexpected error.'}, status
+
+        curr_stocks = balances[stock_id][0]
+
+        if curr_stocks < amount_to_reserve:
+            return {'status':'failure', 'message':'Not enough stocks in account to reserve.'}, 404
+        
+        set_sell_trigger_query = to_table_where_query.format(
+            table=stocks_table,
+            fields='stock_balance = stock_balance - {res}, stock_reserve = stock_reserve + {res}'.format(
+                res=amount_to_reserve
+                ),
+            where=where_clause
+        )
+        set_sell_trigger_query = set_sell_trigger_query + \
+            "delete from {table} where user_id = '{user}' AND stock_id = '{stock}';".format(
+                table=pending_sell_triggers_table,
+                user=user_id,
+                stock=stock_id
+            )
+        set_sell_trigger_query = set_sell_trigger_query + \
+            "insert into {table} values ('{user}', '{stock}', {stock_amount}, {stock_price}) on conflict (user_id, stock_id) do update" \
+            " set stock_amount={stock_amount}, stock_price={stock_price};".format(
+                table=sell_triggers_table,
+                user=user_id,
+                stock=stock_id,
+                stock_amount=stock_amount,
+                stock_price=price
+            )
+
+        await self.handleCancelSellTrigger(user_id, stock_id)
+        result = await self.executeQuery(set_sell_trigger_query)
+
+        if type(result) != str:
+            return {
+                'status': 'failure', 'message': 'Could not set trigger price.'
+            }, 500
+
+        result = result.lower().split(' ')
+        # Checks we get back "insert <some_num> 1" as our status string for the INSERT query
+        if len(result) == 3 and result[0] == 'insert' and result[2] == '1':
+            return {
+                'status': 'success', 'message': 'Successfully set trigger price.'
+            }, 200
+
+        return {
+            'status': 'failure', 'message': 'Failed to set trigger price.'
+        }, 500
+
+    async def handleCancelSellTrigger(self, user_id, stock_id):
+        user_exists = await self._checkUserExists(user_id)
+
+        if not user_exists:
+            return {
+                'status': 'failure', 'message': 'Specified user does not exist.'
+            }, 404
+
+        where_clause = "where user_id='{user}' AND stock_id='{stock}'".format(user=user_id, stock=stock_id)
+
+        get_trigger_query = from_table_where_query.format(
+            columns='*',
+            table=sell_triggers_table,
+            where=where_clause
+        )
+
+        result = await self.fetchQuery(get_trigger_query)
+
+        if result == []:
+            return {'status':'failure', 'message':'Cancel has no corresponding trigger.'}, 404
+        elif result is None:
+            return {
+                'status':'failure', 'message': 'Unexpected error. Could not cancel trigger.'
+            }, 404
+
+        stock_amount = result[0][2]
+        reserved_amount = stock_amount
+
+        cancel_trigger_query = to_table_where_query.format(
+            table=stocks_table,
+            fields='stock_balance = stock_balance + {res}, stock_reserve = stock_reserve - {res}'.format(
+                res=reserved_amount,
+                ),
+            where=where_clause
+        )
+        cancel_trigger_query = cancel_trigger_query + \
+            "delete from {table} where user_id = '{user}' AND stock_id = '{stock}';".format(
+                table=sell_triggers_table,
+                user=user_id,
+                stock=stock_id
+            )
+
+        result = await self.executeQuery(cancel_trigger_query)
+
+        if type(result) != str:
+            return {
+                'status': 'failure', 'message': 'Could not cancel trigger.'
+            }, 500
+
+        result = result.lower().split(' ')
+        # Checks we get back "delete 1" as our status string for the DELETE query
+        if len(result) == 2 and result[0] == 'delete' and result[1] == '1':
+            return {
+                'status': 'success', 'message': 'Successfully cancelled trigger.'
+            }, 200
+
+        return {
+            'status': 'failure', 'message': 'Failed to cancel trigger.'
+        }, 500
 
     async def executeQuery(self, query):
         result = None

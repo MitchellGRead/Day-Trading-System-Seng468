@@ -155,6 +155,18 @@ async def setBuyTriggerPrice(request):
     return response.json(result, status=status)
 
 
+# Cancel buy trigger endpoint -- cancel the specified trigger
+@app.route(endpoints.cancel_set_buy_endpoint, methods=['POST'])
+async def cancelBuyTrigger(request):
+    res, err = validateRequest(request.json, cancel_set_buy_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    result, status = await app.config['logic'].handleCancelBuyTrigger(data['user_id'], data['stock_symbol'])
+    return response.json(result, status=status)
+
+
 # Set sell trigger amount endpoint -- set the amount of stock to sell
 @app.route(endpoints.set_sell_trigger_amount_endpoint, methods=['POST'])
 async def setSellTriggerAmount(request):
@@ -176,6 +188,18 @@ async def setSellTriggerPrice(request):
 
     data = request.json
     result, status = await app.config['logic'].handleSellTriggerPrice(data['user_id'], data['stock_symbol'], data['price'])
+    return response.json(result, status=status)
+
+
+# Cancel sell trigger endpoint -- cancel the specified trigger
+@app.route(endpoints.cancel_set_sell_endpoint, methods=['POST'])
+async def cancelSellTrigger(request):
+    res, err = validateRequest(request.json, cancel_set_sell_schema)
+    if not res:
+        return response.json(errorResult(err, request.json), status=400)
+
+    data = request.json
+    result, status = await app.config['logic'].handleCancelSellTrigger(data['user_id'], data['stock_symbol'])
     return response.json(result, status=status)
 
 

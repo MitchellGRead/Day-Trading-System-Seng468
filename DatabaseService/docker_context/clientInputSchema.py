@@ -68,6 +68,15 @@ triggers_price_schema = {
     'required': ['user_id', 'stock_symbol', 'price']
 }
 
+triggers_cancel_schema = {
+    'type': 'object',
+    'properties': {
+        'user_id': {'type': 'string'},
+        'stock_symbol': one_to_three_letter_string
+    },
+    'required': ['user_id', 'stock_symbol']
+}
+
 add_funds_schema = funds_schema
 remove_funds_schema = funds_schema
 buy_stock_schema = stocks_query_schema
@@ -76,3 +85,5 @@ buy_trigger_amount_schema = triggers_amount_schema
 buy_trigger_price_schema = triggers_price_schema
 sell_trigger_amount_schema = triggers_amount_schema
 sell_trigger_price_schema = triggers_price_schema
+cancel_set_buy_schema = triggers_cancel_schema
+cancel_set_sell_schema = triggers_cancel_schema
