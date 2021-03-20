@@ -56,8 +56,8 @@ class ServiceLogic:
         result = await self.psqlHandler.handleBuyTriggerAmount(user_id, stock_id, amount)
         return result
     
-    async def handleBuyTriggerPrice(self, user_id, stock_id, price):
-        result = await self.psqlHandler.handleBuyTriggerPrice(user_id, stock_id, price)
+    async def handleBuyTriggerPrice(self, user_id, stock_id, price, transaction_num):
+        result = await self.psqlHandler.handleBuyTriggerPrice(user_id, stock_id, price, transaction_num)
         return result
     
     async def handleExecuteBuyTrigger(self, user_id, stock_id, funds):
@@ -72,8 +72,8 @@ class ServiceLogic:
         result = await self.psqlHandler.handleSellTriggerAmount(user_id, stock_id, amount)
         return result
     
-    async def handleSellTriggerPrice(self, user_id, stock_id, price):
-        result = await self.psqlHandler.handleSellTriggerPrice(user_id, stock_id, price)
+    async def handleSellTriggerPrice(self, user_id, stock_id, price, transaction_num):
+        result = await self.psqlHandler.handleSellTriggerPrice(user_id, stock_id, price, transaction_num)
         return result
 
     async def handleExecuteSellTrigger(self, user_id, stock_id, funds):

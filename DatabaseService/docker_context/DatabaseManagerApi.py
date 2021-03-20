@@ -151,7 +151,7 @@ async def setBuyTriggerPrice(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['logic'].handleBuyTriggerPrice(data['user_id'], data['stock_symbol'], data['price'])
+    result, status = await app.config['logic'].handleBuyTriggerPrice(data['user_id'], data['stock_symbol'], data['price'], data['transaction_num'])
     return response.json(result, status=status)
 
 
@@ -199,7 +199,7 @@ async def setSellTriggerPrice(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['logic'].handleSellTriggerPrice(data['user_id'], data['stock_symbol'], data['price'])
+    result, status = await app.config['logic'].handleSellTriggerPrice(data['user_id'], data['stock_symbol'], data['price'], data['transaction_num'])
     return response.json(result, status=status)
 
 

@@ -39,8 +39,9 @@ set_buy_trigger_price () {
 	local user=\"$1\"
 	local stock=\"$2\"
 	local price=$3
+	local trans_num=999
 	echo Setting buy trigger price for $user for stock $stock at price $price
-	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock, \"price\":$price}" $base_url/triggers/buy/set/price
+	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock, \"price\":$price, \"transaction_num\": $trans_num}" $base_url/triggers/buy/set/price
 }
 
 set_buy_trigger () {
@@ -80,8 +81,9 @@ set_sell_trigger_price () {
 	local user=\"$1\"
 	local stock=\"$2\"
 	local price=$3
+	local trans_num=888
 	echo Setting sell trigger price for $user for stock $stock at price $price
-	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock, \"price\":$price}" $base_url/triggers/sell/set/price
+	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock, \"price\":$price, \"transaction_num\": $trans_num}" $base_url/triggers/sell/set/price
 }
 
 set_sell_trigger () {
