@@ -63,9 +63,10 @@ triggers_price_schema = {
     'properties': {
         'user_id': {'type': 'string'},
         'stock_symbol': one_to_three_letter_string,
-        'price': non_negative_number
+        'price': non_negative_number,
+        'transaction_num': non_negative_number
     },
-    'required': ['user_id', 'stock_symbol', 'price']
+    'required': ['user_id', 'stock_symbol', 'price', 'transaction_num']
 }
 
 triggers_cancel_schema = {

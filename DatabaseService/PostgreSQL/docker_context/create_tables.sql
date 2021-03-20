@@ -1,11 +1,11 @@
 rollback;
 
 create table if not exists users (
-    user_id varchar(12) primary key
+    user_id varchar(255) primary key
 );
 
 create table if not exists account_balances (
-    user_id varchar(12) primary key,
+    user_id varchar(255) primary key,
     account_balance numeric(12, 2),
     account_reserve numeric(12, 2),
     foreign key (user_id) references users(user_id)
@@ -16,7 +16,7 @@ create table if not exists account_balances (
 );
 
 create table if not exists stock_balances (
-    user_id varchar(12),
+    user_id varchar(255),
     stock_id varchar(3),
     stock_balance integer,
     stock_reserve integer,
@@ -29,7 +29,7 @@ create table if not exists stock_balances (
 );
 
  create table if not exists pending_buy_triggers (
-     user_id varchar(12),
+     user_id varchar(255),
      stock_id varchar(3),
      stock_amount integer,
      foreign key (user_id) references users(user_id)
@@ -40,7 +40,7 @@ create table if not exists stock_balances (
  );
 
  create table if not exists complete_buy_triggers (
-     user_id varchar(12),
+     user_id varchar(255),
      stock_id varchar(3),
      stock_amount integer,
      stock_price numeric(12, 2),
@@ -53,7 +53,7 @@ create table if not exists stock_balances (
  );
 
  create table if not exists pending_sell_triggers (
-     user_id varchar(12),
+     user_id varchar(255),
      stock_id varchar(3),
      stock_amount integer,
      foreign key (user_id) references users(user_id)
@@ -64,7 +64,7 @@ create table if not exists stock_balances (
  );
 
  create table if not exists complete_sell_triggers (
-     user_id varchar(12),
+     user_id varchar(255),
      stock_id varchar(3),
      stock_amount integer,
      stock_price numeric(15, 2),

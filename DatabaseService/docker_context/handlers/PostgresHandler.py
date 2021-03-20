@@ -442,7 +442,7 @@ class PostgresHandler:
             'status': 'failure', 'message': 'Failed to set trigger amount.'
         }, 500
 
-    async def handleBuyTriggerPrice(self, user_id, stock_id, price):
+    async def handleBuyTriggerPrice(self, user_id, stock_id, price, transaction_num):
         user_exists = await self._checkUserExists(user_id)
 
         if not user_exists:
@@ -504,7 +504,7 @@ class PostgresHandler:
                 stock_price=price
             )
 
-        await self.handleCancelBuyTrigger(user_id, stock_id)
+        _, cancelStatus = await self.handleCancelBuyTrigger(user_id, stock_id)
         result = await self.executeQuery(set_buy_trigger_query)
 
         if type(result) != str:
@@ -512,12 +512,15 @@ class PostgresHandler:
                 'status': 'failure', 'message': 'Could not set trigger price.'
             }, 500
 
+        replacedTrigger = True if cancelStatus == 200 else False
+
         result = result.lower().split(' ')
         # Checks we get back "insert <some_num> 1" as our status string for the INSERT query
         if len(result) == 3 and result[0] == 'insert' and result[2] == '1':
             return {
-                'status': 'success', 'message': 'Successfully set trigger price.'
-            }, 200
+                'user_id': user_id, 'stock_id': stock_id, 'stock_amount': stock_amount, 
+                'price': price, 'transaction_num': transaction_num, 'replace': replacedTrigger
+                }, 200
 
         return {
             'status': 'failure', 'message': 'Failed to set trigger price.'
@@ -661,7 +664,7 @@ class PostgresHandler:
             'status': 'failure', 'message': 'Failed to add trigger amount.'
         }, 500
         
-    async def handleSellTriggerPrice(self, user_id, stock_id, price):
+    async def handleSellTriggerPrice(self, user_id, stock_id, price, transaction_num):
         user_exists = await self._checkUserExists(user_id)
 
         if not user_exists:
@@ -725,7 +728,7 @@ class PostgresHandler:
                 stock_price=price
             )
 
-        await self.handleCancelSellTrigger(user_id, stock_id)
+        _, cancelStatus = await self.handleCancelSellTrigger(user_id, stock_id)
         result = await self.executeQuery(set_sell_trigger_query)
 
         if type(result) != str:
@@ -733,12 +736,15 @@ class PostgresHandler:
                 'status': 'failure', 'message': 'Could not set trigger price.'
             }, 500
 
+        replacedTrigger = True if cancelStatus == 200 else False
+
         result = result.lower().split(' ')
         # Checks we get back "insert <some_num> 1" as our status string for the INSERT query
         if len(result) == 3 and result[0] == 'insert' and result[2] == '1':
             return {
-                'status': 'success', 'message': 'Successfully set trigger price.'
-            }, 200
+                'user_id': user_id, 'stock_id': stock_id, 'stock_amount': stock_amount, 
+                'price': price, 'transaction_num': transaction_num, 'replace': replacedTrigger
+                }, 200
 
         return {
             'status': 'failure', 'message': 'Failed to set trigger price.'

@@ -116,7 +116,8 @@ stock_amount and stock_price are some numbers
 ### Set buy trigger price - /triggers/buy/set/price
 
 #### Success
-    {'status': 'success', 'message':'<some_message>'}
+    {'user_id': 'some_user_id', 'stock_id': 'some_stock_id', 'stock_amount': some_stock_amount, 'price': some_stock_price, 'transaction_num': transaction_num, 'replace': 'true'/'false'}
+The 'replace' field is used to indicate whether or not an existing trigger was replaced. 'true' means replacement took place.
 
 #### Failure
     {'status': 'failure', 'message':'<some_message>'}
@@ -148,7 +149,8 @@ stock_amount and stock_price are some numbers
 ### Set sell trigger price - /triggers/sell/set/price
 
 #### Success
-    {'status': 'success', 'message':'<some_message>'}
+    {'user_id': 'some_user_id', 'stock_id': 'some_stock_id', 'stock_amount': some_stock_amount, 'price': some_stock_price, 'transaction_num': transaction_num, 'replace': 'true'/'false'}
+The 'replace' field is used to indicate whether or not an existing trigger was replaced. 'true' means replacement took place.
 
 #### Failure
     {'status': 'failure', 'message':'<some_message>'}
