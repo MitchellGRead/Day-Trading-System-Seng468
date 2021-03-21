@@ -9,23 +9,58 @@ class ServiceLogic:
 
     # Only run on startup
     async def initActiveTriggers(self):
-        triggers = await self.trigger_handler.fetchExistingTriggers()
-        self.trigger_execution.addTriggers(triggers)
+        # triggers = await self.trigger_handler.fetchExistingTriggers()
+        # self.trigger_execution.addTriggers(triggers)
+        pass
 
     async def setBuyAmount(self, data):
-        pass
+        return await self.trigger_handler.setBuyAmount(
+            data['transaction_num'],
+            data['command'],
+            data['user_id'],
+            data['stock_symbol'],
+            data['amount']
+        )
 
     async def setBuyTrigger(self, data):
-        pass
+        return await self.trigger_handler.setBuyTrigger(
+            data['transaction_num'],
+            data['command'],
+            data['user_id'],
+            data['stock_symbol'],
+            data['amount']
+        )
 
     async def cancelBuyTrigger(self, data):
-        pass
+        return await self.trigger_handler.cancelBuyTrigger(
+            data['transaction_num'],
+            data['command'],
+            data['user_id'],
+            data['stock_symbol']
+        )
 
     async def setSellAmount(self, data):
-        pass
+        return await self.trigger_handler.setSellAmount(
+            data['transaction_num'],
+            data['command'],
+            data['user_id'],
+            data['stock_symbol'],
+            data['amount']
+        )
 
     async def setSellTrigger(self, data):
-        pass
+        return await self.trigger_handler.setSellTrigger(
+            data['transaction_num'],
+            data['command'],
+            data['user_id'],
+            data['stock_symbol'],
+            data['amount']
+        )
 
     async def cancelSellTrigger(self, data):
-        pass
+        return await self.trigger_handler.cancelSellTrigger(
+            data['transaction_num'],
+            data['command'],
+            data['user_id'],
+            data['stock_symbol']
+        )
