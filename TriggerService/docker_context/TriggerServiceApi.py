@@ -17,7 +17,8 @@ async def setBuyAmount(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    return response.json(data)
+    result, status = app.config['logic'].setBuyAmount(data)
+    return response.json(result, status=status)
 
 
 @app.route(endpoints.buy_trigger_endpoint, methods=['POST'])
@@ -27,7 +28,8 @@ async def setBuyTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    return response.json(data)
+    result, status = app.config['logic'].setBuyTrigger(data)
+    return response.json(result, status=status)
 
 
 @app.route(endpoints.cancel_buy_trigger_endpoint, methods=['POST'])
@@ -37,7 +39,8 @@ async def cancelBuyTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    return response.json(data)
+    result, status = app.config['logic'].cancelBuyTrigger(data)
+    return response.json(result, status=status)
 # --------------------------------------------------------------
 
 
@@ -49,7 +52,8 @@ async def setSellAmount(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    return response.json(data)
+    result, status = app.config['logic'].setSellAmount(data)
+    return response.json(result, status=status)
 
 
 @app.route(endpoints.sell_trigger_endpoint, methods=['POST'])
@@ -59,7 +63,8 @@ async def setSellTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    return response.json(data)
+    result, status = app.config['logic'].setSellTrigger(data)
+    return response.json(result, status=status)
 
 
 @app.route(endpoints.cancel_sell_trigger_endpoint, methods=['POST'])
@@ -69,7 +74,8 @@ async def cancelSellTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    return response.json(data)
+    result, status = app.config['logic'].cancelSellTrigger(data)
+    return response.json(result, status=status)
 # --------------------------------------------------------------
 
 
