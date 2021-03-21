@@ -73,3 +73,14 @@ class ServiceLogic:
 
     async def getQuote(self, trans_num, user_id, stock_id):
         return await self.CacheLogic.getQuote(trans_num, user_id, stock_id)
+
+    async def getBulkQuote(self, user_ids, stock_ids, transaction_nums):
+        return await self.CacheLogic.getBulkQuote(user_ids, stock_ids, transaction_nums)
+
+    async def updateUserCache(self, user_id):
+        await self.CacheLogic.cacheAccountTransaction(user_id)
+        return {'message': "update processed", 'content': ''}, 200
+
+    async def updateStockCache(self, user_id, stock_id):
+        await self.CacheLogic.cacheStockTransaction(user_id, stock_id)
+        return {'message': "update processed", 'content': ''}, 200

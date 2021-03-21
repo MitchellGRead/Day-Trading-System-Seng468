@@ -68,6 +68,23 @@ user_schema = {
     'required': ['transaction_num', 'user_id', 'command']
 }
 
+update_user_schema = {
+    'type': 'object',
+    'properties': {
+        'user_id': {'type': 'string'}
+    },
+    'required': ['user_id']
+}
+
+update_stock_schema = {
+    'type': 'object',
+    'properties': {
+        'user_id': {'type': 'string'},
+        'stock_symbol': one_to_three_letter_string
+    },
+    'required': ['user_id', 'stock_symbol'],
+}
+
 add_funds_schema = funds_schema
 remove_funds_schema = funds_schema
 buy_stock_schema = stocks_query_schema
