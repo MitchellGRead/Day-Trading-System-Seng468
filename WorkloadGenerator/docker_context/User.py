@@ -1,6 +1,6 @@
-from eventLogger import logger
-from UserCommands import UserCommands
 from Client import Client
+from UserCommands import UserCommands
+from eventLogger import logger
 
 
 class User:
@@ -10,17 +10,23 @@ class User:
         self.client = Client(loop)
         self.command_handler = UserCommands(ip, port, self.client)
         self.commands = commands
+        self.times = {}
 
     async def processCommands(self):
-        resps = []
         for command in self.commands:
             logger.debug(f'{self.user_id} processing {command}')
-            # TODO Update so that this saves the amount of time taken to run each command and which command was run for analysis
-            resp = await self.command_handler.handleCommand(command)
-            resps.append(resp)
+            time = await self.command_handler.handleCommand(command)
+
+            self.trackTime(command[1], time)
 
         await self.stop()
-        return resps
+        return self.times
+
+    def trackTime(self, command, time):
+        if command in self.times:
+            self.times[command].append(time)
+        else:
+            self.times[command] = [time]
 
     async def stop(self):
         logger.info(f'{self.user_id} finished processing.')
