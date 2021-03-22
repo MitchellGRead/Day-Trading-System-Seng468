@@ -7,11 +7,10 @@ from TriggerExecutionManager import TriggerExecutionManager
 
 class TriggerHandler:
 
-    def __init__(self, audit, dbm_ip, dbm_port, TriggerExecutionManagerInstance, loop):
+    def __init__(self, audit, dbm_ip, dbm_port, loop):
         self.audit = audit
         self.dbm_url = f'http://{dbm_ip}:{dbm_port}'
         self.client = Client(loop)
-        self.TriggerExecutionManager = TriggerExecutionManagerInstance
 
     def convertCommand(self, command):
         res = ''
@@ -73,19 +72,11 @@ class TriggerHandler:
         trigger_data['command'] = command
         trigger_data['trigger_price'] = trigger_data.pop('price')
         trigger = self.toTrigger(trigger_data)
-
-        self.TriggerExecutionManager.addTrigger(trigger)
-        return "Trigger Created", 200
+        return trigger, 200
 
     async def cancelBuyTrigger(self, trans_num, command, user_id, stock_symbol):
         endpoint = '/triggers/buy/cancel'
         data = {'transaction_num': trans_num, 'user_id': user_id, 'stock_symbol': stock_symbol}
-        trigger = self.TriggerExecutionManager.getTrigger(user_id, stock_symbol, self.convertCommand('SET_BUY_TRIGGER'))
-
-        if trigger:
-            self.TriggerExecutionManager.removeTrigger(trigger)
-        else:
-            return "Trigger does not exist", 404
 
         results, status = await self.client.postRequest(f'{self.dbm_url}{endpoint}', data)
         if status != 200 or results is None:
@@ -116,19 +107,11 @@ class TriggerHandler:
         trigger_data['command'] = command
         trigger_data['trigger_price'] = trigger_data.pop('price')
         trigger = self.toTrigger(trigger_data)
-
-        self.TriggerExecutionManager.addTrigger(trigger)
-        return "Trigger Created", 200
+        return trigger, 200
 
     async def cancelSellTrigger(self, trans_num, command, user_id, stock_symbol):
         endpoint = '/triggers/sell/cancel'
         data = {'transaction_num': trans_num, 'user_id': user_id, 'stock_symbol': stock_symbol}
-        trigger = self.TriggerExecutionManager.getTrigger(user_id, stock_symbol, self.convertCommand('SET_SELL_TRIGGER'))
-
-        if trigger:
-            self.TriggerExecutionManager.removeTrigger(trigger)
-        else:
-            return "Trigger does not exist", 404
 
         results, status = await self.client.postRequest(f'{self.dbm_url}{endpoint}', data)
         if status != 200 or results is None:
