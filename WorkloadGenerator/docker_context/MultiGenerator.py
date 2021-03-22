@@ -1,13 +1,16 @@
-import time
 import asyncio
+import time
+from datetime import datetime
+
 import config
+from Client import Client
+from DataAnalyser import DataAnalyser
 from User import User
 from UserCommands import UserCommands
-from Client import Client
 from eventLogger import logger
 
-CURRENT_FILE_NAME = "./45_user_workload.txt"
-NUM_USERS = 45
+CURRENT_FILE_NAME = "./1_user_workload.txt"
+NUM_USERS = 1
 
 
 def readWorkloadFile():
@@ -55,8 +58,8 @@ async def runUsers(users):
         task = asyncio.create_task(user.processCommands(), name=user.user_id)
         tasks.append(task)
 
-    resp = await asyncio.gather(*tasks)
-    return resp
+    results = await asyncio.gather(*tasks)  # times for each command broken down by users
+    return results
 
 
 async def generateDumplog(command):
@@ -71,8 +74,20 @@ async def generateDumplog(command):
     await client.stop()
 
 
+def combineUserTimes(times):
+    all_times = {}
+    for userTimes in times:
+        for command in userTimes.keys():
+            if command in all_times:
+                all_times[command].extend(userTimes[command])
+            else:
+                all_times[command] = userTimes[command]
+    return all_times
+
+
 async def main():
     workload_actions = readWorkloadFile()
+    num_commands = len(workload_actions)
     user_workloads, dumplog = parseUserCommands(workload_actions)
 
     logger.info(user_workloads.keys())
@@ -83,11 +98,17 @@ async def main():
     users = createUsers(user_workloads, loop)
 
     start = time.time()
-    res = await runUsers(users)
+    times = await runUsers(users)
     await generateDumplog(dumplog)
     end = time.time()
 
-    logger.info(f'Total elapsed time {end - start}')
+    execution_time = end - start
+    command_times = combineUserTimes(times)
+
+    analyser = DataAnalyser(NUM_USERS, num_commands, execution_time, command_times)
+    analyser.saveCommandTimes()
+    analyser.logSummary()
+
     return
 
 

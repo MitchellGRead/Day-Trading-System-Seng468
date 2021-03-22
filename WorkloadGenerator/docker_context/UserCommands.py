@@ -1,4 +1,5 @@
 from eventLogger import logger
+from time import time
 
 
 class UserCommands:
@@ -209,58 +210,47 @@ class UserCommands:
 
         result = await self.client.postRequest(url, data)
         return result
-
     # --------------------------------------------------------------
 
     async def handleCommand(self, params):
+        start_time = time()
         command = params[1]
         if command == 'ADD':
             resp = await self.addFundsRequest(params)
-            logger.debug(resp)
         elif command == 'QUOTE':
             resp = await self.quoteRequest(params)
-            logger.debug(resp)
         elif command == 'BUY':
             resp = await self.buyRequest(params)
-            logger.debug(resp)
         elif command == 'COMMIT_BUY':
             resp = await self.commitBuyRequest(params)
-            logger.debug(resp)
         elif command == 'CANCEL_BUY':
             resp = await self.cancelBuyRequest(params)
-            logger.debug(resp)
         elif command == 'SET_BUY_AMOUNT':
             resp = await self.setBuyAmountRequest(params)
-            logger.debug(resp)
         elif command == 'CANCEL_SET_BUY':
             resp = await self.cancelSetBuyRequest(params)
-            logger.debug(resp)
         elif command == 'SET_BUY_TRIGGER':
             resp = await self.setBuyTriggerRequest(params)
-            logger.debug(resp)
         elif command == 'SELL':
             resp = await self.sellRequest(params)
-            logger.debug(resp)
         elif command == 'COMMIT_SELL':
             resp = await self.commitSellRequest(params)
-            logger.debug(resp)
         elif command == 'CANCEL_SELL':
             resp = await self.cancelSellRequest(params)
-            logger.debug(resp)
         elif command == 'SET_SELL_AMOUNT':
             resp = await self.setSellAmountRequest(params)
-            logger.debug(resp)
         elif command == 'CANCEL_SET_SELL':
             resp = await self.cancelSetSellRequest(params)
-            logger.debug(resp)
         elif command == 'SET_SELL_TRIGGER':
             resp = await self.setSellTriggerRequest(params)
-            logger.debug(resp)
         elif command == 'DISPLAY_SUMMARY':
             resp = await self.displaySummary(params)
-            logger.debug(resp)
         elif command == 'DUMPLOG':
             resp = await self.dumplog(params)
-            logger.debug(resp)
         else:
             logger.warning(f'INVALID COMMAND: {command}')
+            return 0
+
+        total_time = time() - start_time
+        logger.debug(f'{resp} - {total_time}')
+        return total_time

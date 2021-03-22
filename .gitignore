@@ -6,4 +6,5 @@ venv/
 */*/*/*/__pycache__/
 /AuditService/logfiles/*
 /AuditService/docker_context/logfiles/*
+/WorkloadGenerator/docker_context/commandanalysis/*
 /EXE's/dump.rdb

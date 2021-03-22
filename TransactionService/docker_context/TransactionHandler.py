@@ -55,7 +55,7 @@ class TransactionHandler:
             logger.info(f'{command} - {trans_num} - {user_id} --> failed to get quote --> {result} - {status}')
             return result, status
 
-        quote_price = float(result['content']['price'])
+        quote_price = float(result['content'])
 
         if quote_price > amount:
             err_msg = "Not enough capital to buy this stock."
@@ -137,7 +137,7 @@ class TransactionHandler:
         if status != 200:
             logger.info(f'{command} - {trans_num} - {user_id} --> failed to get quote --> {result} - {status}')
             return result, status
-        quote_price = float(result['content']['price'])
+        quote_price = float(result['content'])
 
         result, status = await self.client.getRequest(f"{self.cacheURL}/stocks/get/user/{user_id}/{stock_symbol}")
         if status != 200:

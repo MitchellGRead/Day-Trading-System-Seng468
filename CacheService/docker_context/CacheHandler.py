@@ -40,7 +40,7 @@ class CacheHandler:
         check = await self.RedisHandler.rExists(user_id)
         if check:
             data = await self.RedisHandler.rGet(user_id)
-            return data
+            return data, 200
         else:
             result, status = await self.RedisHandler.updateAccountCache(user_id)
             if status == 200:
@@ -60,7 +60,7 @@ class CacheHandler:
         check = await self.RedisHandler.rExists(f'{user_id}_{stock_id}')
         if check:
             data = await self.RedisHandler.rGet(f'{user_id}_{stock_id}')
-            return data
+            return data, 200
         else:
             result, status = await self.RedisHandler.updateStockCache(user_id, stock_id)
             if status == 200:
@@ -237,7 +237,7 @@ class CacheHandler:
             difference = (now - then)
             if difference <= self._QUOTE_CACHE_TIME_LIMIT_SEC:
                 logger.debug(f'{__name__} - Cache hit while getting stock {stock_id}')
-                return goodResult(msg="Quote price", data={'price': quote['price']}), 200
+                return goodResult(msg="Quote price", data=quote['price']), 200
 
         result, status = await self.LegacyStock.getQuote(trans_num, user_id, stock_id)
         if status == 200:
