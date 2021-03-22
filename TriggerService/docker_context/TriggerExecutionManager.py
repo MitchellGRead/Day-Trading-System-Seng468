@@ -91,7 +91,7 @@ class TriggerExecutionManager:
             self.triggers[stock_symbol].append(trigger)
         else:
             self.triggers[stock_symbol] = [trigger]
-        return self.triggers
+        return "trigger added", 200
 
     def updatePrice(self, stock):
         logger.debug(f'Adding price for {stock}')
