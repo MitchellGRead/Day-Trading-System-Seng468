@@ -26,7 +26,6 @@ async def initTriggerHandler(app, loop):
         app.config['audit'],
         config.DATABASE_SERVER_IP,
         config.DATABASE_SERVER_PORT,
-        app.config['trigger_execution'],
         loop
     )
 
