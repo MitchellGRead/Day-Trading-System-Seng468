@@ -38,8 +38,8 @@ async def initAuditHandler(app, loop):
 async def initLegacyStockHandler(app, loop):
     logger.debug('Creating legacy stock handler')
     app.config['legacyStock'] = LegacyStockServerHandler(
-        config.DUMMY_STOCK_SERVER_IP,
-        config.DUMMY_STOCK_SERVER_PORT,
+        config.LEGACY_STOCK_SERVER_IP,
+        config.LEGACY_STOCK_SERVER_PORT,
         app.config['audit'],
         app.config['redisHandler']
     )
