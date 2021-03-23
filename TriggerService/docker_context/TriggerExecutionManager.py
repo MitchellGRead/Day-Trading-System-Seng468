@@ -100,6 +100,8 @@ class TriggerExecutionManager:
 
     def getTrigger(self, user_id, stock_symbol, command):
         triggers = self.triggers.get(stock_symbol, [])
+        logger.debug(f'{triggers}')
+
         if not triggers:
             return False
 
