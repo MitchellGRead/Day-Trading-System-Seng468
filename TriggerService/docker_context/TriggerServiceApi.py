@@ -17,7 +17,7 @@ async def setBuyAmount(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = app.config['logic'].setBuyAmount(data)
+    result, status = await app.config['logic'].setBuyAmount(data)
     return response.json(result, status=status)
 
 
@@ -28,7 +28,7 @@ async def setBuyTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = app.config['logic'].setBuyTrigger(data)
+    result, status = await app.config['logic'].setBuyTrigger(data)
     return response.json(result, status=status)
 
 
@@ -39,7 +39,7 @@ async def cancelBuyTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = app.config['logic'].cancelBuyTrigger(data)
+    result, status = await app.config['logic'].cancelBuyTrigger(data)
     return response.json(result, status=status)
 # --------------------------------------------------------------
 
@@ -52,7 +52,7 @@ async def setSellAmount(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = app.config['logic'].setSellAmount(data)
+    result, status = await app.config['logic'].setSellAmount(data)
     return response.json(result, status=status)
 
 
@@ -63,7 +63,7 @@ async def setSellTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = app.config['logic'].setSellTrigger(data)
+    result, status = await app.config['logic'].setSellTrigger(data)
     return response.json(result, status=status)
 
 
@@ -74,7 +74,7 @@ async def cancelSellTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = app.config['logic'].cancelSellTrigger(data)
+    result, status = await app.config['logic'].cancelSellTrigger(data)
     return response.json(result, status=status)
 # --------------------------------------------------------------
 
