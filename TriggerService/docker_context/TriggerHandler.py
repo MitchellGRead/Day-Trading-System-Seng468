@@ -68,8 +68,8 @@ class TriggerHandler:
             logger.error(f'Failed during set buy trigger call to DBM: {results}')
             return "setBuyTrigger failed on DBM call", 500
 
-        trigger_data = results.json
-        trigger_data['command'] = command
+        trigger_data = results
+        trigger_data['command'] = 'SET_BUY_TRIGGER'
         trigger_data['trigger_price'] = trigger_data.pop('price')
         trigger = self.toTrigger(trigger_data)
         return trigger, 200
@@ -103,8 +103,8 @@ class TriggerHandler:
             logger.error(f'Failed during set sell trigger call to DBM: {results}')
             return "setSellTrigger failed on DBM call", 500
 
-        trigger_data = results.json
-        trigger_data['command'] = command
+        trigger_data = results
+        trigger_data['command'] = 'SET_SELL_TRIGGER'
         trigger_data['trigger_price'] = trigger_data.pop('price')
         trigger = self.toTrigger(trigger_data)
         return trigger, 200

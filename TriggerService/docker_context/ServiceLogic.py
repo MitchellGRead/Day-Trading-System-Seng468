@@ -32,7 +32,7 @@ class ServiceLogic:
             data['amount']
         )
         if status == 200:
-            result, status = await self.trigger_execution.addTrigger(result)
+            result, status = self.trigger_execution.addTrigger(result)
         return result, status
 
     async def cancelBuyTrigger(self, data):
@@ -68,7 +68,7 @@ class ServiceLogic:
             data['amount']
         )
         if status == 200:
-            result, status = await self.trigger_execution.addTrigger(result)
+            result, status = self.trigger_execution.addTrigger(result)
         return result, status
 
     async def cancelSellTrigger(self, data):
