@@ -19,6 +19,7 @@ import asyncio
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sanic.log import logger
+import random
 
 from Client import Client
 
@@ -165,12 +166,23 @@ class TriggerExecutionManager:
             logger.debug('No triggers to fetch for or no prices to update')
             return
 
-        # Only fetch stocks that have active triggers on them
-        fetch_stocks = [stock for stock in self.triggers.keys() if self.triggers[stock]]
+        stocks = []
+        users = []
+        trans_nums = []
+        for stock in self.triggers.keys():
+            if not self.triggers[stock]:
+                continue
+            selectee = random.choice(self.triggers[stock])
+            stocks.append(stock)
+            users.append(selectee['user_id'])
+            trans_nums.append(selectee['transaction_num'])
 
-        endpoint = '/quote'
-        params = {'stocks': fetch_stocks}
-        results, status = await self.client.getRequest(f'{self.cache_url}{endpoint}', params)
+        stock_string = '?stock_id=' + ''.join(map(str, stocks))
+        user_string = '&user_id=' + ''.join(map(str, users))
+        trans_string = '&transaction_num=' + ''.join(map(str, trans_nums))
+        endpoint = '/quote'+stock_string+user_string+trans_string
+
+        results, status = await self.client.getRequest(f'{self.cache_url}{endpoint}')
         if status != 200 or results is None:
             logger.error('Failed fetching prices for triggers.')
             return
