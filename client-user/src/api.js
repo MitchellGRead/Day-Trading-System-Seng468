@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const API_URL = 'https://localhost:5000';
+const API_URL = 'http://localhost:5000';
 
-// TODO get this actually hooked up
 export async function getQuote(userId, stockSymbol, transNum) {
-  let endpoint = `/get/QUOTE/trans/${transNum}/user_id/${userId}/stock_symbol/${stockSymbol}`;
-  return await axios.get(`${API_URL}${endpoint}`);
+  let endpoint = `/get/QUOTE/trans/${transNum}/user/${userId}/stock/${stockSymbol}`;
+  let resp = await axios.get(`${API_URL}${endpoint}`);
+  return resp.data
 }
 
 export async function postFunds(userId, funds) {
@@ -16,7 +16,8 @@ export async function postFunds(userId, funds) {
     'command': 'ADD',
     'transaction_num': 3
   };
-  return await axios.post(`${API_URL}${endpoint}`, data);
+  let resp = await axios.post(`${API_URL}${endpoint}`, data);
+  return resp.data
 }
 
 export async function postTransact(transactType, userId, stockSymbol, funds) {
@@ -29,7 +30,8 @@ export async function postTransact(transactType, userId, stockSymbol, funds) {
     'amount': funds,
     'transaction_num': 3
   };
-  return await axios.post(`${API_URL}${endpoint}`, data);
+  let resp = await axios.post(`${API_URL}${endpoint}`, data);
+  return resp.data
 }
 
 export async function postCommit(commitType, userId) {
@@ -40,7 +42,8 @@ export async function postCommit(commitType, userId) {
     'user_id': userId,
     'transaction_num': 3
   };
-  return await axios.post(`${API_URL}${endpoint}`, data);
+  let resp = await axios.post(`${API_URL}${endpoint}`, data);
+  return resp.data
 }
 
 export async function postCancel(cancelType, userId) {
@@ -51,7 +54,8 @@ export async function postCancel(cancelType, userId) {
     'user_id': userId,
     'transaction_num': 3
   };
-  return await axios.post(`${API_URL}${endpoint}`, data);
+  let resp = await axios.post(`${API_URL}${endpoint}`, data);
+  return resp.data
 }
 
 export async function postTriggerAmount(triggerType, userId, stockSymbol, funds) {
@@ -64,7 +68,8 @@ export async function postTriggerAmount(triggerType, userId, stockSymbol, funds)
     'stock_symbol': stockSymbol,
     'transaction_num': 3
   };
-  return await axios.post(`${API_URL}${endpoint}`, data);
+  let resp = await axios.post(`${API_URL}${endpoint}`, data);
+  return resp.data
 }
 
 export async function postTrigger(triggerType, userId, stockSymbol, price) {
@@ -77,7 +82,8 @@ export async function postTrigger(triggerType, userId, stockSymbol, price) {
     'stock_symbol': stockSymbol,
     'transaction_num': 3
   };
-  return await axios.post(`${API_URL}${endpoint}`, data);
+  let resp = await axios.post(`${API_URL}${endpoint}`, data);
+  return resp.data
 }
 
 export async function postTriggerCancel(cancelType, userId, stockSymbol) {
@@ -89,18 +95,21 @@ export async function postTriggerCancel(cancelType, userId, stockSymbol) {
     'stock_symbol': stockSymbol,
     'transaction_num': 3
   };
-  return await axios.post(`${API_URL}${endpoint}`, data);
+  let resp = await axios.post(`${API_URL}${endpoint}`, data);
+  return resp.data
 }
 
 export async function generateDumplog(userId, filename) {
   let endpoint = `/get/QUOTE/trans/${3}/file/${filename}`;
 
   let params = userId ? { userId: userId } : {};
-  return await axios.get(`${API_URL}${endpoint}`, { params });
+  let resp = await axios.get(`${API_URL}${endpoint}`, { params });
+  return resp.data
 }
 
 export async function getDisplaySummary(userId) {
   let endpoint = `/get/DISPLAY_SUMMARY/trans/${3}/user/${userId}`;
 
-  return await axios.get(`${API_URL}${endpoint}`);
+  let resp = await axios.get(`${API_URL}${endpoint}`);
+  return resp.data
 }
