@@ -18,10 +18,16 @@ const TransactionTransact = (props) => {
 
     try {
       setLoading(true);
-      let res = await postTransact(data.transact, userId, data.ticker, data.funds);
-      // TODO set and handle error
+      let res = await postTransact(data.transact, userId, data.ticker, parseFloat(data.funds));
     } catch (error) {
-      onError(`${error.message} - Failed to initialize ${transactType.toLowerCase()}.`)
+      if (error.response.status === 404) {
+        let fundsStock = data.transact === 'BUY' ? 'funds' : 'stock'
+        onError(`Not enough ${fundsStock} to perform ${data.transact}`)
+      } else {
+        console.error(error)
+        onError(`${error.message} - Failed to initialize ${transactType.toLowerCase()}.`)
+      }
+
     } finally {
       setLoading(false);
     }

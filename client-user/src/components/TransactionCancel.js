@@ -19,8 +19,12 @@ const TransactionCancel = (props) => {
       setLoading(true);
       let res = await postCancel('CANCEL_BUY', userId)
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to cancel buy.`);
+      if (error.response.status === 404) {
+        onError('No BUY to cancel.')
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to cancel buy.`);
+      }
     } finally {
       setLoading(false);
     }
@@ -37,8 +41,12 @@ const TransactionCancel = (props) => {
       setLoading(true);
       let res = await postCancel('CANCEL_SELL', userId)
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to cancel sell.`);
+      if (error.response.status === 404) {
+        onError('No SELL to cancel.')
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to cancel sell.`);
+      }
     } finally {
       setLoading(false);
     }

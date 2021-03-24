@@ -18,9 +18,14 @@ const TransactionCommit = (props) => {
     try {
       setLoading(true);
       let res = await postCommit('COMMIT_BUY', userId)
+      console.log(res);
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to commit buy.`);
+      if (error.response.status === 404) {
+        onError('No BUY exists to commit.')
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to commit buy.`);
+      }
     } finally {
       setLoading(false);
     }
@@ -37,8 +42,12 @@ const TransactionCommit = (props) => {
       setLoading(true);
       let res = await postCommit('COMMIT_SELL', userId)
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to commit sell.`);
+      if (error.response.status === 404) {
+        onError('No SELL exists to commit.')
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to commit buy.`);
+      }
     } finally {
       setLoading(false);
     }
