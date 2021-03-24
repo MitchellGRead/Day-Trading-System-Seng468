@@ -7,9 +7,11 @@ const TransactionCancel = (props) => {
   const { _, handleSubmit } = useForm();
   const userId = props.userId;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   const cancelBuy = async () => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -18,6 +20,9 @@ const TransactionCancel = (props) => {
     try {
       setLoading(true);
       let res = await postCancel('CANCEL_BUY', userId)
+      if (res.status === 200) {
+        onSuccess('Success cancelling buy.')
+      }
     } catch (error) {
       if (error.response.status === 404) {
         onError('No BUY to cancel.')
@@ -32,6 +37,7 @@ const TransactionCancel = (props) => {
 
   const cancelSell = async () => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -40,6 +46,9 @@ const TransactionCancel = (props) => {
     try {
       setLoading(true);
       let res = await postCancel('CANCEL_SELL', userId)
+      if (res.status === 200) {
+        onSuccess('Success cancelling sell.')
+      }
     } catch (error) {
       if (error.response.status === 404) {
         onError('No SELL to cancel.')

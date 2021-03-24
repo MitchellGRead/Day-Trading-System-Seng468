@@ -7,9 +7,11 @@ const TransactionCommit = (props) => {
   const { _, handleSubmit } = useForm();
   const userId = props.userId;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   const commitBuy = async () => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -18,7 +20,9 @@ const TransactionCommit = (props) => {
     try {
       setLoading(true);
       let res = await postCommit('COMMIT_BUY', userId)
-      console.log(res);
+      if (res.status === 200) {
+        onSuccess('Successfully purchased stock.')
+      }
     } catch (error) {
       if (error.response.status === 404) {
         onError('No BUY exists to commit.')
@@ -33,6 +37,7 @@ const TransactionCommit = (props) => {
 
   const commitSell = async () => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -41,6 +46,9 @@ const TransactionCommit = (props) => {
     try {
       setLoading(true);
       let res = await postCommit('COMMIT_SELL', userId)
+      if (res.status === 200) {
+        onSuccess('Successfully sold stock')
+      }
     } catch (error) {
       if (error.response.status === 404) {
         onError('No SELL exists to commit.')

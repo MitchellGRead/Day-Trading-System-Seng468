@@ -16,8 +16,7 @@ export async function postFunds(userId, funds) {
     'command': 'ADD',
     'transaction_num': 3
   };
-  let resp = await axios.post(`${API_URL}${endpoint}`, data);
-  return resp.data
+  return await axios.post(`${API_URL}${endpoint}`, data);
 }
 
 export async function postTransact(transactType, userId, stockSymbol, funds) {
@@ -30,8 +29,7 @@ export async function postTransact(transactType, userId, stockSymbol, funds) {
     'amount': funds,
     'transaction_num': 3
   };
-  let resp = await axios.post(`${API_URL}${endpoint}`, data);
-  return resp.data
+  return await axios.post(`${API_URL}${endpoint}`, data);
 }
 
 export async function postCommit(commitType, userId) {
@@ -42,8 +40,7 @@ export async function postCommit(commitType, userId) {
     'user_id': userId,
     'transaction_num': 3
   };
-  let resp = await axios.post(`${API_URL}${endpoint}`, data);
-  return resp.data
+  return await axios.post(`${API_URL}${endpoint}`, data);
 }
 
 export async function postCancel(cancelType, userId) {
@@ -54,8 +51,7 @@ export async function postCancel(cancelType, userId) {
     'user_id': userId,
     'transaction_num': 3
   };
-  let resp = await axios.post(`${API_URL}${endpoint}`, data);
-  return resp.data
+  return await axios.post(`${API_URL}${endpoint}`, data);
 }
 
 export async function postTriggerAmount(triggerType, userId, stockSymbol, funds) {
@@ -68,8 +64,7 @@ export async function postTriggerAmount(triggerType, userId, stockSymbol, funds)
     'stock_symbol': stockSymbol,
     'transaction_num': 3
   };
-  let resp = await axios.post(`${API_URL}${endpoint}`, data);
-  return resp.data
+  return await axios.post(`${API_URL}${endpoint}`, data);
 }
 
 export async function postTrigger(triggerType, userId, stockSymbol, price) {
@@ -82,8 +77,7 @@ export async function postTrigger(triggerType, userId, stockSymbol, price) {
     'stock_symbol': stockSymbol,
     'transaction_num': 3
   };
-  let resp = await axios.post(`${API_URL}${endpoint}`, data);
-  return resp.data
+  return await axios.post(`${API_URL}${endpoint}`, data);
 }
 
 export async function postTriggerCancel(cancelType, userId, stockSymbol) {
@@ -95,8 +89,7 @@ export async function postTriggerCancel(cancelType, userId, stockSymbol) {
     'stock_symbol': stockSymbol,
     'transaction_num': 3
   };
-  let resp = await axios.post(`${API_URL}${endpoint}`, data);
-  return resp.data
+  return await axios.post(`${API_URL}${endpoint}`, data);
 }
 
 export async function generateDumplog(userId, filename) {

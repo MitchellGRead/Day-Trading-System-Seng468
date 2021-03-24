@@ -30,6 +30,11 @@ form {
   text-align: center;
   color: crimson;
 }
+
+.success {
+  text-align: center;
+  color: green;
+}
 /* ----------- */
 
 /* Main page */
