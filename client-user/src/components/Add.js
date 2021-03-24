@@ -17,8 +17,7 @@ const Add = (props) => {
 
     try {
       setLoading(true);
-      let res = await postFunds(userId, data.postFunds)
-      // TODO set and handle error
+      let res = await postFunds(userId, parseFloat(data.funds))
     } catch (error) {
       console.error(error);
       onError(`${error.message} - Failed to add funds.`)

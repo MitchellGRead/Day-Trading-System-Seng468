@@ -18,8 +18,8 @@ const Quote = (props) => {
 
     try {
       setLoading(true);
-
-      let quotePrice = await getQuote(userId, data.ticker, 3);
+      let res = await getQuote(userId, data.ticker, 3);
+      let quotePrice = res.content;
       setQuote(quotePrice);
     } catch (error) {
       console.error(error);
