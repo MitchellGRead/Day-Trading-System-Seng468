@@ -7,9 +7,11 @@ const TransactionCommit = (props) => {
   const { _, handleSubmit } = useForm();
   const userId = props.userId;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   const commitBuy = async () => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -18,9 +20,16 @@ const TransactionCommit = (props) => {
     try {
       setLoading(true);
       let res = await postCommit('COMMIT_BUY', userId)
+      if (res.status === 200) {
+        onSuccess('Successfully purchased stock.')
+      }
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to commit buy.`);
+      if (error.response.status === 404) {
+        onError('No BUY exists to commit.')
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to commit buy.`);
+      }
     } finally {
       setLoading(false);
     }
@@ -28,6 +37,7 @@ const TransactionCommit = (props) => {
 
   const commitSell = async () => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -36,9 +46,16 @@ const TransactionCommit = (props) => {
     try {
       setLoading(true);
       let res = await postCommit('COMMIT_SELL', userId)
+      if (res.status === 200) {
+        onSuccess('Successfully sold stock')
+      }
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to commit sell.`);
+      if (error.response.status === 404) {
+        onError('No SELL exists to commit.')
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to commit buy.`);
+      }
     } finally {
       setLoading(false);
     }

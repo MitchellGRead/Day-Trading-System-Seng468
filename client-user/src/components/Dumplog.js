@@ -8,8 +8,10 @@ const Dumplog = (props) => {
   const userId = props.userId;
   const isAdmin = props.isAdmin;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   const onSubmit = async (data) => {
+    onSuccess('');
     onError('');
     if (!userId && !isAdmin) {
       onError('Admin access required to generate all user dumplogs')
