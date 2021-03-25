@@ -2,6 +2,7 @@ from time import time
 from sanic.log import logger
 from decimal import *
 import asyncpg
+import asyncio
 
 connection_string = "postgres://{user}:{password}@{host}:{port}/{database}".format(
     user='daytrader', password='tothemoon', host='trading-db-13',
@@ -25,6 +26,7 @@ class PostgresHandler:
 
     def __init__(self, loop):
         self.loop = loop
+        self.pool = None
 
     async def initializePool(self):
         self.pool = await asyncpg.create_pool(
@@ -50,7 +52,7 @@ class PostgresHandler:
         if result is None:
             return {
                 'errorMessage': 'Unexpected error. Could not get funds.'
-            }, 404
+            }, 500
 
         resp_list = {}
         for record in result:
@@ -73,10 +75,12 @@ class PostgresHandler:
 
         result = await self.fetchQuery(get_funds_query)
 
+        # This is an error as empty list indicates user does not exist, a contradiction
+        # of the earlier check which means something has gone wrong.
         if result == [] or result is None or len(result) != 1:
             return {
                 'errorMessage': 'Unexpected error. Could not get funds.'
-            }, 404
+            }, 500
 
         available_funds = result[0][1]
         reserved_funds = result[0][2]
@@ -129,15 +133,43 @@ class PostgresHandler:
         result = await self.fetchQuery(get_stocks_query)
 
         if result == []:
-            return {'errorMessage':'Stock not found.'}, 404
+            return {'errorMessage': 'Stocks not found.'},  404
         elif result is None:
             return {
                 'errorMessage': 'Unexpected error. Could not get stocks.'
-            }, 404
+            }, 500
 
         resp_list = {}
         for record in result:
             resp_list[record[1]] = [record[2], record[3]]
+
+        return resp_list, 200
+
+    async def handleGetAllTriggers(self):
+        getBuyTriggers  = asyncio.create_task(self.handleGetAllBuyTriggers())
+        getSellTriggers = asyncio.create_task(self.handleGetAllSellTriggers())
+        
+        buyTriggers, buyStatus = await getBuyTriggers
+        sellTriggers, sellStatus = await getSellTriggers
+
+        if buyStatus != 200:
+            return {
+                'errorMessage': 'Could not get buy triggers.'
+            }, 500
+        if sellStatus != 200:
+            return {
+                'errorMessage': 'Could not get sell triggers.'
+            }, 500
+        
+        resp_list = {}
+        for stock in buyTriggers.keys():
+            resp_list[stock] = {'buy_triggers': buyTriggers[stock]}
+
+        for stock in sellTriggers.keys():
+            new_pair = {'sell_triggers': sellTriggers[stock]}
+            if stock in resp_list:
+                resp_list[stock].update(new_pair)
+            resp_list[stock] = new_pair
 
         return resp_list, 200
 
@@ -153,16 +185,16 @@ class PostgresHandler:
         if result is None:
             return {
                 'errorMessage': 'Unexpected error. Could not get buy triggers.'
-            }, 404
+            }, 500
 
         resp_list = {}
         for record in result:
             stocks_list = {}
-            if record[0] in resp_list:
-                stocks_list = resp_list[record[0]]
+            if record[1] in resp_list:
+                stocks_list = resp_list[record[1]]
 
-            stocks_list[record[1]] = [record[2], record[3]]
-            resp_list[record[0]] = stocks_list
+            stocks_list[record[0]] = [record[2], record[3], record[4]]
+            resp_list[record[1]] = stocks_list
 
         return resp_list, 200
         
@@ -187,11 +219,11 @@ class PostgresHandler:
         elif result is None:
             return {
                 'errorMessage': 'Unexpected error. Could not get triggers.'
-            }, 404
+            }, 500
 
         resp_list = {}
         for record in result:
-            resp_list[record[1]] = [record[2], record[3]]
+            resp_list[record[1]] = [record[2], record[3], record[4]]
 
         return resp_list, 200
 
@@ -212,11 +244,11 @@ class PostgresHandler:
         resp_list = {}
         for record in result:
             stocks_list = {}
-            if record[0] in resp_list:
-                stocks_list = resp_list[record[0]]
+            if record[1] in resp_list:
+                stocks_list = resp_list[record[1]]
 
-            stocks_list[record[1]] = [record[2], record[3]]
-            resp_list[record[0]] = stocks_list
+            stocks_list[record[0]] = [record[2], record[3], record[4]]
+            resp_list[record[1]] = stocks_list
 
         return resp_list, 200
 
@@ -241,11 +273,11 @@ class PostgresHandler:
         elif result is None:
             return {
                 'errorMessage': 'Unexpected error. Could not get triggers.'
-            }, 404
+            }, 500
 
         resp_list = {}
         for record in result:
-            resp_list[record[1]] = [record[2], record[3]]
+            resp_list[record[1]] = [record[2], record[3], record[4]]
 
         return resp_list, 200
 
@@ -465,7 +497,7 @@ class PostgresHandler:
         elif result is None:
             return {
                 'status':'failure', 'message': 'Unexpected error. Could not set trigger price.'
-            }, 404
+            }, 500
 
         stock_amount = result[0][2]
         price = Decimal(price)
@@ -495,13 +527,14 @@ class PostgresHandler:
                 stock=stock_id
             )
         set_buy_trigger_query = set_buy_trigger_query + \
-            "insert into {table} values ('{user}', '{stock}', {stock_amount}, {stock_price}) on conflict (user_id, stock_id) do update" \
+            "insert into {table} values ('{user}', '{stock}', {stock_amount}, {stock_price}, {trans_num}) on conflict (user_id, stock_id) do update" \
             " set stock_amount={stock_amount}, stock_price={stock_price};".format(
                 table=buy_triggers_table,
                 user=user_id,
                 stock=stock_id,
                 stock_amount=stock_amount,
-                stock_price=price
+                stock_price=price,
+                trans_num=transaction_num
             )
 
         _, cancelStatus = await self.handleCancelBuyTrigger(user_id, stock_id)
@@ -592,7 +625,7 @@ class PostgresHandler:
         elif result is None:
             return {
                 'status':'failure', 'message': 'Unexpected error. Could not cancel trigger.'
-            }, 404
+            }, 500
 
         stock_amount = result[0][2]
         stock_price = result[0][3]
@@ -687,7 +720,7 @@ class PostgresHandler:
         elif result is None:
             return {
                 'status':'failure', 'message': 'Unexpected error. Could not set trigger price.'
-            }, 404
+            }, 500
 
         stock_amount = result[0][2]
         price = Decimal(price)
@@ -719,13 +752,14 @@ class PostgresHandler:
                 stock=stock_id
             )
         set_sell_trigger_query = set_sell_trigger_query + \
-            "insert into {table} values ('{user}', '{stock}', {stock_amount}, {stock_price}) on conflict (user_id, stock_id) do update" \
+            "insert into {table} values ('{user}', '{stock}', {stock_amount}, {stock_price}, {trans_num}) on conflict (user_id, stock_id) do update" \
             " set stock_amount={stock_amount}, stock_price={stock_price};".format(
                 table=sell_triggers_table,
                 user=user_id,
                 stock=stock_id,
                 stock_amount=stock_amount,
-                stock_price=price
+                stock_price=price,
+                trans_num=transaction_num
             )
 
         _, cancelStatus = await self.handleCancelSellTrigger(user_id, stock_id)
@@ -816,7 +850,7 @@ class PostgresHandler:
         elif result is None:
             return {
                 'status':'failure', 'message': 'Unexpected error. Could not cancel trigger.'
-            }, 404
+            }, 500
 
         stock_amount = result[0][2]
         reserved_amount = stock_amount

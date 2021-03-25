@@ -43,11 +43,20 @@ stock_available and stock_reserved are some numbers
 #### Failure
     {'errorMessage': '<some_string>'}
 
+### Get all triggers for all users - /triggers/all/get
+
+#### Success
+    {'some_stock_id': [{'buy_triggers': {'some_user_id':[stock_amount, stock_price, transaction_num], ...}, 'sell_triggers': {'some_user_id':[stock_amount, stock_price, transaction_num], ...}}], ...}
+stock_amount, stock_price and transation_num are some numbers
+
+#### Failure
+    {'errorMessage': '<some_string>'}
+
 ### Get all users' buy triggers - /triggers/buy/get/all
 
 #### Success
-    {'some_user_id': [{'some_stock_id':[stock_amount, stock_price], ...}], ...}
-stock_amount and stock_price are some numbers
+    {'some_stock_id': [{'some_user_id':[stock_amount, stock_price, transaction_num], ...}], ...}
+stock_amount, stock_price and transation_num are some numbers
 
 #### Failure
     {'errorMessage': '<some_string>'}
@@ -55,17 +64,8 @@ stock_amount and stock_price are some numbers
 ### Get a user's buy triggers - /triggers/buy/get/user/user_id
 
 #### Success
-    {'some_stock_id':[stock_amount, stock_price], ...}
-stock_amount and stock_price are some numbers
-
-#### Failure
-    {'errorMessage': '<some_string>'}
-
-### Get a user's sell triggers - /triggers/sell/get/user/user_id
-
-#### Success
-    {'some_stock_id':[stock_amount, stock_price], ...}
-stock_amount and stock_price are some numbers
+    {'some_stock_id':[stock_amount, stock_price, transaction_num], ...}
+stock_amount, stock_price and transation_num are some numbers
 
 #### Failure
     {'errorMessage': '<some_string>'}
@@ -73,8 +73,17 @@ stock_amount and stock_price are some numbers
 ### Get all users' sell triggers - /triggers/sell/get/all
 
 #### Success
-    {'some_user_id': [{'some_stock_id':[stock_amount, stock_price], ...}], ...}
-stock_amount and stock_price are some numbers
+    {'some_stock_id': [{'some_user_id':[stock_amount, stock_price, transaction_num], ...}], ...}
+stock_amount, stock_price and transation_num are some numbers
+
+#### Failure
+    {'errorMessage': '<some_string>'}
+
+### Get a user's sell triggers - /triggers/sell/get/user/user_id
+
+#### Success
+    {'some_stock_id':[stock_amount, stock_price, transaction_num], ...}
+stock_amount, stock_price and transation_num are some numbers
 
 #### Failure
     {'errorMessage': '<some_string>'}

@@ -44,6 +44,7 @@ create table if not exists stock_balances (
      stock_id varchar(3),
      stock_amount integer,
      stock_price numeric(12, 2),
+     transaction_number integer,
      foreign key (user_id) references users(user_id)
          on delete cascade
          on update cascade,
@@ -68,6 +69,7 @@ create table if not exists stock_balances (
      stock_id varchar(3),
      stock_amount integer,
      stock_price numeric(15, 2),
+     transaction_number integer,
      foreign key (user_id) references users(user_id)
          on delete cascade
          on update cascade,

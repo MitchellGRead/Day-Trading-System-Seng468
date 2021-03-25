@@ -133,6 +133,11 @@ get_stocks_for_user () {
 	curl --request GET $base_url/stocks/get/user/$user
 }
 
+get_all_bulk_triggers() {
+	echo Getting triggers for all users through the bulk endpoint
+	curl --request GET $base_url/triggers/all/get
+}
+
 get_all_triggers() {
 	echo Getting triggers for all users
 	echo Buy triggers:
@@ -152,6 +157,16 @@ get_user_triggers() {
 	curl --request GET $base_url/triggers/sell/get/user/$user
 }
 
+get_all_users_info() {
+	get_all_funds
+	echo && echo
+	get_all_stocks
+	echo && echo
+	get_all_triggers
+	echo && echo
+	get_all_bulk_triggers
+}
+
 get_user_info() {
 	local user=$1
 	get_funds_for_user $user
@@ -163,11 +178,7 @@ get_user_info() {
 
 run_test () {
 	# No user exists on clean state
-	get_all_funds
-	echo && echo
-	get_all_stocks
-	echo && echo
-	get_all_triggers
+	get_all_users_info
 	echo && echo
 	get_user_info larry
 	echo && echo
@@ -190,6 +201,8 @@ run_test () {
 
 	# User creation
 	add_funds larry 12000.45
+	echo && echo
+	get_all_users_info
 	echo && echo
 	set_buy_trigger_price larry XYZ 4000
 	echo && echo
@@ -225,6 +238,8 @@ run_test () {
 	echo && echo
 	get_user_info larry
 	echo && echo
+	get_all_users_info
+	echo && echo
 	set_buy_trigger larry ABC 2000 1.1
 	echo && echo
 	set_sell_trigger larry ANC 25 5000
@@ -252,6 +267,8 @@ run_test () {
 	execute_sell_trigger larry ANC 5000
 	echo && echo
 	get_user_info larry
+	echo && echo
+	get_all_users_info
 	echo && echo
 }
 

@@ -206,6 +206,6 @@ class TransactionHandler:
 
     async def auditNoCommand(self, command, trans_num, user_id, result, status, err_msg):
         logger.info(f'{command} - {trans_num} - {user_id} --> {err_msg} --> {result} - {status}')
-        self.audit.handleError(trans_num, command, err_msg, user_id)
+        await self.audit.handleError(trans_num, command, err_msg, user_id)
 
     # __________________________________________________________________________________________________________________

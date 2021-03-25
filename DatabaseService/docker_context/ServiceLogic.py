@@ -20,6 +20,10 @@ class ServiceLogic:
         result, status = await self.psqlHandler.handleGetUserStocksCommand(user_id, stock_id)
         return result, status
 
+    async def handleGetAllTriggers(self):
+        result = await self.psqlHandler.handleGetAllTriggers()
+        return result
+
     async def handleGetAllBuyTriggers(self):
         result = await self.psqlHandler.handleGetAllBuyTriggers()
         return result
