@@ -21,6 +21,8 @@ async def initTransaction(app, loop):
     app.config['transaction'] = TransactionHandler(
         config.TRANSACTION_SERVER_IP,
         config.TRANSACTION_SERVER_PORT,
+        config.TRIGGER_SERVER_IP,
+        config.TRIGGER_SERVER_PORT,
         loop
     )
 

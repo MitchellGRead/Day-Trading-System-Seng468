@@ -10,8 +10,8 @@ class ServiceLogic:
 
     # Only run on startup
     async def initActiveTriggers(self):
-        # triggers = await self.trigger_handler.fetchExistingTriggers()
-        # self.trigger_execution.addTriggers(triggers)
+        triggers = await self.trigger_handler.fetchExistingTriggers()
+        self.trigger_execution.addTriggers(triggers)
         pass
 
     async def setBuyAmount(self, data):

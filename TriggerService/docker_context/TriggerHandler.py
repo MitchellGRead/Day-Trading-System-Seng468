@@ -45,8 +45,36 @@ class TriggerHandler:
             return trigger
 
     async def fetchExistingTriggers(self):
-        triggers = []
-        # TODO waiting on DBM additions
+        triggers_data = []
+        endpoint = '/triggers/all/get'
+        results, status = await self.client.getRequest(f'{self.dbm_url}{endpoint}')
+
+        if status == 200 and results != []:
+            for stock_id in results.keys():
+                stockObj = results[stock_id]
+                if 'buy_triggers' in stockObj:
+                    buyObj = stockObj['buy_triggers']
+                    for user_id in buyObj.keys():
+                        trigger = {'stock_symbol': stock_id, 'user_id': user_id, 'command': 'SET_BUY_TRIGGER'}
+
+                        infoObj = buyObj[user_id]
+                        trigger['stock_amount'] = infoObj[0]
+                        trigger['trigger_price'] = infoObj[1]
+                        trigger['transaction_num'] = infoObj[2]
+                        triggers_data.append(trigger)
+
+                if 'sell_triggers' in stockObj:
+                    sellObj = stockObj['sell_triggers']
+                    for user_id in sellObj.keys():
+                        trigger = {'stock_symbol': stock_id, 'user_id': user_id, 'command': 'SET_SELL_TRIGGER'}
+
+                        infoObj = sellObj[user_id]
+                        trigger['stock_amount'] = infoObj[0]
+                        trigger['trigger_price'] = infoObj[1]
+                        trigger['transaction_num'] = infoObj[2]
+                        triggers_data.append(trigger)
+
+        triggers = self.toTriggers(triggers_data)
         return triggers
 
     async def setBuyAmount(self, trans_num, command, user_id, stock_symbol, amount):

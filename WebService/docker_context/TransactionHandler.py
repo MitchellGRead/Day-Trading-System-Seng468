@@ -3,8 +3,9 @@ from Client import Client
 
 class TransactionHandler:
 
-    def __init__(self, ip, port, loop):
-        self.url = f'http://{ip}:{port}'
+    def __init__(self, transaction_ip, transaction_port, trigger_ip, trigger_port, loop):
+        self.url = f'http://{transaction_ip}:{transaction_port}'
+        self.triggerURL = f'http://{trigger_ip}:{trigger_port}'
         self.client = Client(loop)
 
     async def handleQuote(self, data):
@@ -38,4 +39,28 @@ class TransactionHandler:
 
     async def handleCancelSell(self, data):
         resp = await self.client.postRequest(f'{self.url}/sell/cancel', data)
+        return resp
+
+    async def handleBuyAmount(self, data):
+        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/amount', data)
+        return resp
+
+    async def handleBuyTrigger(self, data):
+        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/set', data)
+        return resp
+
+    async def handleCancelBuyTrigger(self, data):
+        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/cancel', data)
+        return resp
+
+    async def handleSellAmount(self, data):
+        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/amount', data)
+        return resp
+
+    async def handleSellTrigger(self, data):
+        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/set', data)
+        return resp
+
+    async def handleCancelSellTrigger(self, data):
+        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/cancel', data)
         return resp

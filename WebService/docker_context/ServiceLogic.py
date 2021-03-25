@@ -97,33 +97,33 @@ class ServiceLogic:
     # BUY TRIGGER COMMAND HANDLING -----------------------------
     async def handleBuyAmount(self, data):
         await self.__auditTransactionCommand(data)
-        # TODO send to trigger service
-        return
+        resp = await self.transaction.handleBuyAmount(data)
+        return resp
 
     async def handleBuyTrigger(self, data):
         await self.__auditUserCommand(data)
-        # TODO send to trigger service
-        return
+        resp = await self.transaction.handleBuyTrigger(data)
+        return resp
 
     async def handleCancelBuyTrigger(self, data):
         await self.__auditUserCommand(data)
-        # TODO send to trigger service
-        return
+        resp = await self.transaction.handleCancelBuyTrigger(data)
+        return resp
     # ----------------------------------------------------------
 
     # SELL TRIGGER COMMAND HANDLING ----------------------------
     async def handleSellAmount(self, data):
         await self.__auditTransactionCommand(data)
-        # TODO send to trigger service
-        return
+        resp = await self.transaction.handleSellAmount(data)
+        return resp
 
     async def handleSellTrigger(self, data):
         await self.__auditUserCommand(data)
-        # TODO send to trigger service
-        return
+        resp = await self.transaction.handleSellTrigger(data)
+        return resp
 
     async def handleCancelSellTrigger(self, data):
         await self.__auditUserCommand(data)
-        # TODO send to trigger service
-        return
+        resp = await self.transaction.handleCancelSellTrigger(data)
+        return resp
     # ----------------------------------------------------------
