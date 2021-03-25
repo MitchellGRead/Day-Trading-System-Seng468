@@ -40,15 +40,16 @@ class ServiceLogic:
 
         if trigger:
             self.trigger_execution.removeTrigger(trigger)
+            return await self.trigger_handler.cancelBuyTrigger(
+                data['transaction_num'],
+                data['command'],
+                data['user_id'],
+                data['stock_symbol']
+            )
         else:
             return "Trigger does not exist", 404
 
-        return await self.trigger_handler.cancelBuyTrigger(
-            data['transaction_num'],
-            data['command'],
-            data['user_id'],
-            data['stock_symbol']
-        )
+
 
     async def setSellAmount(self, data):
         return await self.trigger_handler.setSellAmount(

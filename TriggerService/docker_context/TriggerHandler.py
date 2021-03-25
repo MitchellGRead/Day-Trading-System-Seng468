@@ -7,9 +7,10 @@ from TriggerExecutionManager import TriggerExecutionManager
 
 class TriggerHandler:
 
-    def __init__(self, audit, dbm_ip, dbm_port, loop):
+    def __init__(self, audit, dbm_ip, dbm_port, cache_ip, cache_port, loop):
         self.audit = audit
         self.dbm_url = f'http://{dbm_ip}:{dbm_port}'
+        self.cache_url = f'http://{cache_ip}:{cache_port}'
         self.client = Client(loop)
 
     def convertCommand(self, command):
@@ -77,6 +78,18 @@ class TriggerHandler:
         triggers = self.toTriggers(triggers_data)
         return triggers
 
+    async def updateCacheFunds(self, user_id):
+        endpoint = '/update/user'
+        data = {'user_id': user_id}
+        result, status = await self.client.postRequest(f'{self.cache_url}{endpoint}', data)
+        return
+
+    async def updateCacheStocks(self, user_id, stock_symbol):
+        endpoint = '/update/stock'
+        data = {'user_id': user_id, 'stock_symbol': stock_symbol}
+        result, status = await self.client.postRequest(f'{self.cache_url}{endpoint}', data)
+        return
+
     async def setBuyAmount(self, trans_num, command, user_id, stock_symbol, amount):
         endpoint = '/triggers/buy/set/amount'
         data = {'transaction_num': trans_num, 'user_id': user_id, 'stock_symbol': stock_symbol, 'amount': amount}
@@ -94,7 +107,9 @@ class TriggerHandler:
         results, status = await self.client.postRequest(f'{self.dbm_url}{endpoint}', data)
         if status != 200 or results is None:
             logger.error(f'Failed during set buy trigger call to DBM: {results}')
-            return "setBuyTrigger failed on DBM call", 500
+            return results, status
+
+        await self.updateCacheFunds(user_id)
 
         trigger_data = results
         trigger_data['command'] = 'SET_BUY_TRIGGER'
@@ -110,6 +125,9 @@ class TriggerHandler:
         if status != 200 or results is None:
             logger.error(f'Failed during cancel buy trigger call to DBM: {results}')
             return "cancelBuyTrigger failed on DBM call", 500
+
+        await self.updateCacheFunds(user_id)
+
         return "Trigger removed", 200
 
     async def setSellAmount(self, trans_num, command, user_id, stock_symbol, amount):
@@ -131,6 +149,8 @@ class TriggerHandler:
             logger.error(f'Failed during set sell trigger call to DBM: {results}')
             return "setSellTrigger failed on DBM call", 500
 
+        await self.updateCacheStocks(user_id, stock_symbol)
+
         trigger_data = results
         trigger_data['command'] = 'SET_SELL_TRIGGER'
         trigger_data['trigger_price'] = trigger_data.pop('price')
@@ -145,4 +165,7 @@ class TriggerHandler:
         if status != 200 or results is None:
             logger.error(f'Failed during cancel sell trigger call to DBM: {results}')
             return "cancelSellTrigger failed on DBM call", 500
+
+        await self.updateCacheStocks(user_id, stock_symbol)
+
         return "Trigger removed", 200

@@ -115,14 +115,15 @@ class TriggerExecutionManager:
 
     def removeTrigger(self, trigger):
         stock_symbol = trigger['stock_symbol']
-        triggers = self.triggers.get(stock_symbol, [])
-        if not triggers:
+        triggersObj = self.triggers.get(stock_symbol, [])
+        if not triggersObj:
             return False
 
         try:
-            triggers.remove(trigger)
+            triggersObj.remove(trigger)
+            self.triggers[stock_symbol] = triggersObj
         except ValueError:
-            pass
+            return False
         return True
 
     def updateTrigger(self, old_trigger, new_trigger):
@@ -131,6 +132,12 @@ class TriggerExecutionManager:
             return
 
         self.addTrigger(new_trigger)
+
+    async def updateCacheStocks(self, user_id, stock_symbol):
+        endpoint = '/update/stock'
+        data = {'user_id': user_id, 'stock_symbol': stock_symbol}
+        result, status = await self.client.postRequest(f'{self.cache_url}{endpoint}', data)
+        return
 
     # This is a background scheduled task
     async def sendResults(self):
@@ -159,6 +166,9 @@ class TriggerExecutionManager:
                 logger.error(f'Failed to send result, keeping data. reason {results}')
                 continue
             logger.info('Successfully sent trigger, resetting result.')
+
+            await self.updateCacheStocks(result['user_id'], result['stock_symbol'])
+
             self.results.remove(result)
 
     # This is a background scheduled task
