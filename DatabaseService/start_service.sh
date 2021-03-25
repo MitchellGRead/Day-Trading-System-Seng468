@@ -9,7 +9,7 @@ network=$network_name
 
 sudo $curr_path/runDbContainers.sh 2>/dev/null
 
-sleep 3
+sleep 15
 $curr_path/build_service.sh 2>/dev/null
 echo 'Starting database service...'
 sudo docker rm $cont >/dev/null 2>&1

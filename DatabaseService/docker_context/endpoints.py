@@ -4,6 +4,7 @@ get_all_funds_endpoint = '/funds/get/all'
 get_user_funds_endpoint = '/funds/get/user/<user_id:string>'
 get_all_stocks_endpoint = '/stocks/get/all'
 get_user_stocks_endpoint = '/stocks/get/user/<user_id:string>' # ?stock_id=string
+get_all_triggers_endpoint = '/triggers/all/get'
 get_all_buy_triggers_endpoint = '/triggers/buy/get/all'
 get_user_buy_triggers_endpoint = '/triggers/buy/get/user/<user_id:string>'
 get_all_sell_triggers_endpoint = '/triggers/sell/get/all'

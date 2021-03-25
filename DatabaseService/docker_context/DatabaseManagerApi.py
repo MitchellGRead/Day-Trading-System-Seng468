@@ -7,8 +7,6 @@ from clientInputSchema import *
 
 app = Sanic(config.DATABASE_SERVER_NAME)
 
-#TODO: Change the PSQL datatype for the account balance -- it cannot accomodate large numbers
-
 # GET ENDPOINTS -----------------------------------------------
 
 # Get all users' funds
@@ -45,6 +43,11 @@ async def getUserStocks(request, user_id):
     result, status = await app.config['logic'].handleGetStocksCommand(user_id, stock_id)
     return response.json(result, status=status)
 
+# Get all active triggers for all users in the system
+@app.route(endpoints.get_all_triggers_endpoint, methods=['GET'])
+async def getAllTriggers(request):
+    result, status = await app.config['logic'].handleGetAllTriggers()
+    return response.json(result, status=status)
 
 # Get all buy triggers
 @app.route(endpoints.get_all_buy_triggers_endpoint, methods=['GET'])
