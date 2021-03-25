@@ -81,8 +81,9 @@ class TriggerExecutionManager:
         for trigger in triggers:
             self.addTrigger(trigger)
 
-    def updatePrices(self, prices):
-        for price in prices:
+    def updatePrices(self, priceObj):
+        self.prices = {}
+        for price in priceObj:
             self.updatePrice(price)
 
     def addTrigger(self, trigger):
@@ -96,7 +97,7 @@ class TriggerExecutionManager:
 
     def updatePrice(self, stock):
         logger.debug(f'Adding price for {stock}')
-        symbol = stock['stock_symbol']
+        symbol = stock['stock_id']
         self.prices[symbol] = stock['price']
 
     def getTrigger(self, user_id, stock_symbol, command):
@@ -148,22 +149,22 @@ class TriggerExecutionManager:
             if command == self.BUY:
                 endpoint = '/triggers/execute/buy'
             elif command == self.SELL:
-                endpoint = '/triggers/execute/buy'
+                endpoint = '/triggers/execute/sell'
             else:
                 logger.debug(f"unknown command: {command}")
                 continue
 
             results, status = await self.client.postRequest(f'{self.dbm_url}{endpoint}', sendObj)
             if status != 200 or results is None:
-                logger.error(f'Failed to send result, keeping data.')
+                logger.error(f'Failed to send result, keeping data. reason {results}')
                 continue
             logger.info('Successfully sent trigger, resetting result.')
             self.results.remove(result)
 
     # This is a background scheduled task
     async def fetchPrices(self):
-        if not self.prices or not self.triggers:
-            logger.debug('No triggers to fetch for or no prices to update')
+        if not self.triggers:
+            logger.debug('No triggers to fetch')
             return
 
         stocks = []
@@ -177,9 +178,9 @@ class TriggerExecutionManager:
             users.append(selectee['user_id'])
             trans_nums.append(selectee['transaction_num'])
 
-        stock_string = '?stock_id=' + ''.join(map(str, stocks))
-        user_string = '&user_id=' + ''.join(map(str, users))
-        trans_string = '&transaction_num=' + ''.join(map(str, trans_nums))
+        stock_string = '?stock_id=' + '&stock_id='.join(map(str, stocks))
+        user_string = '&user_id=' + '&user_id='.join(map(str, users))
+        trans_string = '&transaction_num=' + '&transaction_num='.join(map(str, trans_nums))
         endpoint = '/quote'+stock_string+user_string+trans_string
 
         results, status = await self.client.getRequest(f'{self.cache_url}{endpoint}')

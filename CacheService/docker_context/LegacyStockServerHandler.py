@@ -63,7 +63,7 @@ class LegacyStockServerHandler:
         price = float(price)
         quote_time = int(quote_time)
 
-        await self.audit.handleQuote(trans_num, user_id, stock_symbol, price, quote_time, cryptokey)
+        await self.audit.handleQuote(int(trans_num), user_id, stock_symbol, price, quote_time, cryptokey)
         # TODO: Failure.
 
         await self.RedisHandler.rSet(stock_symbol, {'stock_id': stock_symbol, 'price': price, 'time': currentTime()})
