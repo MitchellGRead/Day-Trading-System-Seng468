@@ -54,13 +54,13 @@ class TransactionHandler:
         return resp
 
     async def handleSellAmount(self, data):
-        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/amount', data)
+        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/sell/amount', data)
         return resp
 
     async def handleSellTrigger(self, data):
-        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/set', data)
+        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/sell/set', data)
         return resp
 
     async def handleCancelSellTrigger(self, data):
-        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/cancel', data)
+        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/sell/cancel', data)
         return resp

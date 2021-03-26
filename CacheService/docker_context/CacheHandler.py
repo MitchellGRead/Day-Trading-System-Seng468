@@ -26,7 +26,7 @@ def currentTime():
 
 
 class CacheHandler:
-    _QUOTE_CACHE_TIME_LIMIT_SEC = 10
+    _QUOTE_CACHE_TIME_LIMIT_SEC = 60
 
     def __init__(self, redis, RedisHandler, audit, loop, ip, port, LegacyStock):
         self.LegacyStock = LegacyStock

@@ -109,7 +109,7 @@ class UserCommands:
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol,
-            'amount': float(amount)
+            'amount': float(amount) if amount else 0
         }
         url = f'{self.url}/set_buy_trigger'
 
@@ -191,7 +191,7 @@ class UserCommands:
             'command': command,
             'user_id': user_id,
             'stock_symbol': stock_symbol,
-            'amount': float(amount)
+            'amount': float(amount) if amount else 0
         }
         url = f'{self.url}/set_sell_trigger'
 

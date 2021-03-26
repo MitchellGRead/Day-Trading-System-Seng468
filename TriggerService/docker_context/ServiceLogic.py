@@ -31,8 +31,16 @@ class ServiceLogic:
             data['stock_symbol'],
             data['amount']
         )
+
         if status == 200:
-            result, status = self.trigger_execution.addTrigger(result)
+            trigger = result[0]
+            replace = result[1]
+            if replace:
+                toReplace = self.trigger_execution.getTrigger(data['user_id'], data['stock_symbol'],
+                                                              TriggerExecutionManager.BUY)
+                await self.trigger_execution.updateTrigger(toReplace, trigger)
+            else:
+                result, status = self.trigger_execution.addTrigger(trigger)
         return result, status
 
     async def cancelBuyTrigger(self, data):
@@ -48,8 +56,6 @@ class ServiceLogic:
             )
         else:
             return "Trigger does not exist", 404
-
-
 
     async def setSellAmount(self, data):
         return await self.trigger_handler.setSellAmount(
@@ -68,8 +74,16 @@ class ServiceLogic:
             data['stock_symbol'],
             data['amount']
         )
+
         if status == 200:
-            result, status = self.trigger_execution.addTrigger(result)
+            trigger = result[0]
+            replace = result[1]
+            if replace:
+                toReplace = self.trigger_execution.getTrigger(data['user_id'], data['stock_symbol'],
+                                                              TriggerExecutionManager.SELL)
+                await self.trigger_execution.updateTrigger(toReplace, trigger)
+            else:
+                result, status = self.trigger_execution.addTrigger(trigger)
         return result, status
 
     async def cancelSellTrigger(self, data):

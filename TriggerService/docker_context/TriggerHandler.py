@@ -111,11 +111,14 @@ class TriggerHandler:
 
         await self.updateCacheFunds(user_id)
 
+        replace = results['replace']
+        # replace = True if 'true' in replace else False
+
         trigger_data = results
         trigger_data['command'] = 'SET_BUY_TRIGGER'
         trigger_data['trigger_price'] = trigger_data.pop('price')
         trigger = self.toTrigger(trigger_data)
-        return trigger, 200
+        return [trigger, replace], 200
 
     async def cancelBuyTrigger(self, trans_num, command, user_id, stock_symbol):
         endpoint = '/triggers/buy/cancel'
@@ -151,11 +154,14 @@ class TriggerHandler:
 
         await self.updateCacheStocks(user_id, stock_symbol)
 
+        replace = results['replace']
+        # replace = True if 'true' in replace else False
+
         trigger_data = results
         trigger_data['command'] = 'SET_SELL_TRIGGER'
         trigger_data['trigger_price'] = trigger_data.pop('price')
         trigger = self.toTrigger(trigger_data)
-        return trigger, 200
+        return [trigger, replace], 200
 
     async def cancelSellTrigger(self, trans_num, command, user_id, stock_symbol):
         endpoint = '/triggers/sell/cancel'
