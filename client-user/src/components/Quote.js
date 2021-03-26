@@ -8,9 +8,11 @@ const Quote = (props) => {
   const { register, handleSubmit } = useForm();
   const userId = props.userId;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   const onSubmit = async (data) => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -18,8 +20,8 @@ const Quote = (props) => {
 
     try {
       setLoading(true);
-
-      let quotePrice = await getQuote(userId, data.ticker, 3);
+      let res = await getQuote(userId, data.ticker, 3);
+      let quotePrice = res.content;
       setQuote(quotePrice);
     } catch (error) {
       console.error(error);

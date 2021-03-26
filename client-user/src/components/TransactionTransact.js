@@ -8,9 +8,11 @@ const TransactionTransact = (props) => {
   const [transactType, setTransactType] = useState('BUY');
   const userId = props.userId;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   const onSubmit = async (data) => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -18,10 +20,19 @@ const TransactionTransact = (props) => {
 
     try {
       setLoading(true);
-      let res = await postTransact(data.transact, userId, data.ticker, data.funds);
-      // TODO set and handle error
+      let res = await postTransact(data.transact, userId, data.ticker, parseFloat(data.funds));
+      if (res.status === 200) {
+        onSuccess(`${capitalize(data.transact)} for ${data.ticker} was successfully initialized.`)
+      }
     } catch (error) {
-      onError(`${error.message} - Failed to initialize ${transactType.toLowerCase()}.`)
+      if (error.response.status === 404) {
+        let fundsStock = data.transact === 'BUY' ? 'funds' : 'stock'
+        onError(`Not enough ${fundsStock} to perform ${data.transact}`)
+      } else {
+        console.error(error)
+        onError(`${error.message} - Failed to initialize ${transactType.toLowerCase()}.`)
+      }
+
     } finally {
       setLoading(false);
     }
