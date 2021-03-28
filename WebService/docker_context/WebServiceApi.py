@@ -38,8 +38,8 @@ async def getAccountSummary(request, command, trans_num, user_id):
     if not res:
         return response.json(errorResult(err, data), status=400)
 
-    await app.config['logic'].handleDisplaySummary(data)
-    return response.json(data)
+    resp, status = await app.config['logic'].handleDisplaySummary(data)
+    return response.json(resp, status=status)
 
 
 @app.route(endpoints.dumplog_endpoint, methods=['GET'])
