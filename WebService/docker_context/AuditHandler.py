@@ -43,6 +43,14 @@ class AuditHandler:
         resp, status = await self.client.getRequest(f'{self.url}{endpoint}')
         return resp, status
 
+    async def generateDumplog(self, trans_num, command, filename, user_id):
+        endpoint = f'/get/{command}/trans/{trans_num}/filename/{filename}'
+        params = {}
+        if user_id:
+            params['user_id'] = user_id
+        resp, status = await self.client.getRequest(f'{self.url}{endpoint}', params)
+        return resp, status
+
     async def handleUserCommand(self, trans_num, command, user_id='', stock_symbol='', amount=0, filename=''):
         event = {
             **self.baseEvent(trans_num, command),

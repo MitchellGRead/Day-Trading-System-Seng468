@@ -50,7 +50,12 @@ class ServiceLogic:
             filename=data['filename'],
             user_id=data['user_id'] if 'user_id' in data else ''
         )
-        # TODO send dumplog command to auditing service as well
+        await self.audit.generateDumplog(
+            trans_num=data['transaction_num'],
+            command=data['command'],
+            filename=data['filename'],
+            user_id=data['user_id'] if 'user_id' in data else ''
+        )
         return
 
     async def handleAdd(self, data):
