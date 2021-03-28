@@ -23,6 +23,23 @@ async def accountSummary(request, command, trans_num, user_id):
     resp, status = await app.config['logic'].fetchAccountSummary(data)
     return response.json(resp, status=status)
 
+@app.route(endpoints.generate_dumplog, methods=['GET'])
+async def generateDumplog(request, command, trans_num, filename):
+    user_id = request.args.get('user_id', '')
+    data = {
+        'command': command,
+        'transaction_num': trans_num,
+        'filename': filename
+    }
+    if user_id:
+        data['user_id'] = user_id
+
+    res, err = validateRequest(data, dumplog_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    resp, status = await app.config['logic'].generateDumplog(data)
+    return response.json(data)
 
 @app.route(endpoints.user_command_endpoint, methods=['POST'])
 async def userCommandEvent(request):

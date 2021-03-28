@@ -10,11 +10,14 @@ class ServiceLogic:
     async def fetchAccountSummary(self, data):
         return self.dbm_handler.fetchAccountSummary(data['user_id'])
 
+    async def generateDumplog(self, data):
+        pass
+
     # Signature will likely change
-    async def __dumplog(self, filename, user_id=''):
-        xml_writer = XmlWriter(filename)
-        # get request to DBM and provide a user_id if one exists
-        xml_writer.createLogFile(self.log_events)
+    # async def __dumplog(self, filename, user_id=''):
+    #     xml_writer = XmlWriter(filename)
+    #     # get request to DBM and provide a user_id if one exists
+    #     xml_writer.createLogFile(self.log_events)
 
     async def logEvent(self, event):
         logger.debug(f'Trying to log {event["xmlName"]} event.')
