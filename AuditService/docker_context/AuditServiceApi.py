@@ -23,6 +23,7 @@ async def accountSummary(request, command, trans_num, user_id):
     resp, status = await app.config['logic'].fetchAccountSummary(data)
     return response.json(resp, status=status)
 
+
 @app.route(endpoints.generate_dumplog, methods=['GET'])
 async def generateDumplog(request, command, trans_num, filename):
     user_id = request.args.get('user_id', '')
@@ -40,6 +41,7 @@ async def generateDumplog(request, command, trans_num, filename):
 
     resp, status = await app.config['logic'].generateDumplog(data)
     return response.json(data)
+
 
 @app.route(endpoints.user_command_endpoint, methods=['POST'])
 async def userCommandEvent(request):

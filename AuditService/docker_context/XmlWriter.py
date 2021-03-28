@@ -4,11 +4,8 @@ import os
 class XmlWriter:
     SAVE_PATH = 'logfiles/'
 
-    def __init__(self, file_name=''):
-        if file_name and file_name.endswith('.xml'):
-            self.save_location = f'{self.SAVE_PATH}{file_name}'
-        else:
-            self.save_location = f'{self.SAVE_PATH}logfile.xml'
+    def __init__(self, file_name):
+        self.save_location = f'{self.SAVE_PATH}{file_name}.xml'
 
     def writeUserCommand(self, event):
         log = self.writeCommon(event) + \
