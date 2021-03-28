@@ -160,3 +160,13 @@ error_event_schema = {
         'error_msg'
     ]
 }
+
+account_summary_schema = {
+    'type': 'object',
+    'properties': {
+        'transaction_num': {'type': 'string'},
+        'command': {'type': 'string'},
+        'user_id': {'type': 'string'}
+    },
+    'required': ['transaction_num', 'command', 'user_id']
+}

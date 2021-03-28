@@ -1,17 +1,20 @@
-import aiohttp
 from sanic.log import logger
 from ServiceLogic import ServiceLogic
+from sanic.log import logger
 
+from ServiceLogic import ServiceLogic
 
-async def initClient(app, loop):
-    logger.debug('Starting http client')
-    app.config['client'] = aiohttp.ClientSession(loop=loop)
+import config
+from DbmHandler import DbmHandler
 
-
-async def closeClient(app, loop):
-    await app.config['client'].close()
-
+async def initDbmHanlder(app, loop):
+    logger.debug('Creating DBM Handler')
+    app.config['dbm'] = DbmHandler(
+        config.DATABASE_SERVER_IP,
+        config.DATABASE_SERVER_PORT,
+        loop
+    )
 
 def initServiceLogic(app, loop):
-    logger.debug('Creating api logic handler')
-    app.config['logic'] = ServiceLogic()
+    logger.debug('Creating api logic')
+    app.config['logic'] = ServiceLogic(app.config['dbm'])

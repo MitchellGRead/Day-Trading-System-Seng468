@@ -1,12 +1,27 @@
 
 from sanic import Sanic, response
 
+import apiListeners
 import config
 import endpoints
-import apiListeners
 from auditInputSchema import *
 
 app = Sanic(config.AUDIT_SERVER_NAME)
+
+
+@app.route(endpoints.account_summary, methods=['GET'])
+async def accountSummary(request, command, trans_num, user_id):
+    data = {
+        'transaction_num': trans_num,
+        'command': command,
+        'user_id': user_id
+    }
+    res, err = validateRequest(data, account_summary_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    resp, status = await app.config['logic'].fetchAccountSummary(data)
+    return response.json(resp, status=status)
 
 
 @app.route(endpoints.user_command_endpoint, methods=['POST'])
@@ -70,10 +85,9 @@ async def errorEvent(request):
 
 
 if __name__ == '__main__':
-    app.register_listener(apiListeners.initClient, 'before_server_start')
+    app.register_listener(apiListeners.initDbmHanlder, 'before_server_start')
     app.register_listener(apiListeners.initServiceLogic, 'before_server_start')
 
-    app.register_listener(apiListeners.closeClient, 'before_server_stop')
 
     app.run(
         host=config.AUDIT_SERVER_IP,
