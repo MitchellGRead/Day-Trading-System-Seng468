@@ -36,7 +36,7 @@ class ServiceLogic:
 
     async def handleDisplaySummary(self, data):
         await self.__auditUserCommand(data)
-        resp, status = self.audit.handleDisplaySummary(
+        resp, status = await self.audit.handleDisplaySummary(
             data['transaction_num'],
             data['command'],
             data['user_id']

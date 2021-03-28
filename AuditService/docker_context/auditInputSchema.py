@@ -164,7 +164,7 @@ error_event_schema = {
 account_summary_schema = {
     'type': 'object',
     'properties': {
-        'transaction_num': {'type': 'string'},
+        'transaction_num': {'type': 'integer'},
         'command': {'type': 'string'},
         'user_id': {'type': 'string'}
     },

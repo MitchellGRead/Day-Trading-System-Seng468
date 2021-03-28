@@ -17,7 +17,7 @@ class ServiceLogic:
 
         xml_writer = XmlWriter(filename)
         xml_writer.createLogFile(events)
-        return {'success': f'file {filename} generated'}
+        return {'success': f'file {filename} generated'}, 200
 
     async def logEvent(self, event):
         logger.debug(f'Trying to log {event["xmlName"]} event.')
