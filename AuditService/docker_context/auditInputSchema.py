@@ -160,3 +160,24 @@ error_event_schema = {
         'error_msg'
     ]
 }
+
+account_summary_schema = {
+    'type': 'object',
+    'properties': {
+        'transaction_num': {'type': 'integer'},
+        'command': {'type': 'string'},
+        'user_id': {'type': 'string'}
+    },
+    'required': ['transaction_num', 'command', 'user_id']
+}
+
+dumplog_schema = {
+    'type': 'object',
+    'properties': {
+        'transaction_num': {'type': 'integer'},
+        'filename': {'type': 'string'},
+        'user_id': {'type': 'string'},
+        'command': {'type': 'string'}
+    },
+    'required': ['transaction_num', 'filename', 'command']
+}

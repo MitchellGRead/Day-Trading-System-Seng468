@@ -36,8 +36,12 @@ class ServiceLogic:
 
     async def handleDisplaySummary(self, data):
         await self.__auditUserCommand(data)
-        # TODO send dumplog command to auditing service as well
-        return
+        resp, status = await self.audit.handleDisplaySummary(
+            data['transaction_num'],
+            data['command'],
+            data['user_id']
+        )
+        return resp, status
 
     async def handleDumplog(self, data):
         await self.audit.handleUserCommand(
@@ -46,7 +50,12 @@ class ServiceLogic:
             filename=data['filename'],
             user_id=data['user_id'] if 'user_id' in data else ''
         )
-        # TODO send dumplog command to auditing service as well
+        await self.audit.generateDumplog(
+            trans_num=data['transaction_num'],
+            command=data['command'],
+            filename=data['filename'],
+            user_id=data['user_id'] if 'user_id' in data else ''
+        )
         return
 
     async def handleAdd(self, data):
