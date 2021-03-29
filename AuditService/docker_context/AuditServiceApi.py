@@ -7,6 +7,7 @@ import endpoints
 from auditInputSchema import *
 
 app = Sanic(config.AUDIT_SERVER_NAME)
+app.config['KEEP_ALIVE_TIMEOUT'] = 10
 
 
 @app.route(endpoints.account_summary, methods=['GET'])
