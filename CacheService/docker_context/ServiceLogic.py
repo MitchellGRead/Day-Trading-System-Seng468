@@ -19,22 +19,20 @@ class ServiceLogic:
 
     async def buyStocks(self, data):
         return await self.CacheLogic.buyStocks(
-            trans_num=data['transaction_num'],
             command=data['command'],
+            trans_num=data['transaction_num'],
             user_id=data['user_id'],
             stock_symbol=data['stock_symbol'],
-            stock_amount=data['stock_amount'],
-            total_value=data['funds']
+            amount=data['amount']
         )
 
     async def sellStocks(self, data):
         return await self.CacheLogic.sellStocks(
-            trans_num=data['transaction_num'],
             command=data['command'],
+            trans_num=data['transaction_num'],
             user_id=data['user_id'],
             stock_symbol=data['stock_symbol'],
-            stock_amount=data['stock_amount'],
-            total_value=data['funds']
+            amount=data['amount']
         )
 
     async def getBuyStocks(self, user_id):
