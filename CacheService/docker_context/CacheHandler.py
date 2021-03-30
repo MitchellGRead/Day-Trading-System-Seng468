@@ -1,5 +1,5 @@
 from time import time
-from math import floor
+from math import floor, ceil
 import asyncio
 
 from sanic.log import logger
@@ -27,6 +27,7 @@ def currentTime():
 
 class CacheHandler:
     _QUOTE_CACHE_TIME_LIMIT_SEC = 10
+    TRANSACTION_TIME_LIMIT = 60
 
     def __init__(self, redis, RedisHandler, audit, loop, ip, port, LegacyStock):
         self.LegacyStock = LegacyStock
@@ -35,6 +36,10 @@ class CacheHandler:
         self.audit = audit
         self.client = Client(loop)
         self.dbmURL = f'http://{ip}:{port}'
+
+    async def auditNoCommand(self, command, trans_num, user_id, result, status, err_msg):
+        logger.info(f'{command} - {trans_num} - {user_id} --> {err_msg} --> {result} - {status}')
+        await self.audit.handleError(trans_num, command, err_msg, user_id)
 
     async def _getUser(self, user_id):
         check = await self.RedisHandler.rExists(user_id)
@@ -67,7 +72,7 @@ class CacheHandler:
                 data = await self.RedisHandler.rGet(f'{user_id}_{stock_id}')
                 return data, 200
             else:
-                return errorResult(f"Couldn't fetch stocks for {user_id}", ""), 404
+                return errorResult(f"Couldn't fetch stocks for {user_id} - {stock_id}", ""), 404
 
     async def getUserStocks(self, user_id, stock_id):
         result, status = await self._getStocks(user_id, stock_id)
@@ -88,27 +93,78 @@ class CacheHandler:
             await self.cacheAccountTransaction(data["user_id"])
         return result, status
 
-    async def buyStocks(self, trans_num, command, user_id, stock_symbol, stock_amount, total_value):
+    async def buyStocks(self, trans_num, command, user_id, stock_symbol, amount):
+        result, status = await self.getQuote(trans_num, user_id, stock_symbol)
+        if status != 200:
+            logger.info(f'{command} - {trans_num} - {user_id} --> failed to get quote --> {result} - {status}')
+            return result, status
+
+        quotedPrice = float(result['content'])
+
+        if quotedPrice > amount:
+            err_msg = "Not enough capital to buy this stock."
+            logger.info(f'{command} - {trans_num} - {user_id} --> {err_msg} {quotedPrice} > {amount}')
+            await self.audit.handleError(trans_num, command, err_msg, user_id, stock_symbol, amount)
+            return errorResult(err=err_msg, data=''), 400
+
+        total_stock = floor(amount/quotedPrice)
+        total_value = round(quotedPrice*total_stock, 2)
+
+        result, status = await self.getUserFunds(user_id)
+        if status != 200:
+            logger.info(f'{command} - {trans_num} - {user_id} --> failed to get user funds --> {result} - {status}')
+            return result, status
+
+        user_bal = float(result['content'])
+
+        if total_value > user_bal:
+            err_msg = "User doesn't have required funds"
+            logger.info(f'{command} - {trans_num} - {user_id} --> {err_msg} {total_value} > {user_bal}')
+            await self.audit.handleError(trans_num, command, err_msg, user_id, stock_symbol, amount)
+            return errorResult(err=err_msg, data=''), 400
+
         data = {
             "transaction_num": trans_num,
             "command": command,
             "user_id": user_id,
             "stock_id": stock_symbol,
             "amount": total_value,
-            "amount_of_stock": stock_amount,
+            "amount_of_stock": total_stock,
             "time": currentTime()
         }
         await self.RedisHandler.rSet(f"{user_id}_BUY", data)
         return goodResult(msg="Buy created", data=''), 200
 
-    async def sellStocks(self, trans_num, command, user_id, stock_symbol, stock_amount, total_value):
+    async def sellStocks(self, trans_num, command, user_id, stock_symbol, amount):
+        result, status = await self.getQuote(trans_num, user_id, stock_symbol)
+        if status != 200:
+            logger.info(f'{command} - {trans_num} - {user_id} --> failed to get quote --> {result} - {status}')
+            return result, status
+
+        quotedPrice = float(result['content'])
+
+        total_stock = ceil(amount / quotedPrice)
+        total_value = round(quotedPrice * total_stock, 2)
+
+        result, status = await self.getUserStocks(user_id, stock_symbol)
+        if status != 200:
+            logger.info(f'{command} - {trans_num} - {user_id} --> failed to get user stocks --> {result} - {status}')
+            return result, status
+
+        stock_bal = result['content']
+        if total_stock > stock_bal:
+            err_msg = "User doesn't have required stocks"
+            logger.info(f'{command} - {trans_num} - {user_id} --> {err_msg} {total_stock} > {stock_bal}')
+            await self.audit.handleError(trans_num, command, err_msg, user_id)
+            return errorResult(err="User doesn't have required stocks", data=''), 400
+
         data = {
             "transaction_num": trans_num,
             "command": command,
             "user_id": user_id,
             "stock_id": stock_symbol,
             "amount": total_value,
-            "amount_of_stock": stock_amount,
+            "amount_of_stock": total_stock,
             "time": currentTime()
         }
         await self.RedisHandler.rSet(f"{user_id}_SELL", data)
@@ -131,8 +187,23 @@ class CacheHandler:
             return errorResult(err="Sell doesn't exist", data=''), 404
 
     async def commitBuyStocks(self, trans_num, command, user_id):
-        # TODO Update DBM to take trans_num and commands
-        buy_request = await self.RedisHandler.rGet(user_id + "_BUY")
+        result, status = await self.getBuyStocks(user_id)
+        if status != 200:
+            err_msg = 'No BUY exists to commit'
+            await self.auditNoCommand(command, trans_num, user_id, result, status, err_msg)
+            return result, status
+
+        buy_request = result['content']
+
+        then = buy_request['time']
+        now = currentTime()
+        difference = (now-then)
+
+        if difference > self.TRANSACTION_TIME_LIMIT:
+            err_msg = "Previous buy has expired"
+            logger.info(f'{command} - {trans_num} - {user_id} --> {err_msg} {difference} > {self.TRANSACTION_TIME_LIMIT}')
+            await self.audit.handleError(trans_num, command, err_msg, user_id)
+            return errorResult(err=err_msg, data=''), 400
 
         try:
             data = {
@@ -153,8 +224,23 @@ class CacheHandler:
         return result, status
 
     async def commitSellStocks(self, trans_num, command, user_id):
-        # TODO Update DBM to take trans_num and commands
-        sell_request = await self.RedisHandler.rGet(user_id + "_SELL")
+        result, status = await self.getSellStocks(user_id)
+        if status != 200:
+            err_msg = 'No SELL exists to commit'
+            await self.auditNoCommand(command, trans_num, user_id, result, status, err_msg)
+            return result, status
+
+        sell_request = result['content']
+
+        then = sell_request['time']
+        now = currentTime()
+        difference = (now-then)
+
+        if difference > self.TRANSACTION_TIME_LIMIT:
+            err_msg = "Previous sell has expired"
+            logger.info(f'{command} - {trans_num} - {user_id} --> {err_msg} {difference} > {self.TRANSACTION_TIME_LIMIT}')
+            await self.audit.handleError(trans_num, command, err_msg, user_id)
+            return errorResult(err=err_msg, data=''), 400
 
         try:
             data = {
