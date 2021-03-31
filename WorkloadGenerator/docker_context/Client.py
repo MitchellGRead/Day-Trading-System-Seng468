@@ -19,6 +19,7 @@ class Client:
         try:
             result = await response.json()
         except ClientResponseError:
+            logger.error(response.text())
             logger.error(f'Invalid content type received, expected json but got {response.headers["Content-Type"]}')
         except Exception:
             logger.exception('Unknown exception occurred while retrieving response data.')

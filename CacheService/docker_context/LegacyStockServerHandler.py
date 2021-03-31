@@ -25,18 +25,7 @@ class LegacyStockServerHandler:
         return reader, writer
 
     async def getQuote(self, trans_num, user_id, stock_symbol):
-        if stock_symbol in self.__tracker.keys():
-            runningTask = self.__tracker[stock_symbol]
-            while not runningTask.done():
-                await asyncio.sleep(1)
-            check = await self.RedisHandler.rExists(stock_symbol)
-            if check:
-                quote = await self.RedisHandler.rGet(stock_symbol)
-                return quote['price'], 200
-            else:
-                return await self.__newQuoteTask(trans_num, user_id, stock_symbol)
-        else:
-            return await self.__newQuoteTask(trans_num, user_id, stock_symbol)
+        return await self.__newQuoteTask(trans_num, user_id, stock_symbol)
 
     async def __newQuoteTask(self, trans_num, user_id, stock_symbol):
         newTask = asyncio.create_task(self.__getQuoteFunc(trans_num, user_id, stock_symbol))

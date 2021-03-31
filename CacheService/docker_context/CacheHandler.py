@@ -42,17 +42,12 @@ class CacheHandler:
         await self.audit.handleError(trans_num, command, err_msg, user_id)
 
     async def _getUser(self, user_id):
-        check = await self.RedisHandler.rExists(user_id)
-        if check:
+        result, status = await self.RedisHandler.updateAccountCache(user_id)
+        if status == 200:
             data = await self.RedisHandler.rGet(user_id)
             return data, 200
         else:
-            result, status = await self.RedisHandler.updateAccountCache(user_id)
-            if status == 200:
-                data = await self.RedisHandler.rGet(user_id)
-                return data, 200
-            else:
-                return "", 404
+            return "", 404
 
     async def getUserFunds(self, user_id):
         result, status = await self._getUser(user_id)
@@ -62,17 +57,12 @@ class CacheHandler:
             return result, status
 
     async def _getStocks(self, user_id, stock_id):
-        check = await self.RedisHandler.rExists(f'{user_id}_{stock_id}')
-        if check:
+        result, status = await self.RedisHandler.updateStockCache(user_id, stock_id)
+        if status == 200:
             data = await self.RedisHandler.rGet(f'{user_id}_{stock_id}')
             return data, 200
         else:
-            result, status = await self.RedisHandler.updateStockCache(user_id, stock_id)
-            if status == 200:
-                data = await self.RedisHandler.rGet(f'{user_id}_{stock_id}')
-                return data, 200
-            else:
-                return errorResult(f"Couldn't fetch stocks for {user_id} - {stock_id}", ""), 404
+            return errorResult(f"Couldn't fetch stocks for {user_id} - {stock_id}", ""), 404
 
     async def getUserStocks(self, user_id, stock_id):
         result, status = await self._getStocks(user_id, stock_id)
@@ -314,17 +304,6 @@ class CacheHandler:
             return errorResult(err=err_msg, data=''), 404
 
     async def getQuote(self, trans_num, user_id, stock_id):
-        check = await self.RedisHandler.rExists(stock_id)
-        if check:
-            quote = await self.RedisHandler.rGet(stock_id)
-
-            then = float(quote['time'])
-            now = currentTime()
-            difference = (now - then)
-            if difference <= self._QUOTE_CACHE_TIME_LIMIT_SEC:
-                logger.debug(f'{__name__} - Cache hit while getting stock {stock_id}')
-                return goodResult(msg="Quote price", data=quote['price']), 200
-
         result, status = await self.LegacyStock.getQuote(trans_num, user_id, stock_id)
         if status == 200:
             return goodResult(msg="Quote price", data=result), 200
