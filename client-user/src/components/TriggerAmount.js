@@ -24,14 +24,14 @@ const TriggerAmount = (props) => {
 
     try {
       setLoading(true);
-      let res = await postTriggerAmount(data.triggerAmount, userId, data.ticker, parseFloat(data.funds));
+      let res = await postTriggerAmount(data.triggerAmount, userId, data.ticker, parseFloat(data.stock));
       if (res.status === 200) {
         onSuccess(`Successfully ${getActionName()} for ${data.ticker}`)
       }
     } catch (error) {
       if (error.response.status === 404) {
-        let amountOrStock = triggerAmountType === 'SET_BUY_AMOUNT' ? 'funds to buy.' : 'stock to sell.'
-        onError(`${userId} does not have enough ${amountOrStock}`)
+        let amountOrStock = triggerAmountType === 'SET_BUY_AMOUNT' ? 'stock to buy.' : 'stock to sell.'
+        onError(`${userId} does not have enough ${amountOrStock} or ${userId} does not exist (add funds to account)`)
       } else {
         console.error(error);
         onError(`${error.message} - Failed to ${getActionName()}.`)
@@ -67,10 +67,10 @@ const TriggerAmount = (props) => {
       />
       <input
         required
-        placeholder={triggerAmountType === 'SET_BUY_AMOUNT' ? 'Funds to use' : 'Number of stock to sell'}
-        name='funds'
+        placeholder={triggerAmountType === 'SET_BUY_AMOUNT' ? 'Number of stock to buy' : 'Number of stock to sell'}
+        name='stock'
         type='number'
-        step='0.01'
+        step='1'
         min='0'
         disabled={loading}
         ref={register}
