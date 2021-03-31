@@ -6,6 +6,6 @@ source $par_path/dbconfig.sh
 
 cont_name=$postgres_db_name
 
-# Tear down existing container if they exist
+# Tear down existing container if it exists
 sudo docker stop $cont_name
 sudo docker rm $cont_name

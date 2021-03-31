@@ -1,8 +1,9 @@
 
 class ServiceLogic:
 
-    def __init__(self, postgresHandler):
+    def __init__(self, postgresHandler, mongoHandler):
         self.psqlHandler = postgresHandler
+        self.mongoHandler = mongoHandler
 
     async def handleGetAllFundsCommand(self):
         result, status = await self.psqlHandler.handleGetAllFundsCommand()
