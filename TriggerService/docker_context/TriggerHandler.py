@@ -97,7 +97,7 @@ class TriggerHandler:
         results, status = await self.client.postRequest(f'{self.dbm_url}{endpoint}', data)
         if status != 200 or results is None:
             logger.error(f'Failed during set buy amount call to DBM: {results}')
-            return "setBuyAmount failed on DBM call", 500
+            return "setBuyAmount failed on DBM call", 404
         return "Success", 200
 
     async def setBuyTrigger(self, trans_num, command, user_id, stock_symbol, amount):
@@ -107,7 +107,7 @@ class TriggerHandler:
         results, status = await self.client.postRequest(f'{self.dbm_url}{endpoint}', data)
         if status != 200 or results is None:
             logger.error(f'Failed during set buy trigger call to DBM: {results}')
-            return results, status
+            return "setBuyTrigger failed on DBM call", 404
 
         await self.updateCacheFunds(user_id)
 
@@ -127,7 +127,7 @@ class TriggerHandler:
         results, status = await self.client.postRequest(f'{self.dbm_url}{endpoint}', data)
         if status != 200 or results is None:
             logger.error(f'Failed during cancel buy trigger call to DBM: {results}')
-            return "cancelBuyTrigger failed on DBM call", 500
+            return "cancelBuyTrigger failed on DBM call", 404
 
         await self.updateCacheFunds(user_id)
 
@@ -140,7 +140,7 @@ class TriggerHandler:
         results, status = await self.client.postRequest(f'{self.dbm_url}{endpoint}', data)
         if status != 200 or results is None:
             logger.error(f'Failed during set sell amount call to DBM: {results}')
-            return "setSellAmount failed on DBM call", 500
+            return "setSellAmount failed on DBM call", 404
         return "Success", 200
 
     async def setSellTrigger(self, trans_num, command, user_id, stock_symbol, amount):
@@ -150,7 +150,7 @@ class TriggerHandler:
         results, status = await self.client.postRequest(f'{self.dbm_url}{endpoint}', data)
         if status != 200 or results is None:
             logger.error(f'Failed during set sell trigger call to DBM: {results}')
-            return "setSellTrigger failed on DBM call", 500
+            return "setSellTrigger failed on DBM call", 404
 
         await self.updateCacheStocks(user_id, stock_symbol)
 
@@ -170,7 +170,7 @@ class TriggerHandler:
         results, status = await self.client.postRequest(f'{self.dbm_url}{endpoint}', data)
         if status != 200 or results is None:
             logger.error(f'Failed during cancel sell trigger call to DBM: {results}')
-            return "cancelSellTrigger failed on DBM call", 500
+            return "cancelSellTrigger failed on DBM call", 404
 
         await self.updateCacheStocks(user_id, stock_symbol)
 
