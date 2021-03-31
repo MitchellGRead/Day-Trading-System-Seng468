@@ -38,29 +38,29 @@ class TransactionHandler:
         return resp, status
 
     async def handleCancelSell(self, data):
-        resp = await self.client.postRequest(f'{self.url}/stocks/cancel_sell', data)
-        return resp
+        resp, status = await self.client.postRequest(f'{self.url}/stocks/cancel_sell', data)
+        return resp, status
 
     async def handleBuyAmount(self, data):
-        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/amount', data)
-        return resp
+        resp, status = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/amount', data)
+        return resp, status
 
     async def handleBuyTrigger(self, data):
-        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/set', data)
-        return resp
+        resp, status = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/set', data)
+        return resp, status
 
     async def handleCancelBuyTrigger(self, data):
-        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/cancel', data)
-        return resp
+        resp, status = await self.client.postRequest(f'{self.triggerURL}/trigger/buy/cancel', data)
+        return resp, status
 
     async def handleSellAmount(self, data):
-        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/sell/amount', data)
-        return resp
+        resp, status = await self.client.postRequest(f'{self.triggerURL}/trigger/sell/amount', data)
+        return resp, status
 
     async def handleSellTrigger(self, data):
-        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/sell/set', data)
-        return resp
+        resp, status = await self.client.postRequest(f'{self.triggerURL}/trigger/sell/set', data)
+        return resp, status
 
     async def handleCancelSellTrigger(self, data):
-        resp = await self.client.postRequest(f'{self.triggerURL}/trigger/sell/cancel', data)
-        return resp
+        resp, status = await self.client.postRequest(f'{self.triggerURL}/trigger/sell/cancel', data)
+        return resp, status
