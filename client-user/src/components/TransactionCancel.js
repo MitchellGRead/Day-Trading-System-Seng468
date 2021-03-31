@@ -25,7 +25,7 @@ const TransactionCancel = (props) => {
       }
     } catch (error) {
       if (error.response.status === 404) {
-        onError('No BUY to cancel.')
+        onError(`No BUY to cancel or ${userId} does not exist (add funds to account).`)
       } else {
         console.error(error);
         onError(`${error.message} - Failed to cancel buy.`);
@@ -51,7 +51,7 @@ const TransactionCancel = (props) => {
       }
     } catch (error) {
       if (error.response.status === 404) {
-        onError('No SELL to cancel.')
+        onError(`No SELL to cancel or ${userId} does not exist (add funds to account).`)
       } else {
         console.error(error);
         onError(`${error.message} - Failed to cancel sell.`);

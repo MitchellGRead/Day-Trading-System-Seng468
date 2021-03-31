@@ -25,7 +25,7 @@ const TransactionCommit = (props) => {
       }
     } catch (error) {
       if (error.response.status === 404) {
-        onError('No BUY exists to commit.')
+        onError(`No BUY exists to commit or ${userId} does not exist (add funds to account).`)
       } else {
         console.error(error);
         onError(`${error.message} - Failed to commit buy.`);
@@ -51,7 +51,7 @@ const TransactionCommit = (props) => {
       }
     } catch (error) {
       if (error.response.status === 404) {
-        onError('No SELL exists to commit.')
+        onError(`No SELL exists to commit or ${userId} does not exist (add funds to account).`)
       } else {
         console.error(error);
         onError(`${error.message} - Failed to commit buy.`);
