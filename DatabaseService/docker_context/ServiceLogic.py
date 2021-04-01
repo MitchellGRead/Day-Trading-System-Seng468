@@ -88,3 +88,11 @@ class ServiceLogic:
     async def handleCancelSellTrigger(self, user_id, stock_id):
         result = await self.psqlHandler.handleCancelSellTrigger(user_id, stock_id)
         return result
+
+    async def handleAddUserAuditEvent(self, user_id, audit_data):
+        result = await self.mongoHandler.handleAddUserAuditEvent(user_id, audit_data)
+        return result
+    
+    async def handleAddSystemAuditEvent(self, audit_data):
+        result = await self.mongoHandler.handleAddSystemAuditEvent(audit_data)
+        return result

@@ -1,4 +1,4 @@
-// Initiliaztion script for the mongoDb database
+// Initialization script for the mongoDb database
 
 db = db.getSiblingDB("trading-db");
 db.logs.insertOne(

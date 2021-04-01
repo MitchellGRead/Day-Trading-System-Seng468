@@ -43,11 +43,13 @@ async def getUserStocks(request, user_id):
     result, status = await app.config['logic'].handleGetStocksCommand(user_id, stock_id)
     return response.json(result, status=status)
 
+
 # Get all active triggers for all users in the system
 @app.route(endpoints.get_all_triggers_endpoint, methods=['GET'])
 async def getAllTriggers(request):
     result, status = await app.config['logic'].handleGetAllTriggers()
     return response.json(result, status=status)
+
 
 # Get all buy triggers
 @app.route(endpoints.get_all_buy_triggers_endpoint, methods=['GET'])
@@ -227,6 +229,34 @@ async def cancelSellTrigger(request):
 
     data = request.json
     result, status = await app.config['logic'].handleCancelSellTrigger(data['user_id'], data['stock_symbol'])
+    return response.json(result, status=status)
+
+
+# Add audit event to user logs
+@app.route(endpoints.add_audit_event, methods=['POST'])
+async def addAuditEvent(request):
+    user_id  = request.args.get('user_id', '')
+    result = None
+    status = None
+    data = request.json
+    
+    if not data:
+        return response.json({'errorMessage':'No data provided', 'content':data}, status=400)
+    if 'xmlName' not in data:
+        return response.json({'errorMessage':'Missing required field \'xmlName\'', 'content':data}, status=400)
+
+    eventType = data['xmlName']
+    input_schema = audit_events_schemas[eventType]
+
+    res, err = validateRequest(data, input_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    if user_id:
+        result, status = await app.config['logic'].handleAddUserAuditEvent(user_id, data)
+    else:
+        result, status = await app.config['logic'].handleAddSystemAuditEvent(data)
+    
     return response.json(result, status=status)
 
 

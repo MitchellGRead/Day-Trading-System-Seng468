@@ -111,6 +111,20 @@ cancel_sell_trigger () {
 	curl --header "Content-Type: application/json" --request POST --data "{\"user_id\":$user, \"stock_symbol\":$stock}" $base_url/triggers/sell/cancel
 }
 
+add_user_audit_event () {
+	local user=$1
+	echo Adding user audit event for $user
+	curl --header "Content-Type: application/json" --request POST \
+	--data "{\"xmlName\":\"userCommand\", \"server\":\"server-1\", \"timestamp\":12345, \"transaction_num\":9898, \"command\":\"BUY\", \"user_id\":\"$user\", \"stock_symbol\":\"XYZ\", \"amount\":785}" \
+	$base_url/audit/event?user_id=$user
+}
+
+add_audit_event () {
+	echo Adding system audit event 
+	curl --header "Content-Type: application/json" --request POST \
+	--data "{\"xmlName\":\"systemEvent\", \"server\":\"server-2\", \"timestamp\":67890, \"transaction_num\":1212, \"command\":\"SELL\"}" $base_url/audit/event
+}
+
 get_all_funds () {
 	echo Getting funds for all users
 	curl --request GET $base_url/funds/get/all
@@ -198,9 +212,17 @@ run_test () {
 	echo && echo
 	cancel_sell_trigger larry DEF
 	echo && echo
+	add_user_audit_event larry
+	echo && echo
+	add_audit_event 
+	echo && echo
 
 	# User creation
 	add_funds larry 12000.45
+	echo && echo
+	add_user_audit_event larry
+	echo && echo
+	add_audit_event 
 	echo && echo
 	get_all_users_info
 	echo && echo
@@ -231,6 +253,10 @@ run_test () {
 	set_sell_trigger larry DEF 500 5000
 	echo && echo
 	get_user_info larry
+	echo && echo
+	add_user_audit_event larry
+	echo && echo
+	add_audit_event 
 	echo && echo
 	set_buy_trigger larry ABC 5000 1.1
 	echo && echo
