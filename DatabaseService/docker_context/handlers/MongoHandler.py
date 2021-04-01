@@ -3,6 +3,7 @@ from sanic.log import logger
 import asyncio
 import motor.motor_asyncio
 
+#TODO: Filter empty logs from the GET methods
 class MongoHandler:
 
     def __init__(self, loop):
@@ -12,13 +13,24 @@ class MongoHandler:
         self.user_logs = self.mongo_db['logs']
 
     async def initializeMongo(self):
-        logger.debug("Initializing Mongo")
-        async with await self.mongo_client.start_session() as s:
-            result = await self.user_logs.insert_one({'x':2}, session=s)
-            if result.acknowledged:
-                logger.debug("Successful insert into Mongo")
-            else:
-                logger.debug("Failed insert into Mongo")
+        pass
+    
+    async def handleGetDumplogCommand(self, user_id):
+        userExists = True if user_id == "" else False
+        if not userExists:
+            userExists = await self.__checkUserExists(user_id)
+
+        if not userExists:
+            return {'errorMessage': 'User not found.'}, 404
+
+        logsDoc = await self.user_logs.find_one({"user_id": user_id})
+
+        if logsDoc is None:
+            return {'errorMessage': 'Could not get dumplog'}, 500
+        elif 'logs' not in logsDoc:
+            return {'errorMessage': 'Could not get find logs'}, 500
+
+        return logsDoc['logs'], 200
 
     async def handleAddUserAuditEvent(self, user_id, audit_data):
         result = await self.__addUser(user_id)
@@ -59,6 +71,5 @@ class MongoHandler:
         if user_exists:
             return True
         
-        async with await self.mongo_client.start_session() as s:
-            result = await self.user_logs.insert_one({"user_id": user_id, "logs": [""]}, session=s)
-            return result.acknowledged
+        result = await self.user_logs.insert_one({"user_id": user_id, "logs": [""]}) 
+        return result.acknowledged

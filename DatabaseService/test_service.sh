@@ -190,6 +190,17 @@ get_user_info() {
 	get_user_triggers $user
 }
 
+get_system_dumplog() {
+	echo Getting system dumplog 
+	curl --request GET $base_url/dumplog
+}
+
+get_user_dumplog() {
+	local user=$1
+	echo Getting dumplog for $user
+	curl --request GET $base_url/dumplog?user_id=$user
+}
+
 run_test () {
 	# No user exists on clean state
 	get_all_users_info
@@ -216,6 +227,10 @@ run_test () {
 	echo && echo
 	add_audit_event 
 	echo && echo
+	get_user_dumplog larry
+	echo && echo
+	get_system_dumplog
+	echo && echo
 
 	# User creation
 	add_funds larry 12000.45
@@ -223,6 +238,10 @@ run_test () {
 	add_user_audit_event larry
 	echo && echo
 	add_audit_event 
+	echo && echo
+	get_user_dumplog larry
+	echo && echo
+	get_system_dumplog
 	echo && echo
 	get_all_users_info
 	echo && echo
@@ -257,6 +276,10 @@ run_test () {
 	add_user_audit_event larry
 	echo && echo
 	add_audit_event 
+	echo && echo
+	get_user_dumplog larry
+	echo && echo
+	get_system_dumplog
 	echo && echo
 	set_buy_trigger larry ABC 5000 1.1
 	echo && echo

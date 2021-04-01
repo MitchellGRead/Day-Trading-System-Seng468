@@ -86,6 +86,14 @@ async def getSummary(request, user_id):
     return response.json(result, status=status)
 
 
+# Get the user or system dumplog 
+@app.route(endpoints.get_dumplog_endpoint, methods=['GET'])
+async def getDumplog(request):
+    user_id  = request.args.get('user_id', '')
+    result, status = await app.config['logic'].handleGetDumplogCommand(user_id)
+    return response.json(result, status=status)
+
+
 # POST ENDPOINTS -----------------------------------------------
 
 
@@ -232,7 +240,7 @@ async def cancelSellTrigger(request):
     return response.json(result, status=status)
 
 
-# Add audit event to user logs
+# Add audit event to user/system logs
 @app.route(endpoints.add_audit_event, methods=['POST'])
 async def addAuditEvent(request):
     user_id  = request.args.get('user_id', '')

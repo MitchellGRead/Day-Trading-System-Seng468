@@ -42,8 +42,11 @@ class ServiceLogic:
         return result
 
     async def handleGetSummaryCommand(self, user_id):
-        # TODO: Talk to both Postgres and Mongo to get the required data
         return None, 500
+    
+    async def handleGetDumplogCommand(self, user_id):
+        result = await self.mongoHandler.handleGetDumplogCommand(user_id)
+        return result
 
     async def handleAddFundsCommand(self, user_id, funds):
         result, status = await self.psqlHandler.handleAddFundsCommand(user_id, funds)
