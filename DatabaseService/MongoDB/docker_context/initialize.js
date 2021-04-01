@@ -2,5 +2,5 @@
 
 db = db.getSiblingDB("trading-db");
 db.logs.insertOne(
-	{user_id: "", logs: [""]}
+	{user_id: "", logs: []}
 );

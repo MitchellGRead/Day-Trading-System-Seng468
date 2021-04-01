@@ -8,7 +8,6 @@ async def initDbConnections(app, loop):
     app.config['psqlHandler'] = PostgresHandler(loop)
     app.config['mongoHandler'] = MongoHandler(loop)
     await app.config['psqlHandler'].initializePool()
-    await app.config['mongoHandler'].initializeMongo()
     
 def initServiceLogic(app, loop):
     logger.debug('Creating api logic handler')

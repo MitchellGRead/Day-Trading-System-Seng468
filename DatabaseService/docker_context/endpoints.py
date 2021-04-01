@@ -10,7 +10,6 @@ get_user_buy_triggers_endpoint = '/triggers/buy/get/user/<user_id:string>'
 get_all_sell_triggers_endpoint = '/triggers/sell/get/all'
 get_user_sell_triggers_endpoint = '/triggers/sell/get/user/<user_id:string>'
 get_summary_endpoint = '/reports/summary/user/<user_id:string>'
-#TODO: Add methods for these endpoints
 get_summary_endpoint = '/summary/<user_id:string>'
 get_dumplog_endpoint = '/dumplog' # ?user_id=string
 
