@@ -42,7 +42,8 @@ class ServiceLogic:
         return result
 
     async def handleGetSummaryCommand(self, user_id):
-        return None, 500
+        result = await self.psqlHandler.handleGetSummary(user_id)
+        return result
     
     async def handleGetDumplogCommand(self, user_id):
         result = await self.mongoHandler.handleGetDumplogCommand(user_id)

@@ -171,6 +171,12 @@ get_user_triggers() {
 	curl --request GET $base_url/triggers/sell/get/user/$user
 }
 
+get_user_summary() {
+	local user=$1
+	echo Getting summary for $user
+	curl --request GET $base_url/summary/$user
+}
+
 get_all_users_info() {
 	get_all_funds
 	echo && echo
@@ -188,6 +194,8 @@ get_user_info() {
 	get_stocks_for_user $user
 	echo && echo
 	get_user_triggers $user
+	echo && echo
+	get_user_summary $user
 }
 
 get_system_dumplog() {
