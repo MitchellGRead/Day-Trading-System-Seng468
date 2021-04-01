@@ -118,8 +118,8 @@ async def setBuyAmount(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    await app.config['logic'].handleBuyAmount(data)
-    return response.json(data)
+    resp, status = await app.config['logic'].handleBuyAmount(data)
+    return response.json(resp, status=status)
 
 
 @app.route(endpoints.set_buy_trigger_endpoint, methods=['POST', 'OPTIONS'])
@@ -129,8 +129,8 @@ async def setBuyTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    await app.config['logic'].handleBuyTrigger(data)
-    return response.json(data)
+    resp, status = await app.config['logic'].handleBuyTrigger(data)
+    return response.json(resp, status=status)
 
 
 @app.route(endpoints.cancel_set_buy_endpoint, methods=['POST', 'OPTIONS'])
@@ -140,8 +140,8 @@ async def cancelBuyTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    await app.config['logic'].handleCancelBuyTrigger(data)
-    return response.json(data)
+    resp, status = await app.config['logic'].handleCancelBuyTrigger(data)
+    return response.json(resp, status=status)
 # --------------------------------------------------------------
 
 
@@ -189,8 +189,8 @@ async def setSellAmount(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    await app.config['logic'].handleSellAmount(data)
-    return response.json(data)
+    resp, status = await app.config['logic'].handleSellAmount(data)
+    return response.json(resp, status=status)
 
 
 @app.route(endpoints.set_sell_trigger_endpoint, methods=['POST', 'OPTIONS'])
@@ -200,8 +200,8 @@ async def setSellTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    await app.config['logic'].handleSellTrigger(data)
-    return response.json(data)
+    resp, status = await app.config['logic'].handleSellTrigger(data)
+    return response.json(resp, status=status)
 
 
 @app.route(endpoints.cancel_set_sell_endpoint, methods=['POST', 'OPTIONS'])
@@ -211,8 +211,8 @@ async def cancelSellTrigger(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    await app.config['logic'].handleCancelSellTrigger(data)
-    return response.json(data)
+    resp, status = await app.config['logic'].handleCancelSellTrigger(data)
+    return response.json(resp, status=status)
 # --------------------------------------------------------------
 
 @app.middleware('response')

@@ -30,7 +30,7 @@ const TriggerExecute = (props) => {
       }
     } catch (error) {
       if (error.response.status === 404) {
-        onError(`Failed to create trigger due to no amount sell.`)
+        onError(`Failed to create trigger due to no amount set, insufficient funds/stock, or ${userId} does not exist (add funds to account).`)
       } else {
         console.error(error);
         onError(`${error.message} - Failed to ${getActionName()}.`)

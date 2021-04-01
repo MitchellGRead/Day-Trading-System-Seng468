@@ -5,8 +5,9 @@ import { getDisplaySummary } from '../api';
 const DisplaySummary = (props) => {
   const [loading, setLoading] = useState(false);
   const [userFunds, setUserFunds] = useState(0);
-  const [transactionHistory, setTransactionHistory] = useState([]);
-  const [activeTriggers, setactiveTriggers] = useState([]);
+  const [stockHoldings, setStockHoldings] = useState([]);
+  const [activeBuyTriggers, setActiveBuyTriggers] = useState([]);
+  const [activeSellTriggers, setActiveSellTriggers] = useState([]);
   const { _, handleSubmit } = useForm();
   const userId = props.userId;
   const onError = props.onError;
@@ -23,11 +24,18 @@ const DisplaySummary = (props) => {
     try {
       setLoading(true);
       let summaryData = await getDisplaySummary(userId);
-      // TODO set the states for the summary
-      // TODO set and handle error
+      console.log(summaryData);
+      setUserFunds(summaryData.funds);
+      setActiveBuyTriggers(summaryData.active_buy_triggers);
+      setActiveSellTriggers(summaryData.active_sell_triggers);
+      setStockHoldings(summaryData.stock_holdings);
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to fetch account summary`)
+      if (error.response.status === 404) {
+        console.error(`Failed getting summary for ${userId}, make sure user exists (add funds).`)
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to fetch account summary`)
+      }
     } finally {
       setLoading(false);
     }

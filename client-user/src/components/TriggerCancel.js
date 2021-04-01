@@ -26,7 +26,7 @@ const TriggerCancel = (props) => {
       }
     } catch (error) {
       if (error.response.status === 404) {
-        onError('No buy trigger to cancel.')
+        onError(`No buy trigger to cancel or ${userId} does not exist (add funds to account).`)
       } else {
         console.error(error);
         onError(`${error.message} - Failed to cancel buy trigger.`);
@@ -38,7 +38,7 @@ const TriggerCancel = (props) => {
 
   const cancelSell = async () => {
     onError('');
-    onscroll('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -52,7 +52,7 @@ const TriggerCancel = (props) => {
       }
     } catch (error) {
       if (error.response.status === 404) {
-        onError('No sell trigger to cancel.')
+        onError(`No sell trigger to cancel or ${userId} does not exist (add funds to account).`)
       } else {
         console.error(error);
         onError(`${error.message} - Failed to cancel sell trigger.`);
