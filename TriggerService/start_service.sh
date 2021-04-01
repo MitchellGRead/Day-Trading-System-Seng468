@@ -11,4 +11,4 @@ network=$network_name
 $curr_path/build_service.sh 2>/dev/null
 echo 'Starting trigger service...'
 sudo docker rm $cont >/dev/null 2>&1
-sudo docker run --name $cont -p $port:$port --cpuset-cpus="0" --network $network -d $image > /dev/null
+sudo docker run --name $cont -p $port:$port --cpuset-cpus="0,1" --network $network -d $image > /dev/null

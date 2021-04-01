@@ -11,4 +11,4 @@ network=$network_name
 $curr_path/build_service.sh 2>/dev/null
 echo 'Starting generator...'
 sudo docker rm $cont >/dev/null 2>&1
-sudo docker run -it --name $cont -p $port:$port --cpuset-cpus="0" --network $network $image /bin/bash
+sudo docker run -it --name $cont -p $port:$port --cpuset-cpus="0,1" --network $network $image /bin/bash

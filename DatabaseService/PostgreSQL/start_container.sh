@@ -16,7 +16,7 @@ echo Built docker image titled $img_name
 if 
     [ $? -eq 0 ]
 then 
-    sudo docker run --name $cont_name -p 5432:5432/tcp --cpuset-cpus="0" --network myNetwork -d $img_name
+    sudo docker run --name $cont_name -p 5432:5432/tcp --cpuset-cpus="0,1" --network myNetwork -d $img_name
     echo Started docker container titled $cont_name
 else
     exit 1
