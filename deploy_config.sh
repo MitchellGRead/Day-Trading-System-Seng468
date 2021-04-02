@@ -24,3 +24,6 @@ cp $curr_path/config.sh $curr_path/WebService/config.sh
 
 cp $curr_path/config.py $curr_path/WorkloadGenerator/docker_context
 cp $curr_path/config.sh $curr_path/WorkloadGenerator/config.sh
+
+cp $curr_path/config.py $curr_path/client-user
+cp $curr_path/config.sh $curr_path/client-user/config.sh
