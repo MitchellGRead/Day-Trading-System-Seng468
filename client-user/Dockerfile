@@ -10,6 +10,7 @@ ENV PATH /app/node_modules.bin:$PATH
 # Install dependencies
 COPY package.json ./
 COPY package-lock.json ./
+RUN npm config set strict-ssl false
 RUN npm install
 
 # Add app

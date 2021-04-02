@@ -1,5 +1,7 @@
 #!/bin/bash
 
+network_name=myNetwork
+
 client_base_name=client
 client_base_num=1
 
