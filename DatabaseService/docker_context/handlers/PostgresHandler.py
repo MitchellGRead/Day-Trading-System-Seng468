@@ -285,9 +285,7 @@ class PostgresHandler:
         user_exists = await self._checkUserExists(user_id)
 
         if not user_exists:
-            return {
-                'status':'failure', 'message': 'Specified user does not exist.'
-            }, 404
+            return {'errorMessage': 'Specified user does not exist.'}, 404
 
         summary_results = await asyncio.gather(
                     self.handleGetUserFundsCommand(user_id),

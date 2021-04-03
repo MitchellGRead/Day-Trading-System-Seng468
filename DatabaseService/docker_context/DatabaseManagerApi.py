@@ -91,7 +91,16 @@ async def getSummary(request, user_id):
 async def getDumplog(request):
     user_id  = request.args.get('user_id', '')
     result, status = await app.config['logic'].handleGetDumplogCommand(user_id)
-    return response.json(result, status=status)
+
+    async def streamDumplog(response):
+        if status == 200:
+            for log in result:
+                await response.write(log)
+        else:
+            for pair in result.items():
+                await response.write(pair)
+    
+    return response.stream(streamDumplog)
 
 
 # POST ENDPOINTS -----------------------------------------------
