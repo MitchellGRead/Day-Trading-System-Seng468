@@ -19,8 +19,10 @@ async def initAudit(app, loop):
 async def initTransaction(app, loop):
     logger.debug('Creating transaction handler')
     app.config['transaction'] = TransactionHandler(
-        config.TRANSACTION_SERVER_IP,
-        config.TRANSACTION_SERVER_PORT,
+        config.CACHE_SERVER_IP,
+        config.CACHE_SERVER_PORT,
+        config.TRIGGER_SERVER_IP,
+        config.TRIGGER_SERVER_PORT,
         loop
     )
 

@@ -1,8 +1,9 @@
 from time import time
 
-import aiohttp
 from sanic.log import logger
+
 from Client import Client
+
 
 def currentTimeMs():
     return round(time() * 1000)
@@ -35,6 +36,20 @@ class AuditHandler:
             'transaction_num': trans_num,
             'command': command
         }
+
+    async def handleDisplaySummary(self, trans_num, command, user_id):
+        endpoint = f'/get/{command}/trans/{trans_num}/user/{user_id}'
+        logger.debug(f'Getting display summary - {trans_num} - {user_id}')
+        resp, status = await self.client.getRequest(f'{self.url}{endpoint}')
+        return resp, status
+
+    async def generateDumplog(self, trans_num, command, filename, user_id):
+        endpoint = f'/get/{command}/trans/{trans_num}/filename/{filename}'
+        params = {}
+        if user_id:
+            params['user_id'] = user_id
+        resp, status = await self.client.getRequest(f'{self.url}{endpoint}', params)
+        return resp, status
 
     async def handleUserCommand(self, trans_num, command, user_id='', stock_symbol='', amount=0, filename=''):
         event = {

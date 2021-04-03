@@ -13,9 +13,6 @@ sudo docker logs $cache_service_name | grep 'ERROR'
 echo 'Redis Service errors:'
 sudo docker logs $redis_service_name | grep 'ERROR'
 
-echo 'Transaction Service errors:'
-sudo docker logs $trans_service_name | grep 'ERROR'
-
 echo 'Triggers Service errors:'
 sudo docker logs $trigger_service_name | grep 'ERROR'
 

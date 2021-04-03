@@ -8,6 +8,7 @@ const TriggerAmount = (props) => {
   const [triggerAmountType, setTriggerAmountType] = useState('SET_BUY_AMOUNT');
   const userId = props.userId;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   const getActionName = () => {
     return triggerAmountType.toLowerCase().replaceAll('_', ' ');
@@ -15,6 +16,7 @@ const TriggerAmount = (props) => {
 
   const onSubmit = async (data) => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -22,11 +24,18 @@ const TriggerAmount = (props) => {
 
     try {
       setLoading(true);
-      let res = await postTriggerAmount(data.triggerAmount, userId, data.ticker, data.funds);
-      // TODO set and handle error
+      let res = await postTriggerAmount(data.triggerAmount, userId, data.ticker, parseFloat(data.stock));
+      if (res.status === 200) {
+        onSuccess(`Successfully ${getActionName()} for ${data.ticker}`)
+      }
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to ${getActionName()}.`)
+      if (error.response.status === 404) {
+        let amountOrStock = triggerAmountType === 'SET_BUY_AMOUNT' ? 'stock to buy.' : 'stock to sell.'
+        onError(`${userId} does not have enough ${amountOrStock} or ${userId} does not exist (add funds to account)`)
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to ${getActionName()}.`)
+      }
     } finally {
       setLoading(false);
     }
@@ -58,10 +67,10 @@ const TriggerAmount = (props) => {
       />
       <input
         required
-        placeholder='Funds to use'
-        name='funds'
+        placeholder={triggerAmountType === 'SET_BUY_AMOUNT' ? 'Number of stock to buy' : 'Number of stock to sell'}
+        name='stock'
         type='number'
-        step='0.01'
+        step='1'
         min='0'
         disabled={loading}
         ref={register}

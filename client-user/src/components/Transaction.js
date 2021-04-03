@@ -7,13 +7,14 @@ import TransactionCancel from './TransactionCancel';
 const Transaction = (props) => {
   const userId = props.userId;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   return (
     <div className='transaction'>
       <h3>Transactions</h3>
-      <TransactionTransact userId={userId} onError={onError} />
-      <TransactionCommit userId={userId} onError={onError} />
-      <TransactionCancel userId={userId} onError={onError} />
+      <TransactionTransact userId={userId} onSuccess={onSuccess} onError={onError} />
+      <TransactionCommit userId={userId} onSuccess={onSuccess} onError={onError} />
+      <TransactionCancel userId={userId} onSuccess={onSuccess} onError={onError} />
     </div>
   )
 }

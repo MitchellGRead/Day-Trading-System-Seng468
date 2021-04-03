@@ -8,9 +8,11 @@ const TriggerCancel = (props) => {
   const { _, handleSubmit } = useForm();
   const userId = props.userId;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   const cancelBuy = async () => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -19,9 +21,16 @@ const TriggerCancel = (props) => {
     try {
       setLoading(true);
       let res = await postTriggerCancel('CANCEL_SET_BUY', userId, stockSymbol);
+      if (res.status === 200) {
+        onSuccess(`Successfully cancelled buy trigger for ${stockSymbol}.`)
+      }
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to cancel buy trigger.`);
+      if (error.response.status === 404) {
+        onError(`No buy trigger to cancel or ${userId} does not exist (add funds to account).`)
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to cancel buy trigger.`);
+      }
     } finally {
       setLoading(false);
     }
@@ -29,6 +38,7 @@ const TriggerCancel = (props) => {
 
   const cancelSell = async () => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -37,9 +47,16 @@ const TriggerCancel = (props) => {
     try {
       setLoading(true);
       let res = await postTriggerCancel('CANCEL_SET_SELL', userId, stockSymbol);
+      if (res.status === 200) {
+        onSuccess(`Successfully cancelled sell trigger for ${stockSymbol}.`)
+      }
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to cancel sell trigger.`);
+      if (error.response.status === 404) {
+        onError(`No sell trigger to cancel or ${userId} does not exist (add funds to account).`)
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to cancel sell trigger.`);
+      }
     } finally {
       setLoading(false);
     }

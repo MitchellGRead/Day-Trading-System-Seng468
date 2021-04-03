@@ -8,11 +8,13 @@ import Error from './components/Error';
 import DisplaySummary from './components/DisplaySummary'
 import Dumplog from './components/Dumplog'
 import './styles/App.css';
+import Success from './components/Success';
 
 const App = () => {
   const [userId, setUserId] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
 
   return (
@@ -26,18 +28,23 @@ const App = () => {
           onChangeIsAdmin={setIsAdmin}
         />
       </div>
-      <Error error={error} />
-      <Quote userId={userId} onError={setError} />
+      { success !== '' &&
+        <Success success={success} />
+      }
+      { error !== '' &&
+        <Error error={error} />
+      }
+      <Quote userId={userId} onSuccess={setSuccess} onError={setError} />
 
       <div className='main-content'>
         <div className='account-actions'>
-          <Add userId={userId} onError={setError} />
-          <Transaction userId={userId} onError={setError} />
-          <Trigger userId={userId} onError={setError} />
-          <Dumplog userId={userId} isAdmin={isAdmin} onError={setError} />
+          <Add userId={userId} onSuccess={setSuccess} onError={setError} />
+          <Transaction userId={userId} onSuccess={setSuccess} onError={setError} />
+          <Trigger userId={userId} onSuccess={setSuccess} onError={setError} />
+          <Dumplog userId={userId} onSuccess={setSuccess} isAdmin={isAdmin} onError={setError} />
         </div>
         <div className='summary-actions'>
-          <DisplaySummary userId={userId} onError={setError} />
+          <DisplaySummary userId={userId} onSuccess={setSuccess} onError={setError} />
         </div>
       </div>
 

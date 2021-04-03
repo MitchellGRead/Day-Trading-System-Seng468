@@ -189,7 +189,7 @@ async def updateStockCache(request):
         return response.json(errorResult(err, request.json), status=400)
 
     data = request.json
-    result, status = await app.config['serviceLogic'].updateStockCache(data['user_id'], data['stock_id'])
+    result, status = await app.config['serviceLogic'].updateStockCache(data['user_id'], data['stock_symbol'])
     return response.json(result, status=status)
 
 # DB SERVICE INITIALIZATION -----------------------------------------------

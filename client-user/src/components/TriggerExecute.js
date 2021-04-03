@@ -8,6 +8,7 @@ const TriggerExecute = (props) => {
   const [triggerType, setTriggerType] = useState('SET_BUY_TRIGGER');
   const userId = props.userId;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   const getActionName = () => {
     return triggerType.toLowerCase().replaceAll('_', ' ');
@@ -15,6 +16,7 @@ const TriggerExecute = (props) => {
 
   const onSubmit = async (data) => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -22,11 +24,17 @@ const TriggerExecute = (props) => {
 
     try {
       setLoading(true);
-      let res = await postTrigger(data.trigger, userId, data.ticker, data.price);
-      // TODO set and handle error
+      let res = await postTrigger(data.trigger, userId, data.ticker, parseFloat(data.price));
+      if (res.status === 200) {
+        onSuccess(`Trigger creation was successful for ${data.ticker}`)
+      }
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to ${getActionName()}.`)
+      if (error.response.status === 404) {
+        onError(`Failed to create trigger due to no amount set, insufficient funds/stock, or ${userId} does not exist (add funds to account).`)
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to ${getActionName()}.`)
+      }
     } finally {
       setLoading(false);
     }

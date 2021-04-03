@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const API_URL = 'https://localhost:5000';
+const API_URL = 'http://localhost:5000';
 
-// TODO get this actually hooked up
 export async function getQuote(userId, stockSymbol, transNum) {
-  let endpoint = `/get/QUOTE/trans/${transNum}/user_id/${userId}/stock_symbol/${stockSymbol}`;
-  return await axios.get(`${API_URL}${endpoint}`);
+  let endpoint = `/get/QUOTE/trans/${transNum}/user/${userId}/stock/${stockSymbol}`;
+  let resp = await axios.get(`${API_URL}${endpoint}`);
+  return resp.data
 }
 
 export async function postFunds(userId, funds) {
@@ -93,14 +93,16 @@ export async function postTriggerCancel(cancelType, userId, stockSymbol) {
 }
 
 export async function generateDumplog(userId, filename) {
-  let endpoint = `/get/QUOTE/trans/${3}/file/${filename}`;
+  let endpoint = `/get/DUMPLOG/trans/${3}/file/${filename}`;
 
   let params = userId ? { userId: userId } : {};
-  return await axios.get(`${API_URL}${endpoint}`, { params });
+  let resp = await axios.get(`${API_URL}${endpoint}`, { params });
+  return resp.data
 }
 
 export async function getDisplaySummary(userId) {
   let endpoint = `/get/DISPLAY_SUMMARY/trans/${3}/user/${userId}`;
 
-  return await axios.get(`${API_URL}${endpoint}`);
+  let resp = await axios.get(`${API_URL}${endpoint}`);
+  return resp.data
 }

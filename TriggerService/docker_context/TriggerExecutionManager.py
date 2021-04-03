@@ -19,6 +19,7 @@ import asyncio
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sanic.log import logger
+import random
 
 from Client import Client
 
@@ -31,10 +32,11 @@ class TriggerExecutionManager:
     SELL = 'SELL_TRIGGER'
     BUY = 'BUY_TRIGGER'
 
-    def __init__(self, audit, cache_ip, cache_port, loop):
+    def __init__(self, audit, cache_ip, cache_port, dbm_ip, dbm_port, loop):
         self.audit = audit
         self.client = Client(loop)
         self.cache_url = f'http://{cache_ip}:{cache_port}'
+        self.dbm_url = f'http://{dbm_ip}:{dbm_port}'
         self.scheduler = self._setupScheduler()
         self.results = []
         self.triggers = {}
@@ -79,8 +81,9 @@ class TriggerExecutionManager:
         for trigger in triggers:
             self.addTrigger(trigger)
 
-    def updatePrices(self, prices):
-        for price in prices:
+    def updatePrices(self, priceObj):
+        self.prices = {}
+        for price in priceObj:
             self.updatePrice(price)
 
     def addTrigger(self, trigger):
@@ -90,23 +93,37 @@ class TriggerExecutionManager:
             self.triggers[stock_symbol].append(trigger)
         else:
             self.triggers[stock_symbol] = [trigger]
-        return self.triggers
+        return "trigger added", 200
 
     def updatePrice(self, stock):
         logger.debug(f'Adding price for {stock}')
-        symbol = stock['stock_symbol']
+        symbol = stock['stock_id']
         self.prices[symbol] = stock['price']
 
-    def removeTrigger(self, trigger):
-        stock_symbol = trigger['stock_symbol']
+    def getTrigger(self, user_id, stock_symbol, command):
         triggers = self.triggers.get(stock_symbol, [])
+        logger.debug(f'{triggers}')
+
         if not triggers:
             return False
 
+        for trigger in triggers:
+            if trigger['user_id'] == user_id:
+                if trigger['trigger'] == command:
+                    return trigger
+        return False
+
+    def removeTrigger(self, trigger):
+        stock_symbol = trigger['stock_symbol']
+        triggersObj = self.triggers.get(stock_symbol, [])
+        if not triggersObj:
+            return False
+
         try:
-            triggers.remove(trigger)
+            triggersObj.remove(trigger)
+            self.triggers[stock_symbol] = triggersObj
         except ValueError:
-            pass
+            return False
         return True
 
     def updateTrigger(self, old_trigger, new_trigger):
@@ -116,34 +133,67 @@ class TriggerExecutionManager:
 
         self.addTrigger(new_trigger)
 
+    async def updateCacheStocks(self, user_id, stock_symbol):
+        endpoint = '/update/stock'
+        data = {'user_id': user_id, 'stock_symbol': stock_symbol}
+        result, status = await self.client.postRequest(f'{self.cache_url}{endpoint}', data)
+        return
+
     # This is a background scheduled task
     async def sendResults(self):
         if not self.results:
             logger.debug('No trigger results available yet.')
             return
 
-        logger.debug(f'Sending trigger results to cache service: {self.results}')
-        endpoint = '/triggers/execute'
-        results, status = await self.client.postRequest(f'{self.cache_url}{endpoint}', self.results)
-        if status != 200 or results is None:
-            logger.error(f'Failed to send results, keeping data.')
-            return
+        for result in self.results:
+            sendObj = {'user_id': result['user_id'], 'stock_symbol': result['stock_symbol']}
+            funds = round(float(result['stock_amount'])*float(result['quoted_price']), 2)
+            sendObj['funds'] = funds
 
-        logger.info('Successfully sent triggers, resetting results.')
-        self.results = []
+            command = result['trigger']
+            logger.debug(f'Sending trigger result to DBM service: {result}')
+
+            if command == self.BUY:
+                endpoint = '/triggers/execute/buy'
+            elif command == self.SELL:
+                endpoint = '/triggers/execute/sell'
+            else:
+                logger.debug(f"unknown command: {command}")
+                continue
+
+            results, status = await self.client.postRequest(f'{self.dbm_url}{endpoint}', sendObj)
+            if status != 200 or results is None:
+                logger.error(f'Failed to send result, keeping data. reason {results}')
+                continue
+            logger.info('Successfully sent trigger, resetting result.')
+
+            await self.updateCacheStocks(result['user_id'], result['stock_symbol'])
+
+            self.results.remove(result)
 
     # This is a background scheduled task
     async def fetchPrices(self):
-        if not self.prices or not self.triggers:
-            logger.debug('No triggers to fetch for or no prices to update')
+        if not self.triggers:
+            logger.debug('No triggers to fetch')
             return
 
-        # Only fetch stocks that have active triggers on them
-        fetch_stocks = [stock for stock in self.triggers.keys() if self.triggers[stock]]
+        stocks = []
+        users = []
+        trans_nums = []
+        for stock in self.triggers.keys():
+            if not self.triggers[stock]:
+                continue
+            selectee = random.choice(self.triggers[stock])
+            stocks.append(stock)
+            users.append(selectee['user_id'])
+            trans_nums.append(selectee['transaction_num'])
 
-        endpoint = '/quote'
-        params = {'stocks': fetch_stocks}
-        results, status = await self.client.getRequest(f'{self.cache_url}{endpoint}', params)
+        stock_string = '?stock_id=' + '&stock_id='.join(map(str, stocks))
+        user_string = '&user_id=' + '&user_id='.join(map(str, users))
+        trans_string = '&transaction_num=' + '&transaction_num='.join(map(str, trans_nums))
+        endpoint = '/quote'+stock_string+user_string+trans_string
+
+        results, status = await self.client.getRequest(f'{self.cache_url}{endpoint}')
         if status != 200 or results is None:
             logger.error('Failed fetching prices for triggers.')
             return

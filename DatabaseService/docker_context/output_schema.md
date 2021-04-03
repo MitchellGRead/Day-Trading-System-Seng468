@@ -46,7 +46,7 @@ stock_available and stock_reserved are some numbers
 ### Get all triggers for all users - /triggers/all/get
 
 #### Success
-    {'some_stock_id': [{'buy_triggers': {'some_user_id':[stock_amount, stock_price, transaction_num], ...}, 'sell_triggers': {'some_user_id':[stock_amount, stock_price, transaction_num], ...}}], ...}
+    {'some_stock_id': {'buy_triggers': {'some_user_id':[stock_amount, stock_price, transaction_num], ...}, 'sell_triggers': {'some_user_id':[stock_amount, stock_price, transaction_num], ...}}, ...}
 stock_amount, stock_price and transaction_num are some numbers
 
 #### Failure

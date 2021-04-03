@@ -7,9 +7,11 @@ const Add = (props) => {
   const { register, handleSubmit } = useForm();
   const userId = props.userId;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   const onSubmit = async (data) => {
     onError('');
+    onSuccess('');
     if (!userId) {
       onError('User id field must be specified');
       return
@@ -17,8 +19,10 @@ const Add = (props) => {
 
     try {
       setLoading(true);
-      let res = await postFunds(userId, data.postFunds)
-      // TODO set and handle error
+      let res = await postFunds(userId, parseFloat(data.funds))
+      if (res.status === 200) {
+        onSuccess(`Success adding $${data.funds} for ${userId}`)
+      }
     } catch (error) {
       console.error(error);
       onError(`${error.message} - Failed to add funds.`)

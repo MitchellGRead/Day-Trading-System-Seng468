@@ -6,13 +6,14 @@ import TriggerCancel from './TriggerCancel';
 const Trigger = (props) => {
   const userId = props.userId;
   const onError = props.onError;
+  const onSuccess = props.onSuccess;
 
   return (
     <div className='trigger'>
       <h3>Triggers</h3>
-      <TriggerAmount userId={userId} onError={onError} />
-      <TriggerExecute userId={userId} onError={onError} />
-      <TriggerCancel userId={userId} onError={onError} />
+      <TriggerAmount userId={userId} onSuccess={onSuccess} onError={onError} />
+      <TriggerExecute userId={userId} onSuccess={onSuccess} onError={onError} />
+      <TriggerCancel userId={userId} onSuccess={onSuccess} onError={onError} />
     </div>
   );
 }

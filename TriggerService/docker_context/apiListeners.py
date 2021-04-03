@@ -24,6 +24,8 @@ async def initTriggerHandler(app, loop):
     logger.debug('Creating trigger handler')
     app.config['trigger_handler'] = TriggerHandler(
         app.config['audit'],
+        config.DATABASE_SERVER_IP,
+        config.DATABASE_SERVER_PORT,
         config.CACHE_SERVER_IP,
         config.CACHE_SERVER_PORT,
         loop
@@ -50,6 +52,8 @@ async def initTriggerExecutionManager(app, loop):
         app.config['audit'],
         config.CACHE_SERVER_IP,
         config.CACHE_SERVER_PORT,
+        config.DATABASE_SERVER_IP,
+        config.DATABASE_SERVER_PORT,
         loop
     )
 # -------------------------------------------------------------------
