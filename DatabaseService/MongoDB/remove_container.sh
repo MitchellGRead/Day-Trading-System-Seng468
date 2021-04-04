@@ -1,7 +1,11 @@
 #!/bin/bash
-name=mongo-db
-tag=4.4
+curr_path=$(dirname $(realpath -e $0))
+par_path=$(dirname $curr_path)
 
-# Tear down existing image and container if they exist
-docker stop $name-$tag
-docker rm $name-$tag
+source $par_path/dbconfig.sh
+
+cont_name=$mongo_db_name
+
+# Tear down existing container if it exists
+docker stop $cont_name
+docker rm $cont_name

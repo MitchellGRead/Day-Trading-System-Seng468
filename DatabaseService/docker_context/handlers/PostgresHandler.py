@@ -281,6 +281,47 @@ class PostgresHandler:
 
         return resp_list, 200
 
+    async def handleGetSummary(self, user_id):
+        user_exists = await self._checkUserExists(user_id)
+
+        if not user_exists:
+            return {'errorMessage': 'Specified user does not exist.'}, 404
+
+        summary_results = await asyncio.gather(
+                    self.handleGetUserFundsCommand(user_id),
+                    self.handleGetUserStocksCommand(user_id, ''),
+                    self.handleGetUserBuyTriggers(user_id),
+                    self.handleGetUserSellTriggers(user_id)
+                )
+        
+        funds, fundsStatus = summary_results[0]
+        stocks, stocksStatus = summary_results[1]
+        buyTriggers, buyTriggersStatus = summary_results[2]
+        sellTriggers, sellTriggersStatus = summary_results[3]
+
+        if fundsStatus == 500 or stocksStatus == 500 or buyTriggersStatus == 500 or sellTriggersStatus == 500:
+            return {'errorMessage': 'Could not get summary. Unexpected error.'}, 500
+
+        if fundsStatus != 200:
+            return {'errorMessage':'Could not find user.'}, 500
+
+        if stocksStatus == 404:
+            stocks = {}
+        if buyTriggersStatus == 404:
+            buyTriggers = {}
+        if sellTriggersStatus == 404:
+            sellTriggers = {}
+
+        summary = {
+                    'user_id': user_id,
+                    'user_funds': funds,
+                    'stock_holdings': stocks,
+                    'active_buy_trigggers': buyTriggers,
+                    'active_sell_triggers': sellTriggers
+                }
+
+        return summary, 200
+
     async def handleAddFundsCommand(self, user_id, funds):
         user_exists = await self._checkUserExists(user_id)
 

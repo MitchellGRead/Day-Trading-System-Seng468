@@ -1,8 +1,9 @@
 
 class ServiceLogic:
 
-    def __init__(self, postgresHandler):
+    def __init__(self, postgresHandler, mongoHandler):
         self.psqlHandler = postgresHandler
+        self.mongoHandler = mongoHandler
 
     async def handleGetAllFundsCommand(self):
         result, status = await self.psqlHandler.handleGetAllFundsCommand()
@@ -41,8 +42,12 @@ class ServiceLogic:
         return result
 
     async def handleGetSummaryCommand(self, user_id):
-        # TODO: Talk to both Postgres and Mongo to get the required data
-        return None, 500
+        result = await self.psqlHandler.handleGetSummary(user_id)
+        return result
+    
+    async def handleGetDumplogCommand(self, user_id):
+        result = await self.mongoHandler.handleGetDumplogCommand(user_id)
+        return result
 
     async def handleAddFundsCommand(self, user_id, funds):
         result, status = await self.psqlHandler.handleAddFundsCommand(user_id, funds)
@@ -86,4 +91,12 @@ class ServiceLogic:
 
     async def handleCancelSellTrigger(self, user_id, stock_id):
         result = await self.psqlHandler.handleCancelSellTrigger(user_id, stock_id)
+        return result
+
+    async def handleAddUserAuditEvent(self, user_id, audit_data):
+        result = await self.mongoHandler.handleAddUserAuditEvent(user_id, audit_data)
+        return result
+    
+    async def handleAddSystemAuditEvent(self, audit_data):
+        result = await self.mongoHandler.handleAddSystemAuditEvent(audit_data)
         return result

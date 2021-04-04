@@ -1,5 +1,6 @@
 from sanic import Sanic, response
 
+import json
 import config
 import endpoints
 import apiListeners
@@ -43,11 +44,13 @@ async def getUserStocks(request, user_id):
     result, status = await app.config['logic'].handleGetStocksCommand(user_id, stock_id)
     return response.json(result, status=status)
 
+
 # Get all active triggers for all users in the system
 @app.route(endpoints.get_all_triggers_endpoint, methods=['GET'])
 async def getAllTriggers(request):
     result, status = await app.config['logic'].handleGetAllTriggers()
     return response.json(result, status=status)
+
 
 # Get all buy triggers
 @app.route(endpoints.get_all_buy_triggers_endpoint, methods=['GET'])
@@ -84,6 +87,24 @@ async def getSummary(request, user_id):
     return response.json(result, status=status)
 
 
+# Get the user or system dumplog 
+@app.route(endpoints.get_dumplog_endpoint, methods=['GET'])
+async def getDumplog(request):
+    user_id  = request.args.get('user_id', '')
+    result, status = await app.config['logic'].handleGetDumplogCommand(user_id)
+
+    async def streamDumplog(response):
+        if status == 200:
+            for log in result:
+                log_bytes = json.dumps(log).encode('utf-8')
+                await response.write(log_bytes)
+        else:
+            error_bytes = json.dumps(result).encode('utf8')
+            await response.write(error_bytes)
+    
+    return response.stream(streamDumplog)
+
+
 # POST ENDPOINTS -----------------------------------------------
 
 
@@ -97,17 +118,6 @@ async def addFunds(request):
     data = request.json 
     result, status = await app.config['logic'].handleAddFundsCommand(data['user_id'], data['funds'])
     return response.json(result, status=status)
-
-
-# Remove funds from user's account
-# @app.route(endpoints.remove_funds_endpoint, methods=['POST'])
-async def removeFunds(request):
-    res, err = validateRequest(request.json, remove_funds_schema)
-    if not res:
-        return response.json(errorResult(err, request.json), status=400)
- 
-    #TODO: Decide if this method should be supported
-    return None
 
 
 # Buy stocks endpoint -- removes funds and adds stocks
@@ -227,6 +237,34 @@ async def cancelSellTrigger(request):
 
     data = request.json
     result, status = await app.config['logic'].handleCancelSellTrigger(data['user_id'], data['stock_symbol'])
+    return response.json(result, status=status)
+
+
+# Add audit event to user/system logs
+@app.route(endpoints.add_audit_event, methods=['POST'])
+async def addAuditEvent(request):
+    user_id  = request.args.get('user_id', '')
+    result = None
+    status = None
+    data = request.json
+    
+    if not data:
+        return response.json({'errorMessage':'No data provided', 'content':data}, status=400)
+    if 'xmlName' not in data:
+        return response.json({'errorMessage':'Missing required field \'xmlName\'', 'content':data}, status=400)
+
+    eventType = data['xmlName']
+    input_schema = audit_events_schemas[eventType]
+
+    res, err = validateRequest(data, input_schema)
+    if not res:
+        return response.json(errorResult(err, data), status=400)
+
+    if user_id:
+        result, status = await app.config['logic'].handleAddUserAuditEvent(user_id, data)
+    else:
+        result, status = await app.config['logic'].handleAddSystemAuditEvent(data)
+    
     return response.json(result, status=status)
 
 
