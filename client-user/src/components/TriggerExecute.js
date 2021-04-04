@@ -66,6 +66,7 @@ const TriggerExecute = (props) => {
         type='text'
         disabled={loading}
         ref={register}
+        maxLength={3}
       />
       <input
         required

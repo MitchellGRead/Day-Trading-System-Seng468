@@ -46,6 +46,7 @@ const Quote = (props) => {
           placeholder='Ticker symbol'
           disabled={loading}
           ref={register}
+          maxLength={3}
         />
         <input
           type='submit'

@@ -78,6 +78,7 @@ const TriggerCancel = (props) => {
         value={stockSymbol}
         onChange={val => setStockSymbol(val.target.value)}
         disabled={loading}
+        maxLength={3}
       />
       <input
         name='cancelBuyTrigger'
