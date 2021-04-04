@@ -25,7 +25,7 @@ export async function postTransact(transactType, userId, stockSymbol, funds) {
   let data = {
     'command': transactType,
     'user_id': userId,
-    'stock_symbol': stockSymbol,
+    'stock_symbol': stockSymbol.toUpperCase(),
     'amount': funds,
     'transaction_num': 3
   };
@@ -61,7 +61,7 @@ export async function postTriggerAmount(triggerType, userId, stockSymbol, funds)
     'command': triggerType,
     'user_id': userId,
     'amount': funds,
-    'stock_symbol': stockSymbol,
+    'stock_symbol': stockSymbol.toUpperCase(),
     'transaction_num': 3
   };
   return await axios.post(`${API_URL}${endpoint}`, data);
@@ -74,7 +74,7 @@ export async function postTrigger(triggerType, userId, stockSymbol, price) {
     'command': triggerType,
     'user_id': userId,
     'amount': price,
-    'stock_symbol': stockSymbol,
+    'stock_symbol': stockSymbol.toUpperCase(),
     'transaction_num': 3
   };
   return await axios.post(`${API_URL}${endpoint}`, data);
@@ -86,7 +86,7 @@ export async function postTriggerCancel(cancelType, userId, stockSymbol) {
   let data = {
     'command': cancelType,
     'user_id': userId,
-    'stock_symbol': stockSymbol,
+    'stock_symbol': stockSymbol.toUpperCase(),
     'transaction_num': 3
   };
   return await axios.post(`${API_URL}${endpoint}`, data);

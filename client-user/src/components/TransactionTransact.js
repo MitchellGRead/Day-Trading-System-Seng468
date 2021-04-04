@@ -28,6 +28,8 @@ const TransactionTransact = (props) => {
       if (error.response.status === 404) {
         let fundsStock = data.transact === 'BUY' ? 'funds' : 'stock'
         onError(`Not enough ${fundsStock} to perform ${data.transact} or ${userId} does not exist (add funds to account)`)
+      } else if (error.response.status === 400) {
+        onError(error.response.data.errorMessage);
       } else {
         console.error(error)
         onError(`${error.message} - Failed to initialize ${transactType.toLowerCase()}.`)
