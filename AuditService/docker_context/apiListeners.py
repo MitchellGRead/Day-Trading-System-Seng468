@@ -1,11 +1,9 @@
 from sanic.log import logger
-from ServiceLogic import ServiceLogic
-from sanic.log import logger
-
-from ServiceLogic import ServiceLogic
 
 import config
 from DbmHandler import DbmHandler
+from ServiceLogic import ServiceLogic
+
 
 async def initDbmHanlder(app, loop):
     logger.debug('Creating DBM Handler')
@@ -14,6 +12,7 @@ async def initDbmHanlder(app, loop):
         config.DATABASE_SERVER_PORT,
         loop
     )
+
 
 def initServiceLogic(app, loop):
     logger.debug('Creating api logic')

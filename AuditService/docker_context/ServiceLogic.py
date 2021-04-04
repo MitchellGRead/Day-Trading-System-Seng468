@@ -8,17 +8,20 @@ class ServiceLogic:
         self.dbm_handler = dbm_handler
 
     async def fetchAccountSummary(self, data):
-        return self.dbm_handler.fetchAccountSummary(data['user_id'])
+        return await self.dbm_handler.fetchAccountSummary(data['user_id'])
 
     async def generateDumplog(self, data):
         user_id = data.get('user_id', '')
         filename = data['filename']
-        events = self.dbm_handler.fetchAuditEvents(user_id)
+        result, status = await self.dbm_handler.fetchAuditEvents(user_id)
 
-        xml_writer = XmlWriter(filename)
-        xml_writer.createLogFile(events)
+        if status != 200:
+            return result, status
+
+        xmlWriter = XmlWriter(filename)
+        xmlWriter.createLogFile(result)
         return {'success': f'file {filename} generated'}, 200
 
     async def logEvent(self, event):
         logger.debug(f'Trying to log {event["xmlName"]} event.')
-        self.dbm_handler.saveAuditEvent(event)
+        await self.dbm_handler.saveAuditEvent(event)
