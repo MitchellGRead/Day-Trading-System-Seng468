@@ -24,8 +24,12 @@ const Quote = (props) => {
       let quotePrice = res.content;
       setQuote(quotePrice);
     } catch (error) {
-      console.error(error);
-      onError(`${error.message} - Failed to get quote.`);
+      if (error.response.status === 400) {
+        onError(error.response.data.errorMessage);
+      } else {
+        console.error(error);
+        onError(`${error.message} - Failed to get quote.`);
+      }
     } finally {
       setLoading(false);
     }
@@ -42,6 +46,7 @@ const Quote = (props) => {
           placeholder='Ticker symbol'
           disabled={loading}
           ref={register}
+          maxLength={3}
         />
         <input
           type='submit'

@@ -25,8 +25,11 @@ const TriggerCancel = (props) => {
         onSuccess(`Successfully cancelled buy trigger for ${stockSymbol}.`)
       }
     } catch (error) {
-      if (error.response.status === 404) {
+      let status = error.response.status;
+      if (status === 404) {
         onError(`No buy trigger to cancel or ${userId} does not exist (add funds to account).`)
+      } else if (status === 400) {
+        onError(error.response.data.errorMessage);
       } else {
         console.error(error);
         onError(`${error.message} - Failed to cancel buy trigger.`);
@@ -51,8 +54,11 @@ const TriggerCancel = (props) => {
         onSuccess(`Successfully cancelled sell trigger for ${stockSymbol}.`)
       }
     } catch (error) {
-      if (error.response.status === 404) {
+      let status = error.response.status;
+      if (status === 404) {
         onError(`No sell trigger to cancel or ${userId} does not exist (add funds to account).`)
+      } else if (status === 400) {
+        onError(error.response.data.errorMessage);
       } else {
         console.error(error);
         onError(`${error.message} - Failed to cancel sell trigger.`);
@@ -72,6 +78,7 @@ const TriggerCancel = (props) => {
         value={stockSymbol}
         onChange={val => setStockSymbol(val.target.value)}
         disabled={loading}
+        maxLength={3}
       />
       <input
         name='cancelBuyTrigger'

@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = 'http://localhost:5000';
 
 export async function getQuote(userId, stockSymbol, transNum) {
-  let endpoint = `/get/QUOTE/trans/${transNum}/user/${userId}/stock/${stockSymbol}`;
+  let endpoint = `/get/QUOTE/trans/${transNum}/user/${userId}/stock/${stockSymbol.toUpperCase()}`;
   let resp = await axios.get(`${API_URL}${endpoint}`);
   return resp.data
 }
@@ -25,7 +25,7 @@ export async function postTransact(transactType, userId, stockSymbol, funds) {
   let data = {
     'command': transactType,
     'user_id': userId,
-    'stock_symbol': stockSymbol,
+    'stock_symbol': stockSymbol.toUpperCase(),
     'amount': funds,
     'transaction_num': 3
   };
@@ -61,7 +61,7 @@ export async function postTriggerAmount(triggerType, userId, stockSymbol, funds)
     'command': triggerType,
     'user_id': userId,
     'amount': funds,
-    'stock_symbol': stockSymbol,
+    'stock_symbol': stockSymbol.toUpperCase(),
     'transaction_num': 3
   };
   return await axios.post(`${API_URL}${endpoint}`, data);
@@ -74,7 +74,7 @@ export async function postTrigger(triggerType, userId, stockSymbol, price) {
     'command': triggerType,
     'user_id': userId,
     'amount': price,
-    'stock_symbol': stockSymbol,
+    'stock_symbol': stockSymbol.toUpperCase(),
     'transaction_num': 3
   };
   return await axios.post(`${API_URL}${endpoint}`, data);
@@ -86,7 +86,7 @@ export async function postTriggerCancel(cancelType, userId, stockSymbol) {
   let data = {
     'command': cancelType,
     'user_id': userId,
-    'stock_symbol': stockSymbol,
+    'stock_symbol': stockSymbol.toUpperCase(),
     'transaction_num': 3
   };
   return await axios.post(`${API_URL}${endpoint}`, data);
@@ -95,14 +95,12 @@ export async function postTriggerCancel(cancelType, userId, stockSymbol) {
 export async function generateDumplog(userId, filename) {
   let endpoint = `/get/DUMPLOG/trans/${3}/file/${filename}`;
 
-  let params = userId ? { userId: userId } : {};
+  let params = userId ? { 'user_id': userId } : {};
   let resp = await axios.get(`${API_URL}${endpoint}`, { params });
   return resp.data
 }
 
 export async function getDisplaySummary(userId) {
   let endpoint = `/get/DISPLAY_SUMMARY/trans/${3}/user/${userId}`;
-
-  let resp = await axios.get(`${API_URL}${endpoint}`);
-  return resp.data
+  return await axios.get(`${API_URL}${endpoint}`);
 }
