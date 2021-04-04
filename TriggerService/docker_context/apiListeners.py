@@ -67,5 +67,5 @@ async def closeHandlerClients(app, loop):
 
 
 async def stopTriggerScheduler(app, loop):
-    app.config['trigger'].shutdown()
+    app.config['trigger_execution'].shutdown()
 # -------------------------------------------------------------------

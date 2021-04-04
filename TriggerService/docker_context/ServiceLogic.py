@@ -38,7 +38,8 @@ class ServiceLogic:
             if replace:
                 toReplace = self.trigger_execution.getTrigger(data['user_id'], data['stock_symbol'],
                                                               TriggerExecutionManager.BUY)
-                await self.trigger_execution.updateTrigger(toReplace, trigger)
+                if not toReplace:
+                    await self.trigger_execution.updateTrigger(toReplace, trigger)
             else:
                 result, status = self.trigger_execution.addTrigger(trigger)
         return result, status
@@ -81,7 +82,8 @@ class ServiceLogic:
             if replace:
                 toReplace = self.trigger_execution.getTrigger(data['user_id'], data['stock_symbol'],
                                                               TriggerExecutionManager.SELL)
-                await self.trigger_execution.updateTrigger(toReplace, trigger)
+                if not toReplace:
+                    await self.trigger_execution.updateTrigger(toReplace, trigger)
             else:
                 result, status = self.trigger_execution.addTrigger(trigger)
         return result, status
