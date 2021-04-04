@@ -316,7 +316,7 @@ class PostgresHandler:
                     'user_id': user_id,
                     'user_funds': funds,
                     'stock_holdings': stocks,
-                    'active_buy_trigggers': buyTriggers,
+                    'active_buy_triggers': buyTriggers,
                     'active_sell_triggers': sellTriggers
                 }
 
