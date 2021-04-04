@@ -239,7 +239,6 @@ async def cancelSellTrigger(request):
 # Add audit event to user/system logs
 @app.route(endpoints.add_audit_event, methods=['POST'])
 async def addAuditEvent(request):
-    user_id  = request.args.get('user_id', '')
     result = None
     status = None
     data = request.json
@@ -256,6 +255,7 @@ async def addAuditEvent(request):
     if not res:
         return response.json(errorResult(err, data), status=400)
 
+    user_id = data.get('user_id', '')
     if user_id:
         result, status = await app.config['logic'].handleAddUserAuditEvent(user_id, data)
     else:
