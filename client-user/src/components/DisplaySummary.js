@@ -81,7 +81,7 @@ const DisplaySummary = (props) => {
           {
             stockHoldings.map(holding => {
               return <StockHolding
-                id={holding.stockSymbol}
+                key={holding.stockSymbol}
                 stockSymbol={holding.stockSymbol}
                 stockHeld={holding.shares}
                 stockReserved={holding.reserved}
