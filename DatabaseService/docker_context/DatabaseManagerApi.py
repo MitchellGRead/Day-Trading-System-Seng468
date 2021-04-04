@@ -1,4 +1,5 @@
 from sanic import Sanic, response
+from sanic.log import logger
 
 import json
 import config
@@ -92,17 +93,12 @@ async def getSummary(request, user_id):
 async def getDumplog(request):
     user_id  = request.args.get('user_id', '')
     result, status = await app.config['logic'].handleGetDumplogCommand(user_id)
+    data = json.dumps(result).encode('utf-8')
 
     async def streamDumplog(response):
-        if status == 200:
-            for log in result:
-                log_bytes = json.dumps(log).encode('utf-8')
-                await response.write(log_bytes)
-        else:
-            error_bytes = json.dumps(result).encode('utf8')
-            await response.write(error_bytes)
+        await response.write(data)
     
-    return response.stream(streamDumplog)
+    return response.stream(streamDumplog, status=status)
 
 
 # POST ENDPOINTS -----------------------------------------------
