@@ -8,8 +8,8 @@ const StockHolding = (props) => {
   return (
     <div className='stock-holding'>
       <span>Symbol: {stockSymbol}</span>
-      <span>Current Shares: {stockHeld}</span>
-      <span>Shares Reserved: {stockReserved}</span>
+      <span>Current Shares: {stockHeld.toLocaleString()}</span>
+      <span>Shares Reserved: {stockReserved.toLocaleString()}</span>
     </div>
   );
 };

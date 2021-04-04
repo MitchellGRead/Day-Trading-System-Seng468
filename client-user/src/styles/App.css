@@ -140,4 +140,10 @@ form {
   flex-direction: column;
   margin-bottom: 1rem;
 }
+
+.active-trigger {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
 /* ----------- */

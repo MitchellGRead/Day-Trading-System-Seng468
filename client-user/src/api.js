@@ -102,7 +102,5 @@ export async function generateDumplog(userId, filename) {
 
 export async function getDisplaySummary(userId) {
   let endpoint = `/get/DISPLAY_SUMMARY/trans/${3}/user/${userId}`;
-
-  let resp = await axios.get(`${API_URL}${endpoint}`);
-  return resp.data
+  return await axios.get(`${API_URL}${endpoint}`);
 }

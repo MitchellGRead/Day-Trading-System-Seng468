@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { getDisplaySummary } from '../api';
+import ActiveTrigger from './ActiveTrigger';
 import StockHolding from './StockHolding';
 
 const DisplaySummary = (props) => {
@@ -8,8 +9,7 @@ const DisplaySummary = (props) => {
   const [userFunds, setUserFunds] = useState(0);
   const [reserveFunds, setReserveFunds] = useState(0);
   const [stockHoldings, setStockHoldings] = useState([]);
-  const [activeBuyTriggers, setActiveBuyTriggers] = useState({});
-  const [activeSellTriggers, setActiveSellTriggers] = useState({});
+  const [activeTriggers, setActiveTriggers] = useState([]);
   const { _, handleSubmit } = useForm();
   const userId = props.userId;
   const onError = props.onError;
@@ -25,17 +25,24 @@ const DisplaySummary = (props) => {
 
     try {
       setLoading(true);
-      let summaryData = await getDisplaySummary(userId);
+      let resp = await getDisplaySummary(userId);
+      let summaryData = resp.data;
 
       setUserFunds(summaryData.user_funds.available_funds);
       setReserveFunds(summaryData.user_funds.reserved_funds);
-      formatHoldings(summaryData.stock_holdings);
+      setStockHoldings(formatHoldings(summaryData.stock_holdings));
 
-      setActiveBuyTriggers(summaryData.active_buy_triggers);
-      setActiveSellTriggers(summaryData.active_sell_triggers);
+
+      let buyTriggers = formatTriggers(summaryData.active_buy_triggers, 'Buy');
+      let sellTriggers = formatTriggers(summaryData.active_sell_triggers, 'Sell');
+      setActiveTriggers(buyTriggers.concat(sellTriggers));
     } catch (error) {
-      if (error.response.status === 404) {
+      console.log(error);
+      let status = error.response.status;
+      if (status === 404) {
         onError(`Failed getting summary for ${userId}, make sure user exists (add funds).`)
+      } else if (status === 400) {
+        onError(error.response.data.errorMessage);
       } else {
         console.error(error);
         onError(`${error.message} - Failed to fetch account summary`)
@@ -48,7 +55,6 @@ const DisplaySummary = (props) => {
   const formatHoldings = (holdings) => {
     let formattedHoldings = Object.keys(holdings).map(symbol => {
       let [holding, reserved] = holdings[symbol];
-      console.log(symbol);
       return {
         'stockSymbol': symbol,
         'shares': holding,
@@ -56,7 +62,21 @@ const DisplaySummary = (props) => {
       };
     });
 
-    setStockHoldings(formattedHoldings);
+    return formattedHoldings;
+  };
+
+  const formatTriggers = (triggers, triggerType) => {
+    let formattedTriggers = Object.keys(triggers).map(symbol => {
+      let [shares, executionPrice,] = triggers[symbol];
+      return {
+        'triggerType': triggerType,
+        'shares': shares,
+        'stockSymbol': symbol,
+        'executionPrice': executionPrice
+      };
+    });
+
+    return formattedTriggers;
   };
 
   return (
@@ -74,7 +94,17 @@ const DisplaySummary = (props) => {
       <div className='triggers-and-history'>
         <div className='active-triggers'>
           <h4>Active Triggers:</h4>
-          {/* TODO make active triggers objects once audit service finished */}
+          {
+            activeTriggers.map(trigger => {
+              return <ActiveTrigger
+                key={trigger.stockSymbol + '-' + trigger.triggerType}
+                triggerType={trigger.triggerType}
+                stockSymbol={trigger.stockSymbol}
+                shares={trigger.shares}
+                executionPrice={trigger.executionPrice}
+              />
+            })
+          }
         </div>
         <div className='stock-holdings'>
           <h4>Stock Holdings:</h4>
