@@ -215,6 +215,10 @@ run_test () {
 	echo && echo
 	get_user_info larry
 	echo && echo
+	get_user_dumplog larry
+	echo && echo
+	get_system_dumplog
+	echo && echo
 	sell_stocks larry ANC 101 10000.7878
 	echo && echo
 	buy_stocks larry ANC 254 25000

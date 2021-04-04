@@ -1,5 +1,6 @@
 from sanic import Sanic, response
 
+import json
 import config
 import endpoints
 import apiListeners
@@ -95,10 +96,11 @@ async def getDumplog(request):
     async def streamDumplog(response):
         if status == 200:
             for log in result:
-                await response.write(log)
+                log_bytes = json.dumps(log).encode('utf-8')
+                await response.write(log_bytes)
         else:
-            for pair in result.items():
-                await response.write(pair)
+            error_bytes = json.dumps(result).encode('utf8')
+            await response.write(error_bytes)
     
     return response.stream(streamDumplog)
 
@@ -116,17 +118,6 @@ async def addFunds(request):
     data = request.json 
     result, status = await app.config['logic'].handleAddFundsCommand(data['user_id'], data['funds'])
     return response.json(result, status=status)
-
-
-# Remove funds from user's account
-# @app.route(endpoints.remove_funds_endpoint, methods=['POST'])
-async def removeFunds(request):
-    res, err = validateRequest(request.json, remove_funds_schema)
-    if not res:
-        return response.json(errorResult(err, request.json), status=400)
- 
-    #TODO: Decide if this method should be supported
-    return None
 
 
 # Buy stocks endpoint -- removes funds and adds stocks

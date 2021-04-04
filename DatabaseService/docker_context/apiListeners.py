@@ -18,4 +18,5 @@ def initServiceLogic(app, loop):
 
 async def closeDbConnections(app, loop):
     logger.debug('Closing database connections')
+    app.config['mongoHandler'].closeConnection()
     await app.config['psqlHandler'].closeConnection()

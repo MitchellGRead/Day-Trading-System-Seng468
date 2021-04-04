@@ -14,7 +14,6 @@ get_dumplog_endpoint = '/dumplog' # ?user_id=string
 
 """ POST Endpoints """
 add_funds_endpoint = '/funds/add_funds'
-remove_funds_endpoint = '/funds/remove_funds'
 buy_stocks_endpoint = '/stocks/buy_stocks'
 sell_stocks_endpoint = '/stocks/sell_stocks'
 set_buy_trigger_amount_endpoint = '/triggers/buy/set/amount'

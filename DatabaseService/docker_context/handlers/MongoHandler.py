@@ -31,7 +31,12 @@ class MongoHandler:
         elif 'logs' not in logsDoc:
             return {'errorMessage': 'Could not find logs'}, 500
 
-        return logsDoc['logs'], 200
+        logs = logsDoc['logs']
+
+        if logs == []:
+            return {'errorMessage': 'No logs exist in the system'}, 404
+    
+        return logs, 200
 
     async def handleAddUserAuditEvent(self, user_id, audit_data):
         result = await self.__addUser(user_id)
@@ -69,6 +74,9 @@ class MongoHandler:
             return {'status': 'failure', 'message': 'Audit event write operation failed'}, 500
 
         return {'status': 'success', 'message': 'Added audit event to system logs'}, 200
+
+    def closeConnection(self):
+        self.mongo_client.close()
 
     async def __checkUserExists(self, user_id):
         userDoc = await self.user_logs.find_one({"user_id": user_id})
