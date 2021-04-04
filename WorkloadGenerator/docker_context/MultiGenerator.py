@@ -9,8 +9,8 @@ from User import User
 from UserCommands import UserCommands
 from eventLogger import logger
 
-CURRENT_FILE_NAME = "./1000_user_workload.txt"
-NUM_USERS = 1000
+CURRENT_FILE_NAME = "./10_user_workload.txt"
+NUM_USERS = 10
 
 
 def readWorkloadFile():
