@@ -131,7 +131,13 @@ form {
   width: 100%;
 }
 
-.transaction-history {
+.stock-holdings {
   width: 100%;
+}
+
+.stock-holding {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
 }
 /* ----------- */
