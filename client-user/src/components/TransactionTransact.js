@@ -25,10 +25,11 @@ const TransactionTransact = (props) => {
         onSuccess(`${capitalize(data.transact)} for ${data.ticker} was successfully initialized.`)
       }
     } catch (error) {
-      if (error.response.status === 404) {
+      let status = error.response.status;
+      if (status === 404) {
         let fundsStock = data.transact === 'BUY' ? 'funds' : 'stock'
         onError(`Not enough ${fundsStock} to perform ${data.transact} or ${userId} does not exist (add funds to account)`)
-      } else if (error.response.status === 400) {
+      } else if (status === 400) {
         onError(error.response.data.errorMessage);
       } else {
         console.error(error)

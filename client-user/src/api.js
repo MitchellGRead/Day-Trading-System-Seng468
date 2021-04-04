@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = 'http://localhost:5000';
 
 export async function getQuote(userId, stockSymbol, transNum) {
-  let endpoint = `/get/QUOTE/trans/${transNum}/user/${userId}/stock/${stockSymbol}`;
+  let endpoint = `/get/QUOTE/trans/${transNum}/user/${userId}/stock/${stockSymbol.toUpperCase()}`;
   let resp = await axios.get(`${API_URL}${endpoint}`);
   return resp.data
 }

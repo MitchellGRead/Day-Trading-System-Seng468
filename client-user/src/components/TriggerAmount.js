@@ -29,9 +29,12 @@ const TriggerAmount = (props) => {
         onSuccess(`Successfully ${getActionName()} for ${data.ticker}`)
       }
     } catch (error) {
-      if (error.response.status === 404) {
+      let status = error.response.status;
+      if (status === 404) {
         let amountOrStock = triggerAmountType === 'SET_BUY_AMOUNT' ? 'stock to buy.' : 'stock to sell.'
         onError(`${userId} does not have enough ${amountOrStock} or ${userId} does not exist (add funds to account)`)
+      } else if (status === 400) {
+        onError(error.response.data.errorMessage);
       } else {
         console.error(error);
         onError(`${error.message} - Failed to ${getActionName()}.`)

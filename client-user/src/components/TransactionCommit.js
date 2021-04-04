@@ -24,8 +24,11 @@ const TransactionCommit = (props) => {
         onSuccess('Successfully purchased stock.')
       }
     } catch (error) {
-      if (error.response.status === 404) {
+      let status = error.response.status;
+      if (status === 404) {
         onError(`No BUY exists to commit or ${userId} does not exist (add funds to account).`)
+      } else if (status === 400) {
+        onError(error.response.data.errorMessage);
       } else {
         console.error(error);
         onError(`${error.message} - Failed to commit buy.`);
@@ -50,8 +53,11 @@ const TransactionCommit = (props) => {
         onSuccess('Successfully sold stock')
       }
     } catch (error) {
-      if (error.response.status === 404) {
+      let status = error.response.status;
+      if (status === 404) {
         onError(`No SELL exists to commit or ${userId} does not exist (add funds to account).`)
+      } else if (status === 400) {
+        onError(error.response.data.errorMessage);
       } else {
         console.error(error);
         onError(`${error.message} - Failed to commit buy.`);
