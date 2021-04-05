@@ -43,7 +43,7 @@ The following can be done to either run the system with the workload generator o
 # Troubleshooting
 The following are common troubleshoots in case something is not working or if you want to analyse the system with more detail.
 
-## Docker Images Appearing on System Start
+## Some Docker Images Not Starting
 This is commonly caused by issues with the shell scripts not being executable after cloning from Github. 
 To resolve this run the commands `chmod 755 *.sh`, `chmod 755 */*.sh`, `chmod 755 */*/*.sh` and retry starting the system.
 
