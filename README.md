@@ -40,6 +40,10 @@ The following can be done to either run the system with the workload generator o
 2. Execute the shell script `start_client.sh` to intialize the docker container and start the React app.
 3. Navigate to the URL `http://localhost:3000` in your web browser.
 
+# Getting the Dumplog File and Statistics
+In order to retrieve the dumplog file after a dumplog command run `docker cp audit-1:/usr/src/app/logfiles <destination directory>` in a terminal.
+In order to retrieve the run statistics after a workload file run `docker cp gen-1:/usr/src/app/commandanalysis <destination directory>` in a terminal.
+
 # Troubleshooting
 The following are common troubleshoots in case something is not working or if you want to analyse the system with more detail.
 
