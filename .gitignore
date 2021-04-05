@@ -1,6 +1,8 @@
 venv/
 .idea/
-*/__pycache__/
-*/*/__pycache__/
 /AuditService/logfiles/*
+**/__pycache__/
+**.swp
+/AuditService/docker_context/logfiles/*
+/WorkloadGenerator/docker_context/commandanalysis/*
 /EXE's/dump.rdb

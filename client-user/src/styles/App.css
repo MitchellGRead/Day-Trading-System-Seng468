@@ -1,0 +1,149 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.App {
+  background-color: #282c34;
+  min-height: 100vh;
+  color: white;
+  padding: 0.5rem;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.right-space-content * {
+  margin-right: 0.25rem;
+}
+
+form {
+  margin-bottom: 0.25rem;
+}
+
+/* Error div */
+.error {
+  text-align: center;
+  color: crimson;
+}
+
+.success {
+  text-align: center;
+  color: green;
+}
+/* ----------- */
+
+/* Main page */
+.main-content {
+  margin-top: 1.5rem;
+  margin-left: 8rem;
+  margin-right: 8rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.summary-actions {
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.account-actions {
+  width: 100%;
+  padding: 0.5rem;
+}
+/* ----------- */
+
+/* User credentials div */
+.user-credentials {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+#user-id {
+  margin-right: 0.5rem;
+}
+
+#admin {
+  margin-right: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+/* ----------- */
+
+/* Quote div */
+.quote {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* ----------- */
+
+/* Transaction div */
+.transaction {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+/* ----------- */
+
+/* Trigger div */
+.trigger {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+/* ----------- */
+
+/* Dumplog div */
+.dumplog {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+/* ----------- */
+
+/* Display summary */
+.display-summary {
+  display: flex;
+  flex-direction: column;
+}
+
+.userFunds {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.triggers-and-history {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.active-triggers {
+  width: 100%;
+}
+
+.stock-holdings {
+  width: 100%;
+}
+
+.stock-holding {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.active-trigger {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+/* ----------- */
